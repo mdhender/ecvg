@@ -165,7 +165,7 @@ func TestCreateWritesStelliaAndStarsJSON(t *testing.T) {
 }
 
 func TestCreateWritesAllFilesOrNone(t *testing.T) {
-	files := []string{game.FileName, game.StelliaFileName, game.StarsFileName, game.OrbitsFileName}
+	files := []string{game.FileName, game.StelliaFileName, game.StarsFileName, game.OrbitsFileName, game.PlanetsFileName}
 	for _, existing := range files {
 		t.Run(existing+" exists", func(t *testing.T) {
 			dir := filepath.Join(t.TempDir(), "alpha")

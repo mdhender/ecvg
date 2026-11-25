@@ -17,6 +17,8 @@ const (
 	TagRoot Key = 1
 	// TagStellia places the Stellia when a game is created.
 	TagStellia Key = 2
+	// TagPlanets places the planets in orbits when a game is created.
+	TagPlanets Key = 3
 
-	lastTag = TagStellia
+	lastTag = TagPlanets
 )

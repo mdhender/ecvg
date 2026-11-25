@@ -3,8 +3,8 @@
 
 // Package game reads and writes a game's data, kept as JSON files in the
 // game's folder (by convention games/{code}): game.json holds the master data,
-// stellia.json the Stellia, stars.json their stars, and orbits.json the stars'
-// orbits.
+// stellia.json the Stellia, stars.json their stars, orbits.json the stars'
+// orbits, and planets.json the planets in those orbits.
 package game
 
 import (
@@ -70,13 +70,14 @@ type Data struct {
 	Stellia []Stellium
 	Stars   []Star
 	Orbits  []Orbit
+	Planets []Planet
 }
 
 // Create creates a new game in dir and returns its data. It writes game.json,
-// stellia.json, stars.json, and orbits.json. The game's code is the name of
-// dir, its first seed is seed1, its second seed is prng.SplitMix64(seed1), its
-// Stellia and stars come from GenerateStellia, and its orbits from
-// GenerateOrbits.
+// stellia.json, stars.json, orbits.json, and planets.json. The game's code is
+// the name of dir, its first seed is seed1, its second seed is
+// prng.SplitMix64(seed1), its Stellia and stars come from GenerateStellia, its
+// orbits from GenerateOrbits, and its planets from GeneratePlanets.
 //
 // Create never creates folders. It fails if dir does not exist, is not a
 // directory, or already holds any of the files. It writes all of the files or
@@ -99,8 +100,10 @@ func Create(dir string, seed1 uint64) (Data, error) {
 
 	var d Data
 	d.Game = Game{Code: code, Seed1: Seed(seed1), Seed2: Seed(prng.SplitMix64(seed1))}
-	d.Stellia, d.Stars = GenerateStellia(prng.New(uint64(d.Game.Seed1), uint64(d.Game.Seed2)))
+	root := prng.New(uint64(d.Game.Seed1), uint64(d.Game.Seed2))
+	d.Stellia, d.Stars = GenerateStellia(root)
 	d.Orbits = GenerateOrbits(d.Stars)
+	d.Planets = GeneratePlanets(root, d.Stars, d.Orbits)
 
 	var written []string
 	for _, file := range []struct {
@@ -111,6 +114,7 @@ func Create(dir string, seed1 uint64) (Data, error) {
 		{StelliaFileName, d.Stellia},
 		{StarsFileName, d.Stars},
 		{OrbitsFileName, d.Orbits},
+		{PlanetsFileName, d.Planets},
 	} {
 		path := filepath.Join(dir, file.name)
 		if err := writeNew(path, file.v); err != nil {
