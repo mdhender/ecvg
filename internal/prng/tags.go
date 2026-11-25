@@ -25,6 +25,8 @@ const (
 	// TagDepositAmounts, followed by a deposit's ID, draws that deposit's size
 	// and yield when a game is created.
 	TagDepositAmounts Key = 5
+	// TagHabitable picks the habitable planets when a game is created.
+	TagHabitable Key = 6
 
-	lastTag = TagDepositAmounts
+	lastTag = TagHabitable
 )

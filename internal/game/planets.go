@@ -23,6 +23,8 @@ type Planet struct {
 	ID int `json:"id"`
 	// OrbitID is the ID of the orbit the planet is in.
 	OrbitID int `json:"orbit_id"`
+	// Habitable is true if the planet can hold open-air colonies.
+	Habitable bool `json:"habitable"`
 }
 
 // GeneratePlanets places NumPlanets planets, at most one per orbit, using the
