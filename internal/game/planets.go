@@ -25,6 +25,9 @@ type Planet struct {
 	OrbitID int `json:"orbit_id"`
 	// Habitable is true if the planet can hold open-air colonies.
 	Habitable bool `json:"habitable"`
+	// Viability caps the planet's open-air farms: 0 if the planet is not
+	// habitable, otherwise MinViability..MaxViability.
+	Viability int `json:"viability"`
 }
 
 // GeneratePlanets places NumPlanets planets, at most one per orbit, using the

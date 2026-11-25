@@ -27,6 +27,9 @@ const (
 	TagDepositAmounts Key = 5
 	// TagHabitable picks the habitable planets when a game is created.
 	TagHabitable Key = 6
+	// TagViability, followed by a planet's ID, draws that habitable planet's
+	// viability when a game is created.
+	TagViability Key = 7
 
-	lastTag = TagHabitable
+	lastTag = TagViability
 )

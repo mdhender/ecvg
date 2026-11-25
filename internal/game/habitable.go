@@ -103,3 +103,23 @@ func MarkHabitable(root *prng.Stream, planets []Planet, orbits []Orbit) {
 		}
 	}
 }
+
+// MinViability and MaxViability bound a habitable planet's viability.
+const (
+	MinViability = 1
+	MaxViability = 25
+)
+
+// SetViability sets each planet's viability: 0 if it is not habitable,
+// otherwise a value from MinViability to MaxViability on a bell curve (see
+// bellCurve) drawn from the stream root.Derive(TagViability, id), so it
+// depends only on the planet's ID. Call it after MarkHabitable.
+func SetViability(root *prng.Stream, planets []Planet) {
+	for i := range planets {
+		planets[i].Viability = 0
+		if planets[i].Habitable {
+			s := root.Derive(prng.TagViability, prng.Key(planets[i].ID))
+			planets[i].Viability = bellCurve(s, MinViability, MaxViability)
+		}
+	}
+}

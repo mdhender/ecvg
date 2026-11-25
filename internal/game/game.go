@@ -79,7 +79,8 @@ type Data struct {
 // game's code is the name of dir, its first seed is seed1, its second seed is
 // prng.SplitMix64(seed1), its Stellia and stars come from GenerateStellia, its
 // orbits from GenerateOrbits, its planets from GeneratePlanets with
-// habitability from MarkHabitable, and its deposits from GenerateDeposits.
+// habitability from MarkHabitable and viability from SetViability, and its
+// deposits from GenerateDeposits.
 //
 // Create never creates folders. It fails if dir does not exist, is not a
 // directory, or already holds any of the files. It writes all of the files or
@@ -107,6 +108,7 @@ func Create(dir string, seed1 uint64) (Data, error) {
 	d.Orbits = GenerateOrbits(d.Stars)
 	d.Planets = GeneratePlanets(root, d.Stars, d.Orbits)
 	MarkHabitable(root, d.Planets, d.Orbits)
+	SetViability(root, d.Planets)
 	d.Deposits = GenerateDeposits(root, d.Planets)
 
 	files := []struct {

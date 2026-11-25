@@ -148,3 +148,73 @@ func TestMarkHabitablePanics(t *testing.T) {
 		})
 	}
 }
+
+func viableGame(root *prng.Stream) []game.Planet {
+	_, planets := habitableGame(root)
+	game.SetViability(root, planets)
+	return planets
+}
+
+func TestSetViabilityRules(t *testing.T) {
+	planets := viableGame(goldenRoot())
+	sum, mid, n := 0, 0, 0
+	for _, p := range planets {
+		switch {
+		case !p.Habitable && p.Viability != 0:
+			t.Errorf("planet %d is not habitable but has viability %d, want 0", p.ID, p.Viability)
+		case p.Habitable && (p.Viability < game.MinViability || p.Viability > game.MaxViability):
+			t.Errorf("planet %d is habitable with viability %d, want %d..%d", p.ID, p.Viability, game.MinViability, game.MaxViability)
+		case p.Habitable:
+			n++
+			sum += p.Viability
+			if p.Viability > 9 && p.Viability <= 17 { // the middle third of 1..25
+				mid++
+			}
+		}
+	}
+	// A three-dice bell curve centres on 13 and puts about two-thirds of the
+	// values in the middle third, against one-third for a flat spread.
+	if mean := float64(sum) / float64(n); mean < 11.5 || mean > 14.5 {
+		t.Errorf("mean viability %.1f, want about 13", mean)
+	}
+	if frac := float64(mid) / float64(n); frac < 0.5 {
+		t.Errorf("%.2f of viabilities in the middle third, want about 0.67", frac)
+	}
+}
+
+func TestSetViabilityMatchesGolden(t *testing.T) {
+	planets := viableGame(goldenRoot())
+	for id, want := range map[int]int{9: 17, 15: 6, 23: 14, 28: 11} {
+		if got := planets[id-1].Viability; got != want {
+			t.Errorf("planet %d has viability %d, want %d", id, got, want)
+		}
+	}
+}
+
+func TestSetViabilityDependsOnlyOnPlanet(t *testing.T) {
+	a := viableGame(goldenRoot())
+
+	// A planet's viability depends only on the seeds and its ID, not on the
+	// other planets or on draws from the root.
+	root := goldenRoot()
+	root.Uint64()
+	b := slices.Clone(a)
+	for i := range b {
+		b[i].Viability = -1
+	}
+	game.SetViability(root, b[8:9]) // planet 9 alone
+	if b[8].Viability != a[8].Viability {
+		t.Errorf("planet 9 alone has viability %d, want %d", b[8].Viability, a[8].Viability)
+	}
+
+	// Making a planet not habitable resets its viability to 0.
+	b[8].Habitable = false
+	game.SetViability(root, b[8:9])
+	if b[8].Viability != 0 {
+		t.Errorf("non-habitable planet has viability %d, want 0", b[8].Viability)
+	}
+
+	if c := viableGame(prng.New(goldenSeed+1, prng.SplitMix64(goldenSeed+1))); reflect.DeepEqual(a, c) {
+		t.Error("different seeds gave the same planets")
+	}
+}

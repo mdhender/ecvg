@@ -108,8 +108,8 @@ func TestCreateWritesPlanetsJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, want := habitableGame(goldenRoot()); !reflect.DeepEqual(d.Planets, want) {
-		t.Error("Create returned planets that differ from GeneratePlanets and MarkHabitable")
+	if want := viableGame(goldenRoot()); !reflect.DeepEqual(d.Planets, want) {
+		t.Error("Create returned planets that differ from GeneratePlanets, MarkHabitable, and SetViability")
 	}
 	loaded, err := game.LoadPlanets(dir)
 	if err != nil {
@@ -123,7 +123,7 @@ func TestCreateWritesPlanetsJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const wantPrefix = `[{"id":1,"orbit_id":2,"habitable":false},`
+	const wantPrefix = `[{"id":1,"orbit_id":2,"habitable":false,"viability":0},`
 	if len(data) < len(wantPrefix) || string(data[:len(wantPrefix)]) != wantPrefix {
 		t.Errorf("planets.json starts\n%.80s\nwant\n%s", data, wantPrefix)
 	}
