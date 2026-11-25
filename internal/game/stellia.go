@@ -6,7 +6,6 @@ package game
 import (
 	"encoding/json/v2"
 	"fmt"
-	"math/rand/v2"
 	"os"
 	"path/filepath"
 
@@ -54,8 +53,7 @@ func GenerateStellia(root *prng.Stream) []Stellium {
 			}
 		}
 	}
-	r := rand.New(root.Derive(prng.TagStellia))
-	r.Shuffle(len(points), func(i, j int) { points[i], points[j] = points[j], points[i] })
+	root.Derive(prng.TagStellia).Shuffle(len(points), func(i, j int) { points[i], points[j] = points[j], points[i] })
 
 	stellia := make([]Stellium, NumStellia)
 	for i := range stellia {

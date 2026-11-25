@@ -63,11 +63,10 @@ func TestGenerateStelliaRules(t *testing.T) {
 }
 
 func TestGenerateStelliaMatchesGolden(t *testing.T) {
-	// Also guards against a Go release changing math/rand/v2's Shuffle.
 	stellia := game.GenerateStellia(goldenRoot())
 	for i, want := range map[int][4]int{
-		0:  {-7, 4, 5, 5},
-		1:  {6, 5, -6, 4},
+		0:  {0, -4, -9, 5},
+		1:  {-7, 4, 5, 4},
 		2:  {-4, -4, -5, 3},
 		3:  {1, 8, 9, 3},
 		99: {-4, 2, -2, 1},

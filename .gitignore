@@ -15,8 +15,6 @@
 .amp/
 .claude/
 .DS_Store
-.env.local
-.env.*.local
 .idea/
 .vscode/
 coverage.*
@@ -36,3 +34,6 @@ vendor/
 # test files (but allow .env.test)
 *.test
 !.env.test
+
+# build files (agents sometimes leave them in our root)
+/ec
