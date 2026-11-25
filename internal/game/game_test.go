@@ -35,8 +35,8 @@ func TestCreateWritesGameJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantJSON := "{\n  \"code\": \"alpha\",\n  \"seed1\": \"fedcba9876543210\",\n  \"seed2\": \"" +
-		string(must(game.Seed(prng.SplitMix64(seed1)).MarshalText())) + "\"\n}\n"
+	wantJSON := `{"code":"alpha","seed1":"fedcba9876543210","seed2":"` +
+		string(must(game.Seed(prng.SplitMix64(seed1)).MarshalText())) + "\"}\n"
 	if string(data) != wantJSON {
 		t.Errorf("game.json =\n%s\nwant\n%s", data, wantJSON)
 	}

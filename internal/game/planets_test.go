@@ -123,7 +123,7 @@ func TestCreateWritesPlanetsJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const wantPrefix = "[\n  {\n    \"id\": 1,\n    \"orbit_id\": 2\n  },"
+	const wantPrefix = `[{"id":1,"orbit_id":2},`
 	if len(data) < len(wantPrefix) || string(data[:len(wantPrefix)]) != wantPrefix {
 		t.Errorf("planets.json starts\n%.80s\nwant\n%s", data, wantPrefix)
 	}

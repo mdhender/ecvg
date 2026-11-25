@@ -9,7 +9,6 @@
 package game
 
 import (
-	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"errors"
 	"fmt"
@@ -111,26 +110,23 @@ func Create(dir string, seed1 uint64) (Data, error) {
 
 	files := []struct {
 		name string
+		v    any
 		data []byte
-		err  error
 	}{
-		{name: FileName},
-		{name: StelliaFileName},
-		{name: StarsFileName},
-		{name: OrbitsFileName},
-		{name: PlanetsFileName},
-		{name: DepositsFileName},
+		{name: FileName, v: d.Game},
+		{name: StelliaFileName, v: d.Stellia},
+		{name: StarsFileName, v: d.Stars},
+		{name: OrbitsFileName, v: d.Orbits},
+		{name: PlanetsFileName, v: d.Planets},
+		{name: DepositsFileName, v: d.Deposits},
 	}
-	files[0].data, files[0].err = marshalIndented(d.Game)
-	files[1].data, files[1].err = marshalIndented(d.Stellia)
-	files[2].data, files[2].err = marshalIndented(d.Stars)
-	files[3].data, files[3].err = marshalIndented(d.Orbits)
-	files[4].data, files[4].err = marshalIndented(d.Planets)
-	files[5].data, files[5].err = marshalOnePerLine(d.Deposits)
-	for _, file := range files {
-		if file.err != nil {
-			return Data{}, fmt.Errorf("%s: %w", file.name, file.err)
+	for i := range files {
+		// Marshal every file before writing any, so an error leaves none behind.
+		data, err := json.Marshal(files[i].v)
+		if err != nil {
+			return Data{}, fmt.Errorf("%s: %w", files[i].name, err)
 		}
+		files[i].data = append(data, '\n')
 	}
 
 	var written []string
@@ -145,33 +141,6 @@ func Create(dir string, seed1 uint64) (Data, error) {
 		written = append(written, path)
 	}
 	return d, nil
-}
-
-// marshalIndented returns v as JSON indented by two spaces, ending in a newline.
-func marshalIndented(v any) ([]byte, error) {
-	data, err := json.Marshal(v, jsontext.WithIndent("  "))
-	if err != nil {
-		return nil, err
-	}
-	return append(data, '\n'), nil
-}
-
-// marshalOnePerLine returns items as a JSON array with each item compact on a
-// line of its own, ending in a newline. It suits long arrays of small records.
-func marshalOnePerLine[T any](items []T) ([]byte, error) {
-	data := []byte("[\n")
-	for i, item := range items {
-		line, err := json.Marshal(item)
-		if err != nil {
-			return nil, err
-		}
-		data = append(append(data, "  "...), line...)
-		if i < len(items)-1 {
-			data = append(data, ',')
-		}
-		data = append(data, '\n')
-	}
-	return append(data, "]\n"...), nil
 }
 
 // writeNew writes data to a new file at path. It fails with ErrGameExists if

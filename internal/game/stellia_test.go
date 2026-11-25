@@ -158,7 +158,7 @@ func TestCreateWritesStelliaAndStarsJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const wantPrefix = "[\n  {\n    \"id\": 1,\n    \"stellium_id\": 1,\n    \"seq_no\": 1\n  },"
+	const wantPrefix = `[{"id":1,"stellium_id":1,"seq_no":1},`
 	if len(data) < len(wantPrefix) || string(data[:len(wantPrefix)]) != wantPrefix {
 		t.Errorf("stars.json starts\n%.80s\nwant\n%s", data, wantPrefix)
 	}

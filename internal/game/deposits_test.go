@@ -215,24 +215,19 @@ func TestCreateWritesDepositsJSON(t *testing.T) {
 		t.Error("LoadDeposits differs from what Create wrote")
 	}
 
-	// One deposit per line, between lines holding the brackets.
+	// Compact JSON on a single line.
 	data, err := os.ReadFile(filepath.Join(dir, game.DepositsFileName))
 	if err != nil {
 		t.Fatal(err)
 	}
-	lines := strings.Split(string(data), "\n")
-	if want := game.NumDeposits + 3; len(lines) != want { // the last is empty
-		t.Fatalf("deposits.json has %d lines, want %d", len(lines), want)
+	const (
+		wantPrefix = `[{"id":1,"planet_id":1,"deposit_no":1,"type":"FUEL","size":41449432,"yield":17},`
+		wantSuffix = `,{"id":9936,"planet_id":621,"deposit_no":21,"type":"MTL","size":51005178,"yield":16}]` + "\n"
+	)
+	if !strings.HasPrefix(string(data), wantPrefix) || !strings.HasSuffix(string(data), wantSuffix) {
+		t.Errorf("deposits.json = %.100s...%s, want %s...%s", data, data[max(0, len(data)-100):], wantPrefix, wantSuffix)
 	}
-	for i, want := range map[int]string{
-		0:                    "[",
-		1:                    `  {"id":1,"planet_id":1,"deposit_no":1,"type":"FUEL","size":41449432,"yield":17},`,
-		game.NumDeposits:     `  {"id":9936,"planet_id":621,"deposit_no":21,"type":"MTL","size":51005178,"yield":16}`,
-		game.NumDeposits + 1: "]",
-		game.NumDeposits + 2: "",
-	} {
-		if lines[i] != want {
-			t.Errorf("line %d = %q, want %q", i+1, lines[i], want)
-		}
+	if n := strings.Count(string(data), "\n"); n != 1 {
+		t.Errorf("deposits.json has %d newlines, want 1", n)
 	}
 }
