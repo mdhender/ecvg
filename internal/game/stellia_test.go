@@ -29,7 +29,11 @@ func TestGenerateStelliaRules(t *testing.T) {
 
 	seen := map[[3]int]bool{}
 	counts := map[int]int{}
+	starID := 0
 	for i, s := range stellia {
+		if s.ID != i+1 {
+			t.Errorf("stellium %d has id %d, want %d", i, s.ID, i+1)
+		}
 		p := [3]int{s.X, s.Y, s.Z}
 		if p == [3]int{} {
 			t.Errorf("stellium %d is at the origin", i)
@@ -43,6 +47,10 @@ func TestGenerateStelliaRules(t *testing.T) {
 		seen[p] = true
 
 		for j, star := range s.Stars {
+			// Star IDs are unique because they count up across all stellia.
+			if starID++; star.ID != starID {
+				t.Errorf("stellium %d star %d has id %d, want %d", i, j, star.ID, starID)
+			}
 			if star.SeqNo != j+1 {
 				t.Errorf("stellium %d star %d has seq_no %d, want %d", i, j, star.SeqNo, j+1)
 			}
@@ -54,6 +62,9 @@ func TestGenerateStelliaRules(t *testing.T) {
 	// in that order.
 	if want := map[int]int{5: 1, 4: 1, 3: 8, 2: 15, 1: 75}; !reflect.DeepEqual(counts, want) {
 		t.Errorf("stellia by star count = %v, want %v", counts, want)
+	}
+	if starID != 138 {
+		t.Errorf("got %d stars, want 138", starID)
 	}
 	for i := 1; i < len(stellia); i++ {
 		if len(stellia[i].Stars) > len(stellia[i-1].Stars) {

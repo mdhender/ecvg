@@ -25,6 +25,8 @@ const (
 
 // Stellium is a cluster of stars at integer coordinates (X, Y, Z).
 type Stellium struct {
+	// ID numbers the game's Stellia from 1, in the order they were generated.
+	ID    int    `json:"id"`
 	X     int    `json:"x"`
 	Y     int    `json:"y"`
 	Z     int    `json:"z"`
@@ -33,6 +35,8 @@ type Stellium struct {
 
 // Star is one star of a Stellium, at coordinates (x, y, z, SeqNo).
 type Star struct {
+	// ID numbers all of the game's stars from 1, in Stellium order.
+	ID int `json:"id"`
 	// SeqNo numbers the stars of a Stellium from 1.
 	SeqNo int `json:"seq_no"`
 }
@@ -41,7 +45,8 @@ type Star struct {
 // Every point within StelliaRadius of the origin, other than the origin itself,
 // is a candidate; the candidates are shuffled and the first NumStellia are
 // taken. The first Stellium has 5 stars, the second 4, the next 8 have 3, the
-// next 15 have 2, and the rest have 1.
+// next 15 have 2, and the rest have 1. Stellium IDs run from 1 to NumStellia
+// in that order, and star IDs run from 1 across all the Stellia in that order.
 func GenerateStellia(root *prng.Stream) []Stellium {
 	var points [][3]int
 	for x := -StelliaRadius; x <= StelliaRadius; x++ {
@@ -56,11 +61,13 @@ func GenerateStellia(root *prng.Stream) []Stellium {
 	root.Derive(prng.TagStellia).Shuffle(len(points), func(i, j int) { points[i], points[j] = points[j], points[i] })
 
 	stellia := make([]Stellium, NumStellia)
+	starID := 0
 	for i := range stellia {
 		p := points[i]
-		stellia[i] = Stellium{X: p[0], Y: p[1], Z: p[2], Stars: make([]Star, starsInStellium(i))}
+		stellia[i] = Stellium{ID: i + 1, X: p[0], Y: p[1], Z: p[2], Stars: make([]Star, starsInStellium(i))}
 		for j := range stellia[i].Stars {
-			stellia[i].Stars[j].SeqNo = j + 1
+			starID++
+			stellia[i].Stars[j] = Star{ID: starID, SeqNo: j + 1}
 		}
 	}
 	return stellia
