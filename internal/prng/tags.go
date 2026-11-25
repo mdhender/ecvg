@@ -19,9 +19,12 @@ const (
 	TagStellia Key = 2
 	// TagPlanets places the planets in orbits when a game is created.
 	TagPlanets Key = 3
-	// TagDeposits sizes the planets' deposits and picks their types when a
-	// game is created.
+	// TagDeposits decides how many deposits each planet has and their types
+	// when a game is created.
 	TagDeposits Key = 4
+	// TagDepositAmounts, followed by a deposit's ID, draws that deposit's size
+	// and yield when a game is created.
+	TagDepositAmounts Key = 5
 
-	lastTag = TagDeposits
+	lastTag = TagDepositAmounts
 )

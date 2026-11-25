@@ -22,6 +22,15 @@ func (s *Stream) Shuffle(n int, swap func(i, j int)) {
 	}
 }
 
+// IntN returns a value drawn uniformly from [0, n) by uint64n. It panics if n
+// is not positive. Like Shuffle, its algorithm is frozen after alpha.
+func (s *Stream) IntN(n int) int {
+	if n <= 0 {
+		panic("prng: IntN with non-positive n")
+	}
+	return int(s.uint64n(uint64(n)))
+}
+
 // uint64n returns a value drawn uniformly from [0, n) using Lemire's
 // multiply-and-reject method: the high 64 bits of a 64-bit draw times n,
 // redrawing when the low 64 bits fall below 2⁶⁴ mod n. n must be nonzero.

@@ -4,6 +4,7 @@
 package prng_test
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 
@@ -73,5 +74,53 @@ func TestShuffleIsUniform(t *testing.T) {
 		if got < want*95/100 || got > want*105/100 {
 			t.Errorf("order %v: %d times, want about %d", order, got, want)
 		}
+	}
+}
+
+func TestIntNRangeAndUniformity(t *testing.T) {
+	s := prng.New(seed1, seed2)
+	for _, n := range []int{1, 2, 7, 1_000_000_000} {
+		for range 1000 {
+			if v := s.IntN(n); v < 0 || v >= n {
+				t.Fatalf("IntN(%d) = %d, out of range", n, v)
+			}
+		}
+	}
+
+	const n, trials = 6, 60_000
+	var counts [n]int
+	for range trials {
+		counts[s.IntN(n)]++
+	}
+	for v, got := range counts {
+		// 5% is about 5 standard deviations for 10,000 expected.
+		if want := trials / n; got < want*95/100 || got > want*105/100 {
+			t.Errorf("IntN(%d) gave %d %d times, want about %d", n, v, got, want)
+		}
+	}
+}
+
+func TestIntNMatchesGolden(t *testing.T) {
+	s := prng.New(seed1, seed2)
+	var got []int
+	for range 5 {
+		got = append(got, s.IntN(100))
+	}
+	// The first four are ⌊draw × 100 / 2⁶⁴⌋ of TestRootStreamMatchesGolden's draws.
+	if want := []int{63, 74, 83, 35, 57}; !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestIntNPanics(t *testing.T) {
+	for _, n := range []int{0, -1} {
+		t.Run(fmt.Sprint(n), func(t *testing.T) {
+			defer func() {
+				if recover() == nil {
+					t.Error("did not panic")
+				}
+			}()
+			prng.New(1, 2).IntN(n)
+		})
 	}
 }

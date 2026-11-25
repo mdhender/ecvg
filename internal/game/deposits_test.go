@@ -86,12 +86,66 @@ func TestGenerateDepositsRules(t *testing.T) {
 	}
 }
 
+func TestGenerateDepositAmounts(t *testing.T) {
+	_, deposits := goldenDeposits(goldenRoot())
+	type amounts struct{ minSize, maxSize, minYield, maxYield int }
+	ranges := map[game.DepositType]amounts{
+		game.GOLD: {1_000_000, 20_000_000, 1, 12},
+		game.FUEL: {1_000_000, 99_000_000, 1, 22},
+		game.MTL:  {1_000_000, 99_000_000, 1, 28},
+		game.NMTL: {1_000_000, 99_000_000, 1, 28},
+	}
+	type tally struct{ n, midSize, midYield, sizeSum int }
+	tallies := map[game.DepositType]*tally{}
+	for _, d := range deposits {
+		r := ranges[d.Type]
+		if d.Size < r.minSize || d.Size > r.maxSize {
+			t.Errorf("deposit %d (%s) has size %d, want %d..%d", d.ID, d.Type, d.Size, r.minSize, r.maxSize)
+		}
+		if d.Yield < r.minYield || d.Yield > r.maxYield {
+			t.Errorf("deposit %d (%s) has yield %d, want %d..%d", d.ID, d.Type, d.Yield, r.minYield, r.maxYield)
+		}
+		tl := tallies[d.Type]
+		if tl == nil {
+			tl = &tally{}
+			tallies[d.Type] = tl
+		}
+		tl.n++
+		tl.sizeSum += d.Size
+		third := (r.maxSize - r.minSize) / 3
+		if d.Size > r.minSize+third && d.Size <= r.maxSize-third {
+			tl.midSize++
+		}
+		third = (r.maxYield - r.minYield) / 3
+		if d.Yield > r.minYield+third && d.Yield <= r.maxYield-third {
+			tl.midYield++
+		}
+	}
+
+	// On a bell curve from three dice, about two-thirds of the values fall in
+	// the middle third of the range, against one-third for a flat spread, and
+	// the mean is the midpoint.
+	for typ, tl := range tallies {
+		r := ranges[typ]
+		if frac := float64(tl.midSize) / float64(tl.n); frac < 0.55 {
+			t.Errorf("%s: %.2f of sizes in the middle third, want about 0.67", typ, frac)
+		}
+		if frac := float64(tl.midYield) / float64(tl.n); frac < 0.45 {
+			t.Errorf("%s: %.2f of yields in the middle third, want over 0.45", typ, frac)
+		}
+		mid := float64(r.minSize+r.maxSize) / 2
+		if mean := float64(tl.sizeSum) / float64(tl.n); math.Abs(mean-mid) > 0.05*mid {
+			t.Errorf("%s: mean size %.0f, want about %.0f", typ, mean, mid)
+		}
+	}
+}
+
 func TestGenerateDepositsMatchesGolden(t *testing.T) {
 	_, deposits := goldenDeposits(goldenRoot())
 	for i, want := range map[int]game.Deposit{
-		0:    {ID: 1, PlanetID: 1, DepositNo: 1, Type: game.FUEL},
-		1:    {ID: 2, PlanetID: 1, DepositNo: 2, Type: game.NMTL},
-		9935: {ID: 9936, PlanetID: 621, DepositNo: 21, Type: game.MTL},
+		0:    {ID: 1, PlanetID: 1, DepositNo: 1, Type: game.FUEL, Size: 41_449_432, Yield: 17},
+		1:    {ID: 2, PlanetID: 1, DepositNo: 2, Type: game.NMTL, Size: 49_456_018, Yield: 12},
+		9935: {ID: 9936, PlanetID: 621, DepositNo: 21, Type: game.MTL, Size: 51_005_178, Yield: 16},
 	} {
 		if deposits[i] != want {
 			t.Errorf("deposit %d = %+v, want %+v", i, deposits[i], want)

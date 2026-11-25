@@ -12,6 +12,7 @@ Games live in `games/{code}` (git-ignored); `game.json` holds a game's master da
 Every star gets one planet in a random orbit, then the rest go into random empty orbits, at most one planet per orbit.
 `deposits.json` holds 9,936 deposits (16 per planet on average), each with the `planet_id` of its planet and a `type`: exactly 3,378 FUEL, 3,180 MTL, 3,180 NMTL, and 198 GOLD.
 Deposits per planet come from a fixed bell-curve list (3d11 + 1, scaled to 621 planets and kept symmetric about 16), shuffled across the planets; the types are a fixed list shuffled across the deposits.
+Each deposit also has a random `size` (usable ore) and `yield` (percentage of extracted ore that refines into a usable resource), each the sum of three dice spanning its range: size 1,000,000..20,000,000 for GOLD and 1,000,000..99,000,000 for the others; yield 1..12 GOLD, 1..22 FUEL, 1..28 MTL and NMTL.
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
 

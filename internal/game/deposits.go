@@ -76,6 +76,35 @@ type Deposit struct {
 	DepositNo int `json:"deposit_no"`
 	// Type is the resource in the deposit.
 	Type DepositType `json:"type"`
+	// Size is the amount of usable ore in the deposit.
+	Size int `json:"size"`
+	// Yield is the percentage of the ore extracted that can be refined into a
+	// usable resource.
+	Yield int `json:"yield"`
+}
+
+// depositAmounts gives the range of the size and yield of each type of
+// deposit.
+var depositAmounts = map[DepositType]struct{ minSize, maxSize, minYield, maxYield int }{
+	GOLD: {1_000_000, 20_000_000, 1, 12},
+	FUEL: {1_000_000, 99_000_000, 1, 22},
+	MTL:  {1_000_000, 99_000_000, 1, 28},
+	NMTL: {1_000_000, 99_000_000, 1, 28},
+}
+
+// bellCurve returns a value in [lo, hi] on a bell curve: lo plus the sum of
+// three dice, numbered from 0, whose highest faces add up to hi-lo. When hi-lo
+// does not divide by 3, the first dice are one larger.
+func bellCurve(s *prng.Stream, lo, hi int) int {
+	span, v := hi-lo, lo
+	for die := range 3 {
+		faces := span/3 + 1
+		if die < span%3 {
+			faces++
+		}
+		v += s.IntN(faces)
+	}
+	return v
 }
 
 // GenerateDeposits gives the planets NumDeposits deposits using the stream
@@ -84,6 +113,11 @@ type Deposit struct {
 // the planets in order. The deposit types come from a fixed list with exact
 // counts of each type (see depositTypes), shuffled and dealt to the deposits
 // in order. Deposit IDs run from 1 in planet order.
+//
+// Each deposit's size and yield are drawn on a bell curve (see bellCurve)
+// within the ranges for its type, size first, from the stream
+// root.Derive(TagDepositAmounts, id), so they depend only on the deposit's ID
+// and type.
 //
 // GenerateDeposits panics unless there are exactly NumPlanets planets.
 func GenerateDeposits(root *prng.Stream, planets []Planet) []Deposit {
@@ -111,12 +145,16 @@ func GenerateDeposits(root *prng.Stream, planets []Planet) []Deposit {
 	deposits := make([]Deposit, 0, NumDeposits)
 	for i, planet := range planets {
 		for depositNo := 1; depositNo <= counts[i]; depositNo++ {
-			deposits = append(deposits, Deposit{
+			d := Deposit{
 				ID:        len(deposits) + 1,
 				PlanetID:  planet.ID,
 				DepositNo: depositNo,
 				Type:      types[len(deposits)],
-			})
+			}
+			amounts, ds := depositAmounts[d.Type], root.Derive(prng.TagDepositAmounts, prng.Key(d.ID))
+			d.Size = bellCurve(ds, amounts.minSize, amounts.maxSize)
+			d.Yield = bellCurve(ds, amounts.minYield, amounts.maxYield)
+			deposits = append(deposits, d)
 		}
 	}
 	return deposits
