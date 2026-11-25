@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 // Package game reads and writes a game's data, kept as JSON files in the
-// game's folder (by convention games/{code}): game.json holds the master data
-// and stellia.json the Stellia.
+// game's folder (by convention games/{code}): game.json holds the master data,
+// stellia.json the Stellia, and stars.json their stars.
 package game
 
 import (
@@ -63,32 +63,32 @@ func (s *Seed) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// Create creates a new game in dir and returns its master data and Stellia.
-// It writes game.json and stellia.json. The game's code is the name of dir,
-// its first seed is seed1, its second seed is prng.SplitMix64(seed1), and its
-// Stellia come from GenerateStellia.
+// Create creates a new game in dir and returns its master data, Stellia, and
+// stars. It writes game.json, stellia.json, and stars.json. The game's code is
+// the name of dir, its first seed is seed1, its second seed is
+// prng.SplitMix64(seed1), and its Stellia and stars come from GenerateStellia.
 //
 // Create never creates folders. It fails if dir does not exist, is not a
-// directory, or already holds game.json or stellia.json. It writes both files
-// or neither.
-func Create(dir string, seed1 uint64) (Game, []Stellium, error) {
+// directory, or already holds any of the files. It writes all of the files or
+// none of them.
+func Create(dir string, seed1 uint64) (Game, []Stellium, []Star, error) {
 	abs, err := filepath.Abs(dir)
 	if err != nil {
-		return Game{}, nil, err
+		return Game{}, nil, nil, err
 	}
 	sb, err := os.Stat(abs)
 	if err != nil {
-		return Game{}, nil, err
+		return Game{}, nil, nil, err
 	} else if !sb.IsDir() {
-		return Game{}, nil, fmt.Errorf("%s: %w", dir, ErrNotDirectory)
+		return Game{}, nil, nil, fmt.Errorf("%s: %w", dir, ErrNotDirectory)
 	}
 	code := filepath.Base(abs)
 	if code == string(filepath.Separator) || code == "." {
-		return Game{}, nil, fmt.Errorf("%s: %w", dir, ErrInvalidCode)
+		return Game{}, nil, nil, fmt.Errorf("%s: %w", dir, ErrInvalidCode)
 	}
 
 	g := Game{Code: code, Seed1: Seed(seed1), Seed2: Seed(prng.SplitMix64(seed1))}
-	stellia := GenerateStellia(prng.New(uint64(g.Seed1), uint64(g.Seed2)))
+	stellia, stars := GenerateStellia(prng.New(uint64(g.Seed1), uint64(g.Seed2)))
 
 	var written []string
 	for _, file := range []struct {
@@ -97,17 +97,18 @@ func Create(dir string, seed1 uint64) (Game, []Stellium, error) {
 	}{
 		{FileName, g},
 		{StelliaFileName, stellia},
+		{StarsFileName, stars},
 	} {
 		path := filepath.Join(dir, file.name)
 		if err := writeNew(path, file.v); err != nil {
 			for _, path := range written {
 				_ = os.Remove(path)
 			}
-			return Game{}, nil, err
+			return Game{}, nil, nil, err
 		}
 		written = append(written, path)
 	}
-	return g, stellia, nil
+	return g, stellia, stars, nil
 }
 
 // writeNew writes v as indented JSON to a new file at path. It fails with
@@ -140,14 +141,22 @@ func writeNew(path string, v any) error {
 
 // Load reads game.json from dir.
 func Load(dir string) (Game, error) {
-	path := filepath.Join(dir, FileName)
-	data, err := os.ReadFile(path)
-	if err != nil {
+	var g Game
+	if err := loadJSON(dir, FileName, &g); err != nil {
 		return Game{}, err
 	}
-	var g Game
-	if err := json.Unmarshal(data, &g, json.RejectUnknownMembers(true)); err != nil {
-		return Game{}, fmt.Errorf("%s: %w", path, err)
-	}
 	return g, nil
+}
+
+// loadJSON reads the file name in dir into v, rejecting unknown members.
+func loadJSON(dir, name string, v any) error {
+	path := filepath.Join(dir, name)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, v, json.RejectUnknownMembers(true)); err != nil {
+		return fmt.Errorf("%s: %w", path, err)
+	}
+	return nil
 }
