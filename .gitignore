@@ -1,0 +1,38 @@
+*~
+*.db
+*.db-*
+*.dll
+*.dylib
+*.exe
+*.gz
+*.out
+*.pdf
+*.so
+*.swp
+*.tar
+*.tgz
+*.zip
+.amp/
+.claude/
+.DS_Store
+.env.local
+.env.*.local
+.idea/
+.vscode/
+coverage.*
+dist/
+games/
+go.work
+go.work.sum
+tmp/
+var/
+vendor/
+
+# Environment files (see dotenv).
+# The *.local files may hold secrets, so they are explicitly ignored; shared .env and .env.<env> files are committed.
+.env.local
+.env.*.local
+
+# test files (but allow .env.test)
+*.test
+!.env.test
