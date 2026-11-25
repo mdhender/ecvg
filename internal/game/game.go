@@ -3,7 +3,8 @@
 
 // Package game reads and writes a game's data, kept as JSON files in the
 // game's folder (by convention games/{code}): game.json holds the master data,
-// stellia.json the Stellia, and stars.json their stars.
+// stellia.json the Stellia, stars.json their stars, and orbits.json the stars'
+// orbits.
 package game
 
 import (
@@ -63,52 +64,64 @@ func (s *Seed) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// Create creates a new game in dir and returns its master data, Stellia, and
-// stars. It writes game.json, stellia.json, and stars.json. The game's code is
-// the name of dir, its first seed is seed1, its second seed is
-// prng.SplitMix64(seed1), and its Stellia and stars come from GenerateStellia.
+// Data is everything Create generates for a new game.
+type Data struct {
+	Game    Game
+	Stellia []Stellium
+	Stars   []Star
+	Orbits  []Orbit
+}
+
+// Create creates a new game in dir and returns its data. It writes game.json,
+// stellia.json, stars.json, and orbits.json. The game's code is the name of
+// dir, its first seed is seed1, its second seed is prng.SplitMix64(seed1), its
+// Stellia and stars come from GenerateStellia, and its orbits from
+// GenerateOrbits.
 //
 // Create never creates folders. It fails if dir does not exist, is not a
 // directory, or already holds any of the files. It writes all of the files or
 // none of them.
-func Create(dir string, seed1 uint64) (Game, []Stellium, []Star, error) {
+func Create(dir string, seed1 uint64) (Data, error) {
 	abs, err := filepath.Abs(dir)
 	if err != nil {
-		return Game{}, nil, nil, err
+		return Data{}, err
 	}
 	sb, err := os.Stat(abs)
 	if err != nil {
-		return Game{}, nil, nil, err
+		return Data{}, err
 	} else if !sb.IsDir() {
-		return Game{}, nil, nil, fmt.Errorf("%s: %w", dir, ErrNotDirectory)
+		return Data{}, fmt.Errorf("%s: %w", dir, ErrNotDirectory)
 	}
 	code := filepath.Base(abs)
 	if code == string(filepath.Separator) || code == "." {
-		return Game{}, nil, nil, fmt.Errorf("%s: %w", dir, ErrInvalidCode)
+		return Data{}, fmt.Errorf("%s: %w", dir, ErrInvalidCode)
 	}
 
-	g := Game{Code: code, Seed1: Seed(seed1), Seed2: Seed(prng.SplitMix64(seed1))}
-	stellia, stars := GenerateStellia(prng.New(uint64(g.Seed1), uint64(g.Seed2)))
+	var d Data
+	d.Game = Game{Code: code, Seed1: Seed(seed1), Seed2: Seed(prng.SplitMix64(seed1))}
+	d.Stellia, d.Stars = GenerateStellia(prng.New(uint64(d.Game.Seed1), uint64(d.Game.Seed2)))
+	d.Orbits = GenerateOrbits(d.Stars)
 
 	var written []string
 	for _, file := range []struct {
 		name string
 		v    any
 	}{
-		{FileName, g},
-		{StelliaFileName, stellia},
-		{StarsFileName, stars},
+		{FileName, d.Game},
+		{StelliaFileName, d.Stellia},
+		{StarsFileName, d.Stars},
+		{OrbitsFileName, d.Orbits},
 	} {
 		path := filepath.Join(dir, file.name)
 		if err := writeNew(path, file.v); err != nil {
 			for _, path := range written {
 				_ = os.Remove(path)
 			}
-			return Game{}, nil, nil, err
+			return Data{}, err
 		}
 		written = append(written, path)
 	}
-	return g, stellia, stars, nil
+	return d, nil
 }
 
 // writeNew writes v as indented JSON to a new file at path. It fails with

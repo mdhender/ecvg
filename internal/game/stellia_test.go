@@ -129,10 +129,11 @@ func TestCreateWritesStelliaAndStarsJSON(t *testing.T) {
 	if err := os.Mkdir(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	_, stellia, stars, err := game.Create(dir, goldenSeed)
+	d, err := game.Create(dir, goldenSeed)
 	if err != nil {
 		t.Fatal(err)
 	}
+	stellia, stars := d.Stellia, d.Stars
 	wantStellia, wantStars := game.GenerateStellia(goldenRoot())
 	if !reflect.DeepEqual(stellia, wantStellia) || !reflect.DeepEqual(stars, wantStars) {
 		t.Error("Create returned stellia or stars that differ from GenerateStellia")
@@ -164,7 +165,7 @@ func TestCreateWritesStelliaAndStarsJSON(t *testing.T) {
 }
 
 func TestCreateWritesAllFilesOrNone(t *testing.T) {
-	files := []string{game.FileName, game.StelliaFileName, game.StarsFileName}
+	files := []string{game.FileName, game.StelliaFileName, game.StarsFileName, game.OrbitsFileName}
 	for _, existing := range files {
 		t.Run(existing+" exists", func(t *testing.T) {
 			dir := filepath.Join(t.TempDir(), "alpha")
@@ -175,7 +176,7 @@ func TestCreateWritesAllFilesOrNone(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(dir, existing), []byte(contents), 0o644); err != nil {
 				t.Fatal(err)
 			}
-			if _, _, _, err := game.Create(dir, 1); !errors.Is(err, game.ErrGameExists) {
+			if _, err := game.Create(dir, 1); !errors.Is(err, game.ErrGameExists) {
 				t.Fatalf("Create = %v, want ErrGameExists", err)
 			}
 			if data, err := os.ReadFile(filepath.Join(dir, existing)); err != nil || string(data) != contents {

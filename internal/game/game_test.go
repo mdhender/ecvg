@@ -22,13 +22,13 @@ func TestCreateWritesGameJSON(t *testing.T) {
 	// The top bit is set, so a float64 JSON reader would lose precision.
 	const seed1 = 0xfedcba9876543210
 
-	g, _, _, err := game.Create(dir, seed1)
+	d, err := game.Create(dir, seed1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := game.Game{Code: "alpha", Seed1: seed1, Seed2: game.Seed(prng.SplitMix64(seed1))}
-	if g != want {
-		t.Errorf("Create = %+v, want %+v", g, want)
+	if d.Game != want {
+		t.Errorf("Create = %+v, want %+v", d.Game, want)
 	}
 
 	data, err := os.ReadFile(filepath.Join(dir, game.FileName))
@@ -77,7 +77,7 @@ func TestCreateFails(t *testing.T) {
 		{"filesystem root", string(filepath.Separator), game.ErrInvalidCode},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if _, _, _, err := game.Create(tc.dir, 1); !errors.Is(err, tc.want) {
+			if _, err := game.Create(tc.dir, 1); !errors.Is(err, tc.want) {
 				t.Fatalf("Create = %v, want %v", err, tc.want)
 			}
 		})
