@@ -11,7 +11,7 @@ import (
 
 const seed1, seed2 = 0x0123456789abcdef, 0xfedcba9876543210
 
-func TestRootStreamMatchesPublishedVector(t *testing.T) {
+func TestRootStreamMatchesGolden(t *testing.T) {
 	s := prng.New(seed1, seed2)
 	for i, want := range []uint64{11748147493716979836, 13673077492115055638, 15398964789732017239, 6498083842776177775} {
 		if got := s.Uint64(); got != want {
@@ -20,7 +20,7 @@ func TestRootStreamMatchesPublishedVector(t *testing.T) {
 	}
 }
 
-func TestDeriveMatchesPublishedVector(t *testing.T) {
+func TestDeriveMatchesGolden(t *testing.T) {
 	s := prng.New(seed1, seed2).Derive(prng.TagRoot)
 	for i, want := range []uint64{11781881871367131112, 6486566634792659523, 12344156845670623292, 5274862108971197392} {
 		if got := s.Uint64(); got != want {
@@ -29,7 +29,7 @@ func TestDeriveMatchesPublishedVector(t *testing.T) {
 	}
 }
 
-func TestNestedDeriveMatchesPublishedVector(t *testing.T) {
+func TestNestedDeriveMatchesGolden(t *testing.T) {
 	s := prng.New(seed1, seed2).Derive(prng.TagRoot).Derive(prng.TagRoot)
 	if got, want := s.Uint64(), uint64(17035658063521021138); got != want {
 		t.Errorf("got %d, want %d", got, want)
