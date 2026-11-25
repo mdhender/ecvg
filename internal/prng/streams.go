@@ -54,17 +54,12 @@ func (s *Stream) hash(path []Key) [32]byte {
 		panic(fmt.Sprintf("prng: path must start with a domain tag from tags.go, got %v", path))
 	}
 
-	h := sha256.New()
-	var buf [8]byte
-	for _, v := range []uint64{s.seeds.seed1, s.seeds.seed2, uint64(len(path))} {
-		binary.BigEndian.PutUint64(buf[:], v)
-		h.Write(buf[:])
-	}
+	buf := make([]byte, 0, 8*(3+len(path)))
+	buf = binary.BigEndian.AppendUint64(buf, s.seeds.seed1)
+	buf = binary.BigEndian.AppendUint64(buf, s.seeds.seed2)
+	buf = binary.BigEndian.AppendUint64(buf, uint64(len(path)))
 	for _, k := range path {
-		binary.BigEndian.PutUint64(buf[:], uint64(k))
-		h.Write(buf[:])
+		buf = binary.BigEndian.AppendUint64(buf, uint64(k))
 	}
-	var digest [32]byte
-	h.Sum(digest[:0])
-	return digest
+	return sha256.Sum256(buf)
 }
