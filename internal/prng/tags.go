@@ -19,6 +19,9 @@ const (
 	TagStellia Key = 2
 	// TagPlanets places the planets in orbits when a game is created.
 	TagPlanets Key = 3
+	// TagDeposits sizes the planets' deposits and picks their types when a
+	// game is created.
+	TagDeposits Key = 4
 
-	lastTag = TagPlanets
+	lastTag = TagDeposits
 )
