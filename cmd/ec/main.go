@@ -91,9 +91,10 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		Name:      "create",
 		Usage:     "ec game create [FLAGS] <PATH>",
 		ShortHelp: "create a new game in an existing folder",
-		LongHelp: "Create writes game.json into PATH, an existing folder, by convention games/{code}.\n" +
-			"The folder's name is the game code. Create never creates folders, and it fails\n" +
-			"if PATH is missing, is not a folder, or already holds game.json.",
+		LongHelp: "Create writes game.json and stellia.json into PATH, an existing folder, by\n" +
+			"convention games/{code}. The folder's name is the game code. Create never\n" +
+			"creates folders, and it fails if PATH is missing, is not a folder, or already\n" +
+			"holds game.json or stellia.json.",
 		Flags: createFlags,
 		Exec: func(ctx context.Context, args []string) error {
 			if len(args) != 1 {
@@ -103,11 +104,15 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			if seed != nil {
 				seed1 = *seed
 			}
-			g, err := game.Create(args[0], seed1)
+			g, stellia, err := game.Create(args[0], seed1)
 			if err != nil {
 				return fmt.Errorf("game create: %w", err)
 			}
-			fmt.Fprintf(stdout, "created game %s in %s\n", g.Code, args[0])
+			stars := 0
+			for _, s := range stellia {
+				stars += len(s.Stars)
+			}
+			fmt.Fprintf(stdout, "created game %s in %s: %d stellia, %d stars\n", g.Code, args[0], len(stellia), stars)
 			return nil
 		},
 	})

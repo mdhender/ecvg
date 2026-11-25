@@ -15,6 +15,8 @@ type Key int64
 const (
 	// TagRoot is a placeholder.
 	TagRoot Key = 1
+	// TagStellia places the Stellia when a game is created.
+	TagStellia Key = 2
 
-	lastTag = TagRoot
+	lastTag = TagStellia
 )
