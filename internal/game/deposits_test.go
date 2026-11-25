@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/mdhender/ecvg/internal/game"
@@ -212,5 +213,26 @@ func TestCreateWritesDepositsJSON(t *testing.T) {
 	}
 	if !reflect.DeepEqual(loaded, d.Deposits) {
 		t.Error("LoadDeposits differs from what Create wrote")
+	}
+
+	// One deposit per line, between lines holding the brackets.
+	data, err := os.ReadFile(filepath.Join(dir, game.DepositsFileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(string(data), "\n")
+	if want := game.NumDeposits + 3; len(lines) != want { // the last is empty
+		t.Fatalf("deposits.json has %d lines, want %d", len(lines), want)
+	}
+	for i, want := range map[int]string{
+		0:                    "[",
+		1:                    `  {"id":1,"planet_id":1,"deposit_no":1,"type":"FUEL","size":41449432,"yield":17},`,
+		game.NumDeposits:     `  {"id":9936,"planet_id":621,"deposit_no":21,"type":"MTL","size":51005178,"yield":16}`,
+		game.NumDeposits + 1: "]",
+		game.NumDeposits + 2: "",
+	} {
+		if lines[i] != want {
+			t.Errorf("line %d = %q, want %q", i+1, lines[i], want)
+		}
 	}
 }

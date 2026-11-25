@@ -109,20 +109,34 @@ func Create(dir string, seed1 uint64) (Data, error) {
 	d.Planets = GeneratePlanets(root, d.Stars, d.Orbits)
 	d.Deposits = GenerateDeposits(root, d.Planets)
 
-	var written []string
-	for _, file := range []struct {
+	files := []struct {
 		name string
-		v    any
+		data []byte
+		err  error
 	}{
-		{FileName, d.Game},
-		{StelliaFileName, d.Stellia},
-		{StarsFileName, d.Stars},
-		{OrbitsFileName, d.Orbits},
-		{PlanetsFileName, d.Planets},
-		{DepositsFileName, d.Deposits},
-	} {
+		{name: FileName},
+		{name: StelliaFileName},
+		{name: StarsFileName},
+		{name: OrbitsFileName},
+		{name: PlanetsFileName},
+		{name: DepositsFileName},
+	}
+	files[0].data, files[0].err = marshalIndented(d.Game)
+	files[1].data, files[1].err = marshalIndented(d.Stellia)
+	files[2].data, files[2].err = marshalIndented(d.Stars)
+	files[3].data, files[3].err = marshalIndented(d.Orbits)
+	files[4].data, files[4].err = marshalIndented(d.Planets)
+	files[5].data, files[5].err = marshalOnePerLine(d.Deposits)
+	for _, file := range files {
+		if file.err != nil {
+			return Data{}, fmt.Errorf("%s: %w", file.name, file.err)
+		}
+	}
+
+	var written []string
+	for _, file := range files {
 		path := filepath.Join(dir, file.name)
-		if err := writeNew(path, file.v); err != nil {
+		if err := writeNew(path, file.data); err != nil {
 			for _, path := range written {
 				_ = os.Remove(path)
 			}
@@ -133,15 +147,36 @@ func Create(dir string, seed1 uint64) (Data, error) {
 	return d, nil
 }
 
-// writeNew writes v as indented JSON to a new file at path. It fails with
-// ErrGameExists if path exists, and removes the file if writing fails.
-func writeNew(path string, v any) error {
+// marshalIndented returns v as JSON indented by two spaces, ending in a newline.
+func marshalIndented(v any) ([]byte, error) {
 	data, err := json.Marshal(v, jsontext.WithIndent("  "))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	data = append(data, '\n')
+	return append(data, '\n'), nil
+}
 
+// marshalOnePerLine returns items as a JSON array with each item compact on a
+// line of its own, ending in a newline. It suits long arrays of small records.
+func marshalOnePerLine[T any](items []T) ([]byte, error) {
+	data := []byte("[\n")
+	for i, item := range items {
+		line, err := json.Marshal(item)
+		if err != nil {
+			return nil, err
+		}
+		data = append(append(data, "  "...), line...)
+		if i < len(items)-1 {
+			data = append(data, ',')
+		}
+		data = append(data, '\n')
+	}
+	return append(data, "]\n"...), nil
+}
+
+// writeNew writes data to a new file at path. It fails with ErrGameExists if
+// path exists, and removes the file if writing fails.
+func writeNew(path string, data []byte) error {
 	fd, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if errors.Is(err, fs.ErrExist) {
 		return fmt.Errorf("%s: %w", path, ErrGameExists)
