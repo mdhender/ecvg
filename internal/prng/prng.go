@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Michael D Henderson.
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 // Package prng provides deterministic random streams that can be split into
 // independent child streams, so generators produce the same game on any
