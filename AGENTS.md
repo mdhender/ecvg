@@ -5,7 +5,7 @@ This file provides guidance to coding agents when working in this repository.
 ## Project
 
 `ecvg` (module `github.com/mdhender/ecvg`) is another attempt at implementing Empyrean Challenge from the 1978 rulebook.
-It is at the very beginning: the root `ecvg` package (`version.go`, a `semver.Version`), the `ec` command in `cmd/ec`, and internal packages.
+It is at the very beginning: the root `ecvg` package (`version.go`, a `semver.Version`), the `ec` command in `cmd/ec`, the `ecview` command in `cmd/ecview`, and internal packages.
 
 `ec` uses `peterbourgon/ff/v4`. It loads env files for the environment named by `EC_ENV` (default `development`), then reads flags from the command line and from `EC_`-prefixed environment variables (`--seed` is `EC_SEED`).
 Games live in `games/{code}` (git-ignored); `game.json` holds a game's master data, with its two seeds as 16-digit hex strings, `stellia.json` holds its Stellia, `stars.json` holds their stars, each with the `stellium_id` of its Stellium, `orbits.json` holds 10 orbits per star, each with the `star_id` of its star, and `planets.json` holds 621 planets (4.5 per star on average), each with the `orbit_id` of its orbit.
@@ -17,6 +17,7 @@ Deposits per planet come from a fixed bell-curve list (3d11 + 1, scaled to 621 p
 Each deposit also has a random `size` (usable ore) and `yield` (percentage of extracted ore that refines into a usable resource), each the sum of three dice spanning its range: size 1,000,000..20,000,000 for GOLD and 1,000,000..99,000,000 for the others; yield 1..12 GOLD, 1..22 FUEL, 1..28 MTL and NMTL.
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
+`ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia, to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
 
 The plan:
 
@@ -32,6 +33,7 @@ go test ./...
 go test ./internal/dotenv -run TestLoadPrecedence   # a single test
 go vet ./...
 go run ./cmd/ec game create games/{code}       # the folder must already exist
+go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
 
 ## Code conventions

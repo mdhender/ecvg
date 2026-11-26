@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stellia of {{.Code}}</title>
+<style>
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b72; --line: #d9d7d0;
+  --grid: rgba(0,0,0,.10); --axis: rgba(0,0,0,.35);
+  --s1: #4a78c2; --s2: #2f9e8f; --s3: #c79a1c; --s4: #d0632b; --s5: #b23a6e;
+  --hl: #000;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0f14; --panel: #161922; --ink: #e8e8ec; --muted: #9a9caa; --line: #2a2e3b;
+    --grid: rgba(255,255,255,.10); --axis: rgba(255,255,255,.35);
+    --s1: #7fa6ea; --s2: #4fd1bd; --s3: #f0c443; --s4: #ff8a4c; --s5: #ff6fae;
+    --hl: #fff;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding: 16px 20px 8px; }
+h1 { margin: 0; font-size: 20px; font-weight: 600; }
+header p { margin: 4px 0 0; color: var(--muted); }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; padding: 8px 20px 20px; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.map { position: relative; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); }
+.toolbar button { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.toolbar button:hover { border-color: var(--muted); }
+.toolbar label { color: var(--muted); display: inline-flex; gap: 4px; align-items: center; margin-left: 6px; }
+.toolbar .hint { margin-left: auto; color: var(--muted); font-size: 12px; }
+canvas { display: block; width: 100%; height: min(78vh, 760px); cursor: grab; touch-action: none; }
+canvas.dragging { cursor: grabbing; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; border-radius: 50%; }
+#tip { position: absolute; pointer-events: none; display: none; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 8px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.2); white-space: nowrap; }
+.list { max-height: calc(min(78vh, 760px) + 90px); overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 10px; text-align: right; }
+th { position: sticky; top: 0; background: var(--panel); border-bottom: 1px solid var(--line);
+  color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; }
+tbody tr { cursor: pointer; }
+tbody tr:hover, tbody tr.sel { background: var(--grid); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Stellia of {{.Code}}</h1>
+  <p>{{.Count}} Stellia holding {{.Stars}} stars, all within {{.Radius}} units of the origin.</p>
+</header>
+<main>
+  <section class="panel map">
+    <div class="toolbar">
+      <button data-view="iso">3D</button>
+      <button data-view="xy">Top (X–Y)</button>
+      <button data-view="xz">Front (X–Z)</button>
+      <button data-view="yz">Side (Y–Z)</button>
+      <label><input type="checkbox" id="labels"> IDs</label>
+      <label><input type="checkbox" id="stems" checked> Stems</label>
+      <span class="hint">Drag to rotate · scroll to zoom</span>
+    </div>
+    <canvas id="map"></canvas>
+    <div id="tip"></div>
+    <div class="legend">
+      <span><i style="width:8px;height:8px;background:var(--s1)"></i>1 star</span>
+      <span><i style="width:10px;height:10px;background:var(--s2)"></i>2 stars</span>
+      <span><i style="width:12px;height:12px;background:var(--s3)"></i>3 stars</span>
+      <span><i style="width:14px;height:14px;background:var(--s4)"></i>4 stars</span>
+      <span><i style="width:16px;height:16px;background:var(--s5)"></i>5 stars</span>
+      <span>Stems drop to the X–Y plane; nearer Stellia are drawn brighter.</span>
+    </div>
+  </section>
+  <section class="panel list">
+    <table>
+      <thead><tr><th data-k="id">ID</th><th data-k="x">X</th><th data-k="y">Y</th><th data-k="z">Z</th><th data-k="stars">Stars</th><th data-k="d">Dist</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </section>
+</main>
+<script>
+"use strict";
+const RADIUS = {{.Radius}};
+const POINTS = {{.JSON}};
+for (const p of POINTS) p.d = Math.hypot(p.x, p.y, p.z);
+
+const canvas = document.getElementById("map");
+const ctx = canvas.getContext("2d");
+const tip = document.getElementById("tip");
+const showLabels = document.getElementById("labels");
+const showStems = document.getElementById("stems");
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+// View angles: yaw turns about the Z axis, pitch tilts it toward the viewer.
+const VIEWS = { iso: [-0.6, 1.05], xy: [0, 0], xz: [0, Math.PI / 2], yz: [-Math.PI / 2, Math.PI / 2] };
+let [yaw, pitch] = VIEWS.iso;
+let zoom = 1;
+let selected = null;
+let hovered = null;
+let projected = [];
+
+// project maps a game point to screen coordinates plus depth (larger is nearer).
+function project(x, y, z, w, h) {
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const rx = x * cy - y * sy;
+  const ry = x * sy + y * cy;
+  const sx = rx;
+  const sy2 = ry * cp + z * sp;    // screen up
+  const depth = z * cp - ry * sp;  // toward viewer
+  const scale = zoom * Math.min(w, h) / (2 * RADIUS + 4);
+  return [w / 2 + sx * scale, h / 2 - sy2 * scale, depth];
+}
+
+function line(a, b) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+
+function draw() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const P = (x, y, z) => project(x, y, z, w, h);
+
+  // X-Y plane grid, clipped to the radius, plus its boundary circle.
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = css("--grid");
+  for (let i = -RADIUS; i <= RADIUS; i += 5) {
+    const e = Math.sqrt(RADIUS * RADIUS - i * i);
+    line(P(i, -e, 0), P(i, e, 0));
+    line(P(-e, i, 0), P(e, i, 0));
+  }
+  ctx.beginPath();
+  for (let a = 0; a <= 64; a++) {
+    const t = a / 64 * 2 * Math.PI, q = P(RADIUS * Math.cos(t), RADIUS * Math.sin(t), 0);
+    a ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
+  }
+  ctx.stroke();
+
+  // Axes, labelled at their positive ends.
+  ctx.strokeStyle = css("--axis");
+  ctx.fillStyle = css("--axis");
+  ctx.font = "12px system-ui, sans-serif";
+  const r = RADIUS + 1;
+  for (const [name, a, b] of [["X", [-r, 0, 0], [r, 0, 0]], ["Y", [0, -r, 0], [0, r, 0]], ["Z", [0, 0, -r], [0, 0, r]]]) {
+    const pa = P(...a), pb = P(...b);
+    line(pa, pb);
+    ctx.fillText("+" + name, pb[0] + 4, pb[1] - 4);
+  }
+
+  projected = POINTS.map(p => ({ p, s: P(p.x, p.y, p.z), base: P(p.x, p.y, 0) }))
+    .sort((a, b) => a.s[2] - b.s[2]);
+
+  if (showStems.checked) {
+    ctx.strokeStyle = css("--grid");
+    for (const q of projected) line(q.base, q.s);
+  }
+  for (const q of projected) {
+    const { p, s } = q;
+    const rad = 2.5 + 1.5 * p.stars;
+    ctx.globalAlpha = 0.45 + 0.55 * (s[2] + RADIUS) / (2 * RADIUS);
+    ctx.fillStyle = css("--s" + Math.min(p.stars, 5));
+    ctx.beginPath(); ctx.arc(s[0], s[1], rad, 0, 2 * Math.PI); ctx.fill();
+    ctx.globalAlpha = 1;
+    if (p === selected || p === hovered) {
+      ctx.strokeStyle = css("--hl"); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(s[0], s[1], rad + 3, 0, 2 * Math.PI); ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+    if (showLabels.checked || p === selected) {
+      ctx.fillStyle = css("--ink");
+      ctx.fillText(p.id, s[0] + rad + 2, s[1] - rad);
+    }
+  }
+}
+
+function describe(p) {
+  return `Stellium ${p.id} · (${p.x}, ${p.y}, ${p.z}) · ${p.stars} star${p.stars === 1 ? "" : "s"} · ${p.d.toFixed(1)} from origin`;
+}
+
+function nearest(mx, my) {
+  let best = null, bestD = 12 * 12;
+  for (const q of projected) {
+    const dx = q.s[0] - mx, dy = q.s[1] - my, d = dx * dx + dy * dy;
+    if (d <= bestD) { best = q; bestD = d; } // later entries are nearer the viewer
+  }
+  return best;
+}
+
+let drag = null;
+canvas.addEventListener("pointerdown", e => {
+  drag = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false };
+  canvas.setPointerCapture(e.pointerId);
+  canvas.classList.add("dragging");
+});
+canvas.addEventListener("pointermove", e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+    yaw = drag.yaw + dx * 0.01;
+    pitch = Math.max(0, Math.min(Math.PI, drag.pitch - dy * 0.01));
+    tip.style.display = "none";
+    draw();
+    return;
+  }
+  const q = nearest(mx, my);
+  const p = q ? q.p : null;
+  if (p !== hovered) { hovered = p; draw(); }
+  if (p) {
+    tip.textContent = describe(p);
+    tip.style.display = "block";
+    tip.style.left = Math.min(mx + 14, rect.width - tip.offsetWidth - 4) + "px";
+    tip.style.top = (canvas.offsetTop + my + 14) + "px";
+  } else {
+    tip.style.display = "none";
+  }
+});
+canvas.addEventListener("pointerup", e => {
+  canvas.classList.remove("dragging");
+  if (drag && !drag.moved) {
+    const rect = canvas.getBoundingClientRect();
+    const q = nearest(e.clientX - rect.left, e.clientY - rect.top);
+    select(q ? q.p : null, true);
+  }
+  drag = null;
+});
+canvas.addEventListener("pointerleave", () => { hovered = null; tip.style.display = "none"; draw(); });
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  zoom = Math.max(0.5, Math.min(6, zoom * Math.exp(-e.deltaY * 0.001)));
+  draw();
+}, { passive: false });
+
+for (const b of document.querySelectorAll("[data-view]")) {
+  b.addEventListener("click", () => { [yaw, pitch] = VIEWS[b.dataset.view]; zoom = 1; draw(); });
+}
+showLabels.addEventListener("change", draw);
+showStems.addEventListener("change", draw);
+
+// The table.
+const rows = document.getElementById("rows");
+let sortKey = "id", sortDir = 1;
+function renderRows() {
+  const list = POINTS.slice().sort((a, b) => sortDir * (a[sortKey] - b[sortKey]) || a.id - b.id);
+  rows.replaceChildren(...list.map(p => {
+    const tr = document.createElement("tr");
+    tr.dataset.id = p.id;
+    if (p === selected) tr.className = "sel";
+    for (const v of [p.id, p.x, p.y, p.z, p.stars, p.d.toFixed(1)]) {
+      const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+    }
+    tr.addEventListener("click", () => select(p === selected ? null : p, false));
+    return tr;
+  }));
+}
+for (const th of document.querySelectorAll("th[data-k]")) {
+  th.addEventListener("click", () => {
+    if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = 1; }
+    renderRows();
+  });
+}
+function select(p, scroll) {
+  selected = p;
+  renderRows();
+  draw();
+  if (p && scroll) rows.querySelector(`tr[data-id="${p.id}"]`)?.scrollIntoView({ block: "nearest" });
+}
+
+window.addEventListener("resize", draw);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+renderRows();
+draw();
+</script>
+</body>
+</html>
