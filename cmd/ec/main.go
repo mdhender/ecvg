@@ -18,6 +18,7 @@ import (
 	"github.com/mdhender/ecvg/internal/dotenv"
 	"github.com/mdhender/ecvg/internal/engine"
 	"github.com/mdhender/ecvg/internal/game"
+	"github.com/mdhender/ecvg/internal/orders"
 	"github.com/mdhender/ecvg/internal/report"
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
@@ -86,7 +87,12 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			"It reads the state as of the current turn, N, from PATH/turns/N, runs the\n" +
 			"turn's phases, writes the new state to PATH/turns/N+1, and then makes N+1\n" +
 			"the current turn in game.json. PATH/turns/N is not changed. It fails if\n" +
-			"PATH/turns/N+1 already exists.",
+			"PATH/turns/N+1 already exists.\n" +
+			"\n" +
+			"The first phase carries out the orders in PATH/turns/N/orders, one file per\n" +
+			"empire named empire-{id}.txt. An order that is not valid is rejected and\n" +
+			"listed as file:line: order: reason; the turn still runs. Any other file in\n" +
+			"that folder, or a file for an empire that is not in the game, fails the run.",
 		Flags: runFlags,
 		Exec: func(ctx context.Context, args []string) error {
 			if len(args) != 1 {
@@ -97,10 +103,22 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 				return fmt.Errorf("turn run: %w", err)
 			}
 			turn := d.Game.Turn
-			engine.RunTurn(&d)
+			files, err := orders.LoadTurn(args[0], turn)
+			if err != nil {
+				return fmt.Errorf("turn run: orders: %w", err)
+			}
+			result, err := engine.RunTurn(&d, files)
+			if err != nil {
+				return fmt.Errorf("turn run: orders: %w", err)
+			}
 			if err := d.WriteTurn(args[0]); err != nil {
 				return fmt.Errorf("turn run: %w", err)
 			}
+			for _, r := range result.Rejected {
+				_, _ = fmt.Fprintf(stdout, "rejected %s\n", r)
+			}
+			_, _ = fmt.Fprintf(stdout, "orders from %d empires: %d accepted, %d rejected\n",
+				len(files), result.Accepted, len(result.Rejected))
 			_, _ = fmt.Fprintf(stdout, "ran turn %d of game %s; the state as of turn %d is in %s\n",
 				turn, d.Game.Code, d.Game.Turn, game.TurnDir(args[0], d.Game.Turn))
 			return nil

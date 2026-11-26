@@ -35,6 +35,7 @@ func sample() game.Data {
 		Colonies: []game.Colony{{
 			ID: 7, EmpireID: 1, PlanetID: 40, No: 1, Type: game.COPN, TechLevel: 1,
 			Population: game.Population{UEM: 600000, USK: 300000, PRO: 200000, SLD: 100000},
+			Rations:    game.DefaultRations,
 			SOL:        game.DefaultSOL, DeathRate: game.DefaultDeathRate, BirthRate: game.DefaultBirthRate,
 			Operational:   []game.Unit{{Type: "FARM", TechLevel: 10, Qty: 100000}},
 			Cargo:         []game.Unit{{Type: "FOOD", Qty: 4269990}},
@@ -60,7 +61,8 @@ func TestEmpire(t *testing.T) {
 				"Player: abcdefgh",
 				"Home world: planet 40 at (-3, 4, 12) star 1 orbit 3",
 				"COLONY 1   COPN (open-air surface colony)   Tech level 1",
-				"Standard of living 1.00   Birth rate 0.625%   Death rate 0.625%",
+				"Entity ID: 7",
+				"Rations 100%   Standard of living 1.00   Birth rate 0.625%   Death rate 0.625%",
 				"  UEM             600,000      60,000,000",
 				"  Total         1,200,000     120,000,000",
 				"Food needed each turn: 300,000 FOOD",

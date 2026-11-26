@@ -5,7 +5,10 @@
 // of which changes the game's data in memory.
 package engine
 
-import "github.com/mdhender/ecvg/internal/game"
+import (
+	"github.com/mdhender/ecvg/internal/game"
+	"github.com/mdhender/ecvg/internal/orders"
+)
 
 // TurnsPerYear is the number of turns in a game year. A turn whose number
 // divides by it is an end-of-year turn.
@@ -16,10 +19,17 @@ const SetupTurn = 0
 
 // RunTurn processes the game's current turn, d.Game.Turn: it runs each phase
 // in order on the state in d, which becomes the state as of the next turn, and
-// then advances d.Game.Turn. The phases so far: Demographics.
-func RunTurn(d *game.Data) {
+// then advances d.Game.Turn. The phases, in order: ApplyOrders, with the
+// orders the empires returned for the turn, and Demographics. It returns what
+// became of the orders. If it fails, d is not changed.
+func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
+	result, err := ApplyOrders(d, files)
+	if err != nil {
+		return OrdersResult{}, err
+	}
 	Demographics(d, d.Game.Turn)
 	d.Game.Turn++
+	return result, nil
 }
 
 // Demographics is the demographic changes phase of the turn numbered turn. It

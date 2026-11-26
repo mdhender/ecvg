@@ -24,6 +24,14 @@ const (
 	MaxHandleLength = 12
 )
 
+// DefaultRations is the rations of a new entity, a percentage of the food its
+// population needs. MinRations and MaxRations bound what it can be set to.
+const (
+	DefaultRations = 100
+	MinRations     = 1
+	MaxRations     = 500
+)
+
 const ErrInvalidHandle = cerrs.Error("invalid handle")
 
 // Race is a species. Each race starts on one home world, and every empire on
@@ -66,6 +74,9 @@ type Colony struct {
 	TechLevel int        `json:"tech_level"`
 	// Population is the colony's population units.
 	Population Population `json:"population"`
+	// Rations is the percentage of the food its population needs that the
+	// colony hands out, MinRations..MaxRations, by default DefaultRations.
+	Rations int `json:"rations"`
 	// SOL is the standard of living, by default DefaultSOL.
 	SOL float64 `json:"sol"`
 	// DeathRate and BirthRate are fractions of the population per turn (0.01

@@ -104,8 +104,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		p("%s", strings.Repeat("-", 72))
 		p("COLONY %d   %s (%s)   Tech level %d", c.No, c.Type, entityNames[c.Type], c.TechLevel)
 		p("%s", strings.Repeat("-", 72))
+		p("Entity ID: %d", c.ID)
 		p("Location: planet %d at %s", c.PlanetID, loc)
-		p("Standard of living %.2f   Birth rate %s   Death rate %s", c.SOL, percent(c.BirthRate), percent(c.DeathRate))
+		p("Rations %d%%   Standard of living %.2f   Birth rate %s   Death rate %s", c.Rations, c.SOL, percent(c.BirthRate), percent(c.DeathRate))
 
 		pop := c.Population
 		p("")

@@ -386,6 +386,7 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 					Type:          tc.Type,
 					TechLevel:     tc.TechLevel,
 					Population:    tc.Population,
+					Rations:       game.DefaultRations,
 					SOL:           game.DefaultSOL,
 					DeathRate:     game.DefaultDeathRate,
 					BirthRate:     game.DefaultBirthRate,

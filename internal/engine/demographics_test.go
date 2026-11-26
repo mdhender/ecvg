@@ -121,7 +121,9 @@ func TestRunTurn(t *testing.T) {
 		{5, game.Population{UEM: 92, USK: 8, SLD: 100}},         // turn 4, the end of the year
 		{6, game.Population{UEM: 90, USK: 10, PRO: 5, SLD: 95}}, // turn 5 follows it
 	} {
-		engine.RunTurn(&d)
+		if _, err := engine.RunTurn(&d, nil); err != nil {
+			t.Fatal(err)
+		}
 		if d.Game.Turn != want.turn || d.Colonies[0].Population != want.p {
 			t.Fatalf("got turn %d, %+v; want turn %d, %+v", d.Game.Turn, d.Colonies[0].Population, want.turn, want.p)
 		}

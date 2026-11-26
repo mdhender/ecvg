@@ -72,12 +72,22 @@ Then, for every turn, starting with turn 0:
 # 1. Write the reports for the current turn and send them to the players.
 go run ./cmd/ec turn report games/alpha
 
-# 2. Collect the players' orders into turns/N/orders/.
-#    (Orders are not implemented yet: the engine ignores this folder.)
+# 2. Collect the players' orders into turns/N/orders/, one file per empire,
+#    named like the empire's report: empire-001.txt. See "Orders" below.
 
 # 3. Run the turn. This creates turns/N+1 and makes it the current turn.
 go run ./cmd/ec turn run games/alpha
 ```
+
+`run` lists every order it rejected, as `file:line: order: reason`, and still runs the turn:
+
+```
+rejected empire-001.txt:3: set rations for 16 to 50%: entity 16: the empire does not control an entity with that ID
+orders from 2 empires: 4 accepted, 1 rejected
+ran turn 0 of game alpha; the state as of turn 1 is in games/alpha/turns/1
+```
+
+If a rejection was a typo, roll back, fix the file, and run again. A file in the orders folder that is not named for an empire in the game stops the run before anything changes.
 
 Then go back to step 1, which now reports on the new turn.
 
@@ -111,6 +121,24 @@ go run ./cmd/ecview --store games/alpha stellia   # 3D map of the Stellia
 go run ./cmd/ecview --store games/alpha empires   # the empires and their colonies, as of the current turn
 ```
 
+## Orders
+
+An orders file is plain text, UTF-8, with one order per line. An order can't be split across lines, and a line can't hold two orders.
+
+```
+# Orders for Empire 1, turn 0.
+set rations for 1 to 75%      // tighten belts
+SET   RATIONS   FOR 1 TO 75%  # the same order: case and spacing don't matter
+```
+
+- Keywords ignore case. Any amount of white space separates the words.
+- A comment starts with `#` or `//` and runs to the end of the line. It must start a word: `set rations#` is the two words `set` and `rations#`, not a comment. Neither starts a comment inside quoted text.
+- Blank lines are ignored.
+
+| Order | Effect |
+| ----- | ------ |
+| `set rations for EntityID to PercentageAmount` | Sets the rations of an entity (a ship or colony) the empire controls. EntityID is the "Entity ID" in the empire's report. PercentageAmount is a whole number from `1%` to `500%`; the `%` is required and must be joined to the number (`50%`, not `50 %`). A new entity is at 100%. If an entity gets more than one, the last wins. |
+
 ## Where the files are
 
 Games live in `games/{code}`, which git ignores.
@@ -131,7 +159,9 @@ games/alpha/
       reports/
         empire-001.txt   one plain text report per empire
         ...
-      orders/            orders returned for turn 0 (not implemented yet)
+      orders/
+        empire-001.txt   the orders each empire returned for turn 0
+        ...
     1/               created by running turn 0
       ...
 ```
