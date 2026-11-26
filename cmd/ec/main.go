@@ -239,5 +239,32 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		},
 	})
 
+	empireTemplateFlags := ff.NewFlagSet("template").SetParent(empireFlags)
+	empireCmd.Subcommands = append(empireCmd.Subcommands, &ff.Command{
+		Name:      "template",
+		Usage:     "ec empire template <PATH>",
+		ShortHelp: "write the default template for a new empire's initial assets",
+		LongHelp: "Template writes empire-template.json into PATH, the folder of an existing\n" +
+			"game. It describes what every new empire starts with on its home world: its\n" +
+			"population, 1 farming group, 1 mining group (working a home world deposit,\n" +
+			"by its number), 4 factory groups with their orders, and a cache of FOOD,\n" +
+			"FUEL, MTL, and NMTL. Edit it before creating empires. It is never\n" +
+			"overwritten: delete it first to start again from the default.",
+		Flags: empireTemplateFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("empire template: want exactly one PATH, got %d arguments", len(args))
+			}
+			t, err := game.CreateEmpireTemplate(args[0])
+			if err != nil {
+				return fmt.Errorf("empire template: %w", err)
+			}
+			fmt.Fprintf(stdout, "wrote %s: %d population types, %d farming, %d mining, and %d factory groups, %d cache items\n",
+				filepath.Join(args[0], game.EmpireTemplateFileName), len(t.Population),
+				len(t.FarmingGroups), len(t.MiningGroups), len(t.FactoryGroups), len(t.Cache))
+			return nil
+		},
+	})
+
 	return root
 }

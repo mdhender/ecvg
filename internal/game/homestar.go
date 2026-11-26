@@ -27,8 +27,8 @@ const HomeStarsPerStellium = 2
 const MaxDepositsPerPlanet = 31
 
 const (
-	ErrInvalidTemplate = cerrs.Error("invalid home star template")
-	ErrTemplateExists  = cerrs.Error("home star template already exists")
+	ErrInvalidTemplate = cerrs.Error("invalid template")
+	ErrTemplateExists  = cerrs.Error("template already exists")
 )
 
 const (

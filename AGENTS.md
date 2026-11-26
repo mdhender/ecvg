@@ -29,6 +29,9 @@ The counts above (orbits per star aside) describe a game as created; designating
 `ec empire create --handle {handle} [--name {name}] games/{code}` adds an empire to the first available home world: the home world (planet in orbit 3 of a home star) with the lowest ID that has fewer empires than its capacity, the number of its FUEL, MTL, and NMTL deposits (GOLD doesn't count); it is an error if there is none.
 The first empire on a home world also creates a race whose ID is the home world's ID; races are saved in `races.json` (`id`, `homeworld_id`) and empires in `empires.json` (`id`, `handle`, `name`, `race_id`, `homeworld_id`), neither of which exists until the first empire.
 A handle is 8 to 12 lowercase ASCII letters and has at most one empire; empire IDs count up from the largest so far, and the name defaults to `Empire #{id}`.
+`ec empire template games/{code}` writes `empire-template.json`, the template for every new empire's initial assets on its home world: `population` (`type` UEM, USK, PRO, SLD, CNW, or SPY, and `qty`), exactly 1 `farming_groups`, 1 `mining_groups` (with the `deposit_no` of the home world deposit it works), and 4 `factory_groups` (each with `units`, `tech_level`, and factory groups also `orders`, a unit code such as `CNGD` or `AUT-1`), and a `cache` of FOOD, FUEL, MTL, and NMTL (`type`, `qty`).
+Its default numbers come from the sample turn 1 report in the 1978 manual; like the home star template it lives in `internal/game/empire-template.json`, is written out byte for byte, is never overwritten, and loading it rejects unknown members and invalid values.
+It is not yet applied when an empire is created.
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia (home Stellia glow and are always labelled on the map, and are starred in a sortable Home column), to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
@@ -49,6 +52,7 @@ go vet ./...
 go run ./cmd/ec game create games/{code}       # the folder must already exist
 go run ./cmd/ec game homestar-template games/{code}    # then edit homestar-template.json
 go run ./cmd/ec game designate-home --star {id} games/{code}     # or --stellium {id}
+go run ./cmd/ec empire template games/{code}                # then edit empire-template.json
 go run ./cmd/ec empire create --handle {handle} games/{code}
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
