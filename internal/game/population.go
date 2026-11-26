@@ -33,6 +33,15 @@ func (t EntityType) Enclosed() bool {
 	return t != COPN
 }
 
+// What every entity starts with.
+const (
+	// DefaultSOL is the standard of living.
+	DefaultSOL = 1.0
+	// DefaultDeathRate and DefaultBirthRate are 0.625% of the population.
+	DefaultDeathRate = 0.00625
+	DefaultBirthRate = 0.00625
+)
+
 // What one population unit of any type amounts to.
 const (
 	// PeoplePerPopulationUnit is the number of people in a population unit.

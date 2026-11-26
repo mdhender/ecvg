@@ -65,6 +65,12 @@ type Colony struct {
 	TechLevel int        `json:"tech_level"`
 	// Population is the colony's population units.
 	Population Population `json:"population"`
+	// SOL is the standard of living, by default DefaultSOL.
+	SOL float64 `json:"sol"`
+	// DeathRate and BirthRate are fractions of the population per turn (0.01
+	// is 1%), by default DefaultDeathRate and DefaultBirthRate.
+	DeathRate float64 `json:"drt"`
+	BirthRate float64 `json:"brt"`
 	// Operational lists the units in use, and Cargo the units in storage.
 	Operational []Unit `json:"operational"`
 	Cargo       []Unit `json:"cargo"`

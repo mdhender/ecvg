@@ -1,0 +1,48 @@
+// Copyright (c) 2026 Michael D Henderson.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Package engine processes a game's turns. A turn is processed in phases, each
+// of which changes the game's data in memory.
+package engine
+
+import "github.com/mdhender/ecvg/internal/game"
+
+// TurnsPerYear is the number of turns in a game year. A turn whose number
+// divides by it is an end-of-year turn.
+const TurnsPerYear = 4
+
+// Demographics is the demographic changes phase of the turn numbered turn. It
+// applies ChangePopulation to the population of every entity in d.
+func Demographics(d *game.Data, turn int) {
+	for i := range d.Colonies {
+		d.Colonies[i].Population = ChangePopulation(d.Colonies[i].Population, turn)
+	}
+}
+
+// ChangePopulation returns the population p after the demographic changes of
+// the turn numbered turn, made in this order:
+//
+//  1. If UEM is more than 30% of the population, 2% of UEM (rounded up to a
+//     whole unit) become USK.
+//  2. If the prior turn, turn-1, was an end-of-year turn (it is greater than 0
+//     and divides by TurnsPerYear), 5% of SLD (rounded up) become PRO.
+//
+// The total population does not change.
+func ChangePopulation(p game.Population, turn int) game.Population {
+	if p.UEM*10 > p.Units()*3 {
+		n := percentUp(p.UEM, 2)
+		p.UEM -= n
+		p.USK += n
+	}
+	if prior := turn - 1; prior > 0 && prior%TurnsPerYear == 0 {
+		n := percentUp(p.SLD, 5)
+		p.SLD -= n
+		p.PRO += n
+	}
+	return p
+}
+
+// percentUp returns pct percent of n, rounded up to a whole number.
+func percentUp(n, pct int) int {
+	return (n*pct + 99) / 100
+}

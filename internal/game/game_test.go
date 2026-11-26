@@ -29,7 +29,8 @@ func sampleData() game.Data {
 		Empires:  []game.Empire{{ID: 1, Name: "Empire #1", RaceID: 1, HomeWorldID: 1}},
 		Colonies: []game.Colony{{
 			ID: 1, EmpireID: 1, PlanetID: 1, No: 1, Type: "COPN", TechLevel: 1,
-			Population:    game.Population{UEM: 4, USK: 3, PRO: 2, SLD: 1},
+			Population: game.Population{UEM: 4, USK: 3, PRO: 2, SLD: 1},
+			SOL:        game.DefaultSOL, DeathRate: game.DefaultDeathRate, BirthRate: game.DefaultBirthRate,
 			Operational:   []game.Unit{{Type: "FARM", TechLevel: 1, Qty: 10}},
 			Cargo:         []game.Unit{{Type: "FOOD", Qty: 20}},
 			FarmingGroups: []game.Group{{No: 1, Units: []game.GroupUnits{{Qty: 10, TechLevel: 1}}}},

@@ -30,7 +30,7 @@ Games live in `games/{code}` (git-ignored). `internal/game` holds the record typ
 - `races.json` holds one race per home world (`id` and `homeworld_id` are both the home world's planet ID).
 - `empires.json` holds 15 empires per home world, 150 in all (`id`, `handle`, `name`, `race_id`, `homeworld_id`), all of that home world's race.
   The name is `Empire #{id}` and the `handle` (8 to 12 lowercase ASCII letters, the player) is empty until an empire is given to a player.
-- `colonies.json` holds each empire's colonies, copied from the empire template onto its home world, with `empire_id` and `planet_id`.
+- `colonies.json` holds each empire's colonies, copied from the empire template onto its home world, with `empire_id` and `planet_id`, and the default `sol`, `drt`, and `brt`.
 
 The templates are embedded from `cmd/ecgen/homestar-template.json` and `cmd/ecgen/empire-template.json`; the two template flags name a file to use instead. Loading either rejects unknown members and invalid values.
 The home star template has 10 `orbits`, each with its `orbit_no`, an optional `note` for the game master (ignored), and a `planet` (`homeworld`, `habitable`, `viability`, `deposits`; a missing boolean or number is false or 0) or `null` for an empty orbit.
@@ -93,8 +93,9 @@ A ship orbiting a Stellium is `(x, y, z, 0, 0, 0, 0, 0)`; one orbiting a Star is
 `ox, oy, oz` are small positive integers giving a position relative to the planet.
 
 - **Planet:** habitability (bool; false forbids open-air colonies), viability (0..25, caps open-air farms), 1..31 deposits, each of type GOLD, FUEL, MTL (metallics), or NMTL (non-metallics).
-- **Entity:** one of four types: CSHP (ship), COPN (open-air surface colony), CENC (enclosed surface colony), or CORB (enclosed orbital colony). It holds Population and Inventory units, both transferable between entities. All but COPN are enclosed.
+- **Entity:** one of four types: CSHP (ship), COPN (open-air surface colony), CENC (enclosed surface colony), or CORB (enclosed orbital colony). It holds Population and Inventory units, both transferable between entities. All but COPN are enclosed. Every entity has an SOL (standard of living, default 1.0), a DRT (death rate, default 0.625%), and a BRT (birth rate, default 0.625%); the rates are stored as fractions (`"drt": 0.00625`).
 - **Population:** four types of unit: UEM (unemployables), USK (unskilled workers), PRO (professionals), and SLD (soldiers). A unit is a block of 100 people with a mass of 1 MU; on a ship or in an enclosed colony it also takes 1 VU of space and 1 LU (life support unit). Each unit initially eats 0.25 FOOD per turn (`internal/game/population.go` rounds an entity's total up to a whole FOOD). Population quantities everywhere, including the empire template, are units, not people.
 - **Cadres (not yet implemented):** CNW (construction workers) and SPY (spies) are population trained for a specific purpose. They must be assembled via orders, so they wait until orders are implemented; nothing starts with them.
+- **Turns:** a year is 4 turns, and a turn whose number divides by 4 is an end-of-year turn. A turn is processed in phases, in `internal/engine`. So far there is one, demographic changes (`engine.Demographics`), which is not yet wired to a command: (1) if UEM is more than 30% of an entity's population, 2% of UEM (rounded up) become USK; then (2) if the prior turn was an end-of-year turn (prior turn > 0 and divides by 4, so this happens in turns 5, 9, 13, ...), 5% of SLD (rounded up) become PRO.
 - **Units:** manufactured or processed items with mass (MU) and volume (VU). Volume has assembled and unassembled values; most units are bigger assembled.
 - **Production:** farming makes FOOD; mining extracts deposits into GOLD, FUEL, MTL, NMTL; manufacturing turns resource units into manufactured units (CNGD, SDRV, ...).

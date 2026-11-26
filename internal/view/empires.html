@@ -72,6 +72,7 @@ th { color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line)
 "use strict";
 const EMPIRES = {{.Empires}};
 const num = n => n.toLocaleString("en-US");
+const pct = r => +(r * 100).toFixed(4) + "%";
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; };
 for (const e of EMPIRES) {
   e.loc = `(${e.x}, ${e.y}, ${e.z}) star ${e.seq_no} orbit ${e.orbit_no}`;
@@ -150,6 +151,7 @@ function renderDetail() {
   for (const c of e.colonies) {
     const p = c.population;
     out.push(el("h3", `Colony ${c.no} · ${c.type} · TL ${c.tech_level} · planet ${c.planet_id}`));
+    out.push(el("p", `SOL ${c.sol.toFixed(2)} · death rate ${pct(c.drt)} · birth rate ${pct(c.brt)}`, "sub"));
     out.push(el("h4", "Population"));
     out.push(table(["<Type", "Units", "People"], [["UEM", p.uem], ["USK", p.usk], ["PRO", p.pro], ["SLD", p.sld],
       ["Total", p.uem + p.usk + p.pro + p.sld]].map(([k, n]) => [k, num(n), num(n * 100)])));

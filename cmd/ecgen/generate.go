@@ -364,7 +364,9 @@ func generateDeposits(root *prng.Stream, d *game.Data, templated map[int]*Templa
 // world, in planet ID order, it creates a race, whose ID is the home world's
 // ID, and empiresPerHomeWorld empires of that race, named "Empire #ID", with
 // no handle. Each empire gets the colonies in e on its home world, with no
-// mining groups: an empire assembles those, claiming deposits for itself.
+// mining groups: an empire assembles those, claiming deposits for itself. Every
+// colony starts with the default standard of living, death rate, and birth
+// rate.
 func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTemplate) {
 	for _, planet := range d.Planets {
 		if t := templated[planet.ID]; t == nil || !t.HomeWorld {
@@ -384,6 +386,9 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 					Type:          tc.Type,
 					TechLevel:     tc.TechLevel,
 					Population:    tc.Population,
+					SOL:           game.DefaultSOL,
+					DeathRate:     game.DefaultDeathRate,
+					BirthRate:     game.DefaultBirthRate,
 					Operational:   slices.Clone(tc.Operational),
 					Cargo:         slices.Clone(tc.Cargo),
 					FarmingGroups: cloneGroups(tc.FarmingGroups),
