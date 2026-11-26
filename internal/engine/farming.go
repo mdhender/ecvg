@@ -22,7 +22,9 @@ import (
 //   - Fuel is game.FarmFuel, burned from the FUEL in the colony's cargo,
 //     unless the unit is solar powered (game.FarmSolar).
 //
-// A working unit makes game.FarmFood.
+// A working FARM-2 to FARM-10 unit makes game.FarmFood that turn. A FARM-1
+// unit delivers only after game.FarmCropTurns consecutive turns of work, and
+// loses the crop it had begun in a turn it doesn't work (game.AdvanceCrop).
 func Farming(d *game.Data, turn int) {
 	orbitNo := map[int]int{} // by planet ID
 	orbits := map[int]int{}
@@ -54,7 +56,8 @@ func harvest(c *game.Colony, orbitNo int) game.Harvest {
 		}
 	}
 	for _, g := range c.FarmingGroups {
-		for _, u := range g.Units {
+		for k := range g.Units {
+			u := &g.Units[k]
 			h.Units += u.Qty
 			staffed := max(0, min(u.Qty, pro/game.FarmPRO, usk/game.FarmUSK))
 			h.Unstaffed += u.Qty - staffed
@@ -69,7 +72,14 @@ func harvest(c *game.Colony, orbitNo int) game.Harvest {
 			fuel -= burned
 			h.Worked += worked
 			h.Fuel += burned
-			h.Food += game.FarmFood(u.TechLevel, worked)
+			if u.TechLevel == 1 {
+				var delivered, ruined int
+				u.Pipeline, delivered, ruined = game.AdvanceCrop(u.Qty, u.Pipeline, worked)
+				h.Ruined += ruined
+				h.Food += game.FarmFood(u.TechLevel, delivered)
+			} else {
+				h.Food += game.FarmFood(u.TechLevel, worked)
+			}
 		}
 	}
 	left := h.Fuel

@@ -104,9 +104,13 @@ func TestEmpire(t *testing.T) {
 			name:     "harvest",
 			empireID: 1,
 			edit: func(d *game.Data) {
-				d.Colonies[0].Harvest = game.Harvest{Units: 100000, Worked: 36000, Unstaffed: 4000, Unfuelled: 60000, Fuel: 360000, Food: 1800000}
+				d.Colonies[0].Harvest = game.Harvest{Units: 100000, Worked: 36000, Unstaffed: 4000, Unfuelled: 60000, Ruined: 1500, Fuel: 360000, Food: 1800000}
+				d.Colonies[0].FarmingGroups = append(d.Colonies[0].FarmingGroups,
+					game.Group{No: 2, Units: []game.GroupUnits{{Qty: 5000, TechLevel: 1, Pipeline: []int{0, 2000, 1000}}}})
 			},
 			want: []string{
+				"  Group 2            5,000 units at TL 1\n                     2,000 of them deliver their crop after 2 more turns of work\n                     1,000 of them deliver their crop after 1 more turn of work\n",
+				"  1,500 idle FARM-1 units LOST THE CROP they had begun",
 				"  LAST TURN: 36,000 of 100,000 units worked, burned 360,000 FUEL, and made 1,800,000 FOOD",
 				"  4,000 units idle: no staff (each needs 1 PRO and 3 USK)",
 				"  60,000 units idle: no FUEL",

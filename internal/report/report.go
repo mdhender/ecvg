@@ -177,6 +177,11 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			for _, g := range gs {
 				for _, u := range g.Units {
 					p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
+					for done, n := range u.Pipeline {
+						if left := game.FarmCropTurns - 1 - done; n > 0 && left > 0 {
+							p("            %14s of them deliver their crop after %d more %s of work", commas(n), left, plural(left, "turn", "turns"))
+						}
+					}
 				}
 			}
 		}
@@ -189,6 +194,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 			if h.Unfuelled > 0 {
 				p("  %s units idle: no FUEL", commas(h.Unfuelled))
+			}
+			if h.Ruined > 0 {
+				p("  %s idle FARM-1 units LOST THE CROP they had begun", commas(h.Ruined))
 			}
 		}
 		p("")
@@ -266,4 +274,12 @@ func commas(n int) string {
 // percent formats the fraction r as a percentage, without trailing zeros.
 func percent(r float64) string {
 	return strconv.FormatFloat(r*100, 'f', -1, 64) + "%"
+}
+
+// plural returns one if n is 1 and many otherwise.
+func plural(n int, one, many string) string {
+	if n == 1 {
+		return one
+	}
+	return many
 }

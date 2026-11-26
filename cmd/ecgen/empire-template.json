@@ -11,6 +11,7 @@
         "sld": 100000
       },
       "operational": [
+        {"type": "AUTO", "tech_level": 10, "qty": 1000},
         {"type": "FARM", "tech_level": 10, "qty": 100000},
         {"type": "LFSU", "tech_level": 10, "qty": 100},
         {"type": "SDRV", "tech_level": 10, "qty": 1},

@@ -123,6 +123,10 @@ type MiningGroup struct {
 type GroupUnits struct {
 	Qty       int `json:"qty"`
 	TechLevel int `json:"tech_level"`
+	// Pipeline is for the FARM-1 units of a farming group: the number of
+	// them with 1, 2, and 3 consecutive turns of work behind them. See
+	// AdvanceCrop.
+	Pipeline []int `json:"pipeline,omitempty"`
 }
 
 // ValidateHandle checks that handle is MinHandleLength..MaxHandleLength
