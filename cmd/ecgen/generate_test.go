@@ -195,7 +195,8 @@ func TestGenerateRules(t *testing.T) {
 		tc := e.Colonies[0]
 		if c.ID != i+1 || c.EmpireID != emp.ID || c.PlanetID != emp.HomeWorldID || c.Type != tc.Type ||
 			c.Population != tc.Population || !reflect.DeepEqual(c.Cargo, tc.Cargo) ||
-			!reflect.DeepEqual(c.FactoryGroups, tc.FactoryGroups) {
+			!reflect.DeepEqual(c.FarmingGroups, tc.FarmingGroups) ||
+			len(c.MiningGroups) != len(tc.MiningGroups) || len(c.FactoryGroups) != len(tc.FactoryGroups) {
 			t.Errorf("colony %d doesn't match empire %d and the template", c.ID, emp.ID)
 		}
 	}
