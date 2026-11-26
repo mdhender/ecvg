@@ -27,7 +27,7 @@ func goldenData(t *testing.T) game.Data {
 	return d
 }
 
-// firstStarOf returns the ID of the star with seqNo in the Stellium with
+// starOf returns the ID of the star with seqNo in the Stellium with
 // stelliumID.
 func starOf(t *testing.T, d game.Data, stelliumID, seqNo int) int {
 	t.Helper()
@@ -285,5 +285,81 @@ func TestDesignateHomeStarFiles(t *testing.T) {
 		if e.Name()[0] == '.' {
 			t.Errorf("left temporary file %s", e.Name())
 		}
+	}
+}
+
+func TestFirstStar(t *testing.T) {
+	d := goldenData(t)
+	for _, tc := range []struct {
+		name     string
+		stellium int
+		want     int
+		wantErr  error
+	}{
+		{name: "five-star stellium", stellium: 1, want: 1},
+		{name: "first two-star stellium", stellium: 11, want: starOf(t, d, 11, 1)},
+		{name: "last stellium", stellium: game.NumStellia, want: len(d.Stars)},
+		{name: "unknown stellium", stellium: game.NumStellia + 1, wantErr: game.ErrNoSuchStellium},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := d.FirstStar(tc.stellium)
+			if tc.wantErr != nil {
+				if !errors.Is(err, tc.wantErr) {
+					t.Fatalf("got error %v, want %v", err, tc.wantErr)
+				}
+				return
+			}
+			if err != nil || got != tc.want {
+				t.Errorf("got %d, %v; want %d", got, err, tc.want)
+			}
+		})
+	}
+}
+
+func TestDesignateHomeStellium(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		stellium int
+		wantStar func(d game.Data) int
+		wantErr  error
+	}{
+		{name: "two-star stellium", stellium: 25, wantStar: func(d game.Data) int { return starOf(t, d, 25, 1) }},
+		{name: "three-star stellium", stellium: 8, wantErr: game.ErrNotHomeStar},
+		{name: "unknown stellium", stellium: 999, wantErr: game.ErrNoSuchStellium},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := filepath.Join(t.TempDir(), "game")
+			if err := os.Mkdir(dir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			createGame(t, dir)
+			if _, err := game.CreateHomeStarTemplate(dir); err != nil {
+				t.Fatal(err)
+			}
+			before, err := game.LoadData(dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			c, err := game.DesignateHomeStellium(dir, tc.stellium)
+			if tc.wantErr != nil {
+				if !errors.Is(err, tc.wantErr) {
+					t.Fatalf("got error %v, want %v", err, tc.wantErr)
+				}
+				after, err := game.LoadData(dir)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !reflect.DeepEqual(after, before) {
+					t.Errorf("game changed on error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("got error %v", err)
+			}
+			if want := tc.wantStar(before); c.StarID != want || c.StelliumID != tc.stellium {
+				t.Errorf("got star %d stellium %d, want %d and %d", c.StarID, c.StelliumID, want, tc.stellium)
+			}
+		})
 	}
 }

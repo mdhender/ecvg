@@ -151,14 +151,17 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 	})
 
 	designateFlags := ff.NewFlagSet("designate-home").SetParent(gameFlags)
-	starID := designateFlags.IntLong("star", 0, "ID of the star to make a home star (required)")
+	starID := designateFlags.IntLong("star", 0, "ID of the star to make a home star")
+	stelliumID := designateFlags.IntLong("stellium", 0, "ID of the Stellium whose first star to make a home star")
 	gameCmd.Subcommands = append(gameCmd.Subcommands, &ff.Command{
 		Name:      "designate-home",
-		Usage:     "ec game designate-home --star <ID> <PATH>",
+		Usage:     "ec game designate-home (--star <ID> | --stellium <ID>) <PATH>",
 		ShortHelp: "make a star a home star, applying the home star template",
-		LongHelp: "Designate-home makes the star with ID --star a home star, and its Stellium a\n" +
-			"home Stellium, in the game in PATH. The star must be the first star of a\n" +
-			"Stellium with exactly 2 stars that is not already a home Stellium.\n" +
+		LongHelp: "Designate-home makes a star a home star, and its Stellium a home Stellium, in\n" +
+			"the game in PATH. Name the star by its ID with --star, or name its Stellium\n" +
+			"with --stellium to use that Stellium's first star; give exactly one. The star\n" +
+			"must be the first star of a Stellium with exactly 2 stars that is not already\n" +
+			"a home Stellium.\n" +
 			"\n" +
 			"The star's orbits, planets, and deposits are deleted and new ones are created\n" +
 			"from PATH/homestar-template.json, with new IDs; IDs are never reused. The\n" +
@@ -168,10 +171,16 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			if len(args) != 1 {
 				return fmt.Errorf("game designate-home: want exactly one PATH, got %d arguments", len(args))
 			}
-			if *starID == 0 {
-				return fmt.Errorf("game designate-home: --star is required")
+			var c game.HomeStarChanges
+			var err error
+			switch {
+			case (*starID == 0) == (*stelliumID == 0):
+				return fmt.Errorf("game designate-home: give exactly one of --star and --stellium")
+			case *starID != 0:
+				c, err = game.DesignateHomeStar(args[0], *starID)
+			default:
+				c, err = game.DesignateHomeStellium(args[0], *stelliumID)
 			}
-			c, err := game.DesignateHomeStar(args[0], *starID)
 			if errors.Is(err, fs.ErrNotExist) && strings.Contains(err.Error(), game.HomeStarTemplateFileName) {
 				return fmt.Errorf("game designate-home: %w (run ec game homestar-template first)", err)
 			} else if err != nil {

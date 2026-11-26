@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	ErrNoSuchStar  = cerrs.Error("no such star")
-	ErrNotHomeStar = cerrs.Error("star can't be a home star")
-	ErrAlreadyHome = cerrs.Error("already a home stellium")
+	ErrNoSuchStar     = cerrs.Error("no such star")
+	ErrNoSuchStellium = cerrs.Error("no such stellium")
+	ErrNotHomeStar    = cerrs.Error("star can't be a home star")
+	ErrAlreadyHome    = cerrs.Error("already a home stellium")
 )
 
 // HomeStarChanges reports what DesignateHomeStar did.
@@ -186,7 +187,37 @@ func LoadData(dir string) (Data, error) {
 // temporary file before renaming any of them into place, so an error before
 // the renames leaves the game unchanged.
 func DesignateHomeStar(dir string, starID int) (HomeStarChanges, error) {
+	return designate(dir, func(Data) (int, error) { return starID, nil })
+}
+
+// DesignateHomeStellium is DesignateHomeStar for the first star of the
+// Stellium with ID stelliumID.
+func DesignateHomeStellium(dir string, stelliumID int) (HomeStarChanges, error) {
+	return designate(dir, func(d Data) (int, error) { return d.FirstStar(stelliumID) })
+}
+
+// FirstStar returns the ID of the first star (SeqNo 1) of the Stellium with
+// ID stelliumID.
+func (d Data) FirstStar(stelliumID int) (int, error) {
+	if !slices.ContainsFunc(d.Stellia, func(s Stellium) bool { return s.ID == stelliumID }) {
+		return 0, fmt.Errorf("stellium %d: %w", stelliumID, ErrNoSuchStellium)
+	}
+	for _, s := range d.Stars {
+		if s.StelliumID == stelliumID && s.SeqNo == 1 {
+			return s.ID, nil
+		}
+	}
+	return 0, fmt.Errorf("stellium %d has no first star: %w", stelliumID, ErrNoSuchStar)
+}
+
+// designate loads the game in dir, picks the star to designate with pick, and
+// does the work of DesignateHomeStar.
+func designate(dir string, pick func(Data) (int, error)) (HomeStarChanges, error) {
 	d, err := LoadData(dir)
+	if err != nil {
+		return HomeStarChanges{}, err
+	}
+	starID, err := pick(d)
 	if err != nil {
 		return HomeStarChanges{}, err
 	}
