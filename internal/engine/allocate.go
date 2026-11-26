@@ -4,6 +4,9 @@
 package engine
 
 import (
+	"cmp"
+	"slices"
+
 	"github.com/mdhender/ecvg/internal/game"
 	"github.com/mdhender/ecvg/internal/units"
 )
@@ -26,12 +29,15 @@ type Allocation struct {
 	// Farms is indexed like the colony's FarmingGroups and then like the
 	// group's Units.
 	Farms [][]Work
+	// Mines is indexed like the colony's MiningGroups and then like the
+	// group's Units.
+	Mines [][]Work
 }
 
 // AllocateResources is the resource allocation phase of the turn numbered
 // turn. For each colony in d it makes the worker cadre for the turn
-// (game.NewWorkers) and shares the cadre and the FUEL in the colony's cargo
-// among its groups. It returns the allocations, one per colony in d.Colonies
+// (game.NewWorkers) and shares the cadre and the colony's FUEL (in its cargo
+// and depot) among its groups. It returns the allocations, one per colony in d.Colonies
 // order. Nothing is allocated in turn SetupTurn, and it returns nil.
 //
 // There are two levels of idle. The first is the empire's: the units a
@@ -41,16 +47,18 @@ type Allocation struct {
 // production phases to respect and the report to show.
 //
 // The scheme is deliberately blunt, not efficient. It makes two passes over
-// the groups, each time the farming groups first (mining and factory groups
-// will follow them), and each kind in order of seniority: the group number,
+// the groups, each time the farming groups first, then the mining groups
+// (factory groups will follow them), and each kind in order of seniority: the group number,
 // lowest first. Within a group the units are taken in the order listed.
 //
 //  1. Staff. Each group takes as much of the cadre as it can use
-//     (game.FarmPRO and game.FarmUSK for each FARM unit), until the cadre
+//     (game.FarmPRO and game.FarmUSK for each FARM unit, game.MinePRO and
+//     game.MineUSK for each MINE unit), until the cadre
 //     can't staff another unit. Staff is never given back, even by a unit
 //     that then gets no fuel.
 //  2. Fuel. Each group takes as much FUEL as its staffed units can use
-//     (game.FarmFuel; none for solar powered farms, game.FarmSolar). The pass
+//     (game.FarmFuel, but none for solar powered farms, game.FarmSolar;
+//     game.MineFuel). The pass
 //     stops when the fuel runs out, or at the first group that has no staff.
 //
 // The fuel is only allocated here; the production phases burn it.
@@ -60,6 +68,11 @@ func AllocateResources(d *game.Data, turn int) []Allocation {
 			c := &d.Colonies[i]
 			c.Workers = game.Workers{}
 			for _, g := range c.FarmingGroups {
+				for k := range g.Units {
+					g.Units[k].Idle = game.Idle{}
+				}
+			}
+			for _, g := range c.MiningGroups {
 				for k := range g.Units {
 					g.Units[k].Idle = game.Idle{}
 				}
@@ -84,55 +97,82 @@ func AllocateResources(d *game.Data, turn int) []Allocation {
 	return allocs
 }
 
+// slot is one group in the order the passes take them.
+type slot struct {
+	mine        bool
+	idlePercent int
+	units       []game.GroupUnits
+	work        []Work
+}
+
 // allocate shares the worker cadre and FUEL of c, which is in orbit orbitNo,
 // among its groups.
 func allocate(c *game.Colony, orbitNo int) Allocation {
-	a := Allocation{Farms: make([][]Work, len(c.FarmingGroups))}
+	a := Allocation{
+		Farms: make([][]Work, len(c.FarmingGroups)),
+		Mines: make([][]Work, len(c.MiningGroups)),
+	}
+	// The groups in the order of both passes: farms, then mines, each kind
+	// by seniority.
+	var slots []slot
+	for _, j := range bySeniority(len(c.FarmingGroups), func(j int) int { return c.FarmingGroups[j].No }) {
+		g := c.FarmingGroups[j]
+		a.Farms[j] = make([]Work, len(g.Units))
+		slots = append(slots, slot{idlePercent: g.IdlePercent, units: g.Units, work: a.Farms[j]})
+	}
+	for _, j := range bySeniority(len(c.MiningGroups), func(j int) int { return c.MiningGroups[j].No }) {
+		g := c.MiningGroups[j]
+		a.Mines[j] = make([]Work, len(g.Units))
+		slots = append(slots, slot{mine: true, idlePercent: g.IdlePercent, units: g.Units, work: a.Mines[j]})
+	}
 
 	// Pass 1: staff.
-	for j, g := range c.FarmingGroups {
-		a.Farms[j] = make([]Work, len(g.Units))
-		for k, u := range g.Units {
-			w := &a.Farms[j][k]
-			w.Ordered = game.IdleUnits(u.Qty, g.IdlePercent)
-			w.Staffed = c.Workers.Take(u.Qty-w.Ordered, game.FarmPRO, game.FarmUSK)
+	for _, s := range slots {
+		pro, usk := game.FarmPRO, game.FarmUSK
+		if s.mine {
+			pro, usk = game.MinePRO, game.MineUSK
+		}
+		for k, u := range s.units {
+			w := &s.work[k]
+			w.Ordered = game.IdleUnits(u.Qty, s.idlePercent)
+			w.Staffed = c.Workers.Take(u.Qty-w.Ordered, pro, usk)
 		}
 	}
 
 	// Pass 2: fuel.
-	fuel := 0
-	for _, u := range c.Cargo {
-		if u.Type == units.FUEL {
-			fuel += u.Qty
-		}
-	}
-	for j, g := range c.FarmingGroups {
-		staffed := 0
-		for k, u := range g.Units {
-			w := &a.Farms[j][k]
+	fuel := c.Stock(units.FUEL)
+	for _, s := range slots {
+		staffed, wanted := 0, false
+		for k, u := range s.units {
+			w := &s.work[k]
 			staffed += w.Staffed
-			if game.FarmSolar(u.TechLevel, c.Type, orbitNo) {
+			wanted = wanted || u.Qty > w.Ordered
+			switch {
+			case s.mine:
+				w.Worked = min(w.Staffed, game.MinesFuelled(u.TechLevel, fuel))
+				w.Fuel = game.MineFuel(u.TechLevel, w.Worked)
+			case game.FarmSolar(u.TechLevel, c.Type, orbitNo):
 				w.Worked = w.Staffed
-				continue
+			default:
+				w.Worked = min(w.Staffed, game.FarmsFuelled(u.TechLevel, fuel))
+				w.Fuel = game.FarmFuel(u.TechLevel, w.Worked)
 			}
-			w.Worked = min(w.Staffed, game.FarmsFuelled(u.TechLevel, fuel))
-			w.Fuel = game.FarmFuel(u.TechLevel, w.Worked)
 			fuel -= w.Fuel
 		}
 		// A group that asked for staff and got none ends the pass. One that
 		// is idle by order asked for nothing, and is passed over.
-		if staffed == 0 && wanted(g, a.Farms[j]) {
+		if staffed == 0 && wanted {
 			break
 		}
 	}
 
 	// Record who is idle, and why.
-	for j, g := range c.FarmingGroups {
-		for k := range g.Units {
-			w := a.Farms[j][k]
-			g.Units[k].Idle = game.Idle{
+	for _, s := range slots {
+		for k := range s.units {
+			w := s.work[k]
+			s.units[k].Idle = game.Idle{
 				Ordered:   w.Ordered,
-				Unstaffed: g.Units[k].Qty - w.Ordered - w.Staffed,
+				Unstaffed: s.units[k].Qty - w.Ordered - w.Staffed,
 				Unfuelled: w.Staffed - w.Worked,
 			}
 		}
@@ -140,12 +180,13 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 	return a
 }
 
-// wanted reports whether any of the units of g asked for staff.
-func wanted(g game.Group, work []Work) bool {
-	for k, u := range g.Units {
-		if u.Qty > work[k].Ordered {
-			return true
-		}
+// bySeniority returns the indexes 0..n-1 ordered by the group number that no
+// returns for each, lowest first.
+func bySeniority(n int, no func(int) int) []int {
+	idx := make([]int, n)
+	for i := range idx {
+		idx[i] = i
 	}
-	return false
+	slices.SortStableFunc(idx, func(a, b int) int { return cmp.Compare(no(a), no(b)) })
+	return idx
 }

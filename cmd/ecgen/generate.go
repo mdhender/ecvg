@@ -393,6 +393,7 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 					BirthRate:     game.DefaultBirthRate,
 					Operational:   slices.Clone(tc.Operational),
 					Cargo:         slices.Clone(tc.Cargo),
+					Depot:         slices.Clone(tc.Depot),
 					FarmingGroups: cloneGroups(tc.FarmingGroups),
 					FactoryGroups: cloneGroups(tc.FactoryGroups),
 					MiningGroups:  []game.MiningGroup{},

@@ -127,6 +127,26 @@ func TestEmpire(t *testing.T) {
 			lack:     []string{"LAST TURN", "units idle", "IDLE"},
 		},
 		{
+			name:     "mining and the depot",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.Depot = []game.Unit{{Type: "FUEL", Qty: 3250000}}
+				c.MiningGroups = []game.MiningGroup{{
+					No: 1, DepositID: 2, IdlePercent: 25,
+					Units: []game.GroupUnits{{Qty: 100000, TechLevel: 10, Idle: game.Idle{Ordered: 25000, Unstaffed: 50000}}},
+					Mined: game.Mined{Worked: 25000, Fuel: 125000, Product: 812500},
+				}}
+			},
+			want: []string{
+				"DEPOT\n  Unit       TL            Qty\n  FUEL               3,250,000\n",
+				"  Group 1   ORDERED IDLE: 25% of its units\n  Group 1          100,000 units at TL 10 working deposit 2 (FUEL)\n" +
+					"                    25,000 of them were IDLE last turn: BY ORDER\n" +
+					"                    50,000 of them were IDLE last turn: NO STAFF\n" +
+					"            LAST TURN: 25,000 units worked, burned 125,000 FUEL, and mined 812,500 FUEL\n",
+			},
+		},
+		{
 			name:     "workers",
 			empireID: 1,
 			edit: func(d *game.Data) {

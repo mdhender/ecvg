@@ -113,13 +113,15 @@ func TestFarming(t *testing.T) {
 			colony: game.Colony{
 				Type: game.COPN, Population: game.Population{USK: 12, PRO: 4},
 				Cargo: []game.Unit{{Type: "FUEL", Qty: 21}},
+				// Listed out of order: seniority is the group number.
 				FarmingGroups: []game.Group{
-					group(1, game.GroupUnits{Qty: 3, TechLevel: 10}, game.GroupUnits{Qty: 2, TechLevel: 2}),
-					group(2, game.GroupUnits{Qty: 5, TechLevel: 1}),
+					group(3, game.GroupUnits{Qty: 5, TechLevel: 1}),
+					group(1, game.GroupUnits{Qty: 3, TechLevel: 10}),
+					group(2, game.GroupUnits{Qty: 2, TechLevel: 2}),
 				},
 			},
 			// Staff: all 3 FARM-10, then 1 of the 2 FARM-2, and none for group
-			// 2. Fuel: 20 runs 2 FARM-10, and the last 1 runs the FARM-2.
+			// 3. Fuel: 20 runs 2 FARM-10, and the last 1 runs the FARM-2.
 			want: game.Harvest{Units: 10, Worked: 3, Unstaffed: 6, Unfuelled: 1, Fuel: 21, Food: 110},
 			fuel: 0, food: 110,
 			workers: game.Workers{PRO: 4, USK: 12, IdlePRO: 0, IdleUSK: 0},
@@ -171,7 +173,7 @@ func TestFarming(t *testing.T) {
 			name: "solar power in an inner orbit",
 			colony: game.Colony{
 				Type: game.CORB, Population: game.Population{USK: 30, PRO: 10},
-				FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 4, TechLevel: 5}, game.GroupUnits{Qty: 4, TechLevel: 6})},
+				FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 4, TechLevel: 5}), group(2, game.GroupUnits{Qty: 4, TechLevel: 6})},
 			},
 			want: game.Harvest{Units: 8, Worked: 4, Unfuelled: 4, Food: 100},
 			food: 100,

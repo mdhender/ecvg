@@ -167,7 +167,20 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		}
 		units("OPERATIONAL", c.Operational)
 		units("CARGO", c.Cargo)
+		if c.HasDepot() {
+			units("DEPOT", c.Depot)
+		}
 
+		idleRows := func(idle game.Idle) {
+			for _, row := range []struct {
+				n   int
+				why string
+			}{{idle.Ordered, "BY ORDER"}, {idle.Unstaffed, "NO STAFF"}, {idle.Unfuelled, "NO FUEL"}} {
+				if row.n > 0 {
+					p("            %14s of them were IDLE last turn: %s", commas(row.n), row.why)
+				}
+			}
+		}
 		groups := func(title string, gs []game.Group) {
 			p("")
 			p("%s", title)
@@ -180,14 +193,7 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				}
 				for _, u := range g.Units {
 					p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
-					for _, row := range []struct {
-						n   int
-						why string
-					}{{u.Idle.Ordered, "BY ORDER"}, {u.Idle.Unstaffed, "NO STAFF"}, {u.Idle.Unfuelled, "NO FUEL"}} {
-						if row.n > 0 {
-							p("            %14s of them were IDLE last turn: %s", commas(row.n), row.why)
-						}
-					}
+					idleRows(u.Idle)
 					for done, n := range u.Pipeline {
 						if left := game.FarmCropTurns - 1 - done; n > 0 && left > 0 {
 							p("            %14s of them deliver their crop after %d more %s of work", commas(n), left, plural(left, "turn", "turns"))
@@ -228,8 +234,23 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			p("  None assembled")
 		}
 		for _, g := range c.MiningGroups {
+			// Players know a deposit by its number on its planet.
+			resource, depositNo := "product", g.DepositID
+			for _, dep := range d.Deposits {
+				if dep.ID == g.DepositID {
+					resource, depositNo = string(dep.Type), dep.DepositNo
+				}
+			}
+			if g.IdlePercent > 0 {
+				p("  Group %-3d ORDERED IDLE: %d%% of its units", g.No, g.IdlePercent)
+			}
 			for _, u := range g.Units {
-				p("  Group %-3d %14s units at TL %d working deposit %d", g.No, commas(u.Qty), u.TechLevel, g.DepositID)
+				p("  Group %-3d %14s units at TL %d working deposit %d (%s)", g.No, commas(u.Qty), u.TechLevel, depositNo, resource)
+				idleRows(u.Idle)
+			}
+			if m := g.Mined; m.Worked > 0 || m.Fuel > 0 || m.Product > 0 {
+				p("            LAST TURN: %s units worked, burned %s FUEL, and mined %s %s",
+					commas(m.Worked), commas(m.Fuel), commas(m.Product), resource)
 			}
 		}
 		groups("FACTORY GROUPS", c.FactoryGroups)

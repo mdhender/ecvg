@@ -235,6 +235,9 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 		{"unit tech level too high", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FACT","tech_level":11,"qty":1}]}]}`},
 		{"tech level on a unit without one", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FOOD","tech_level":1,"qty":1}]}]}`},
 		{"operational unit that is never assembled", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"operational":[{"type":"FOOD","qty":1}]}]}`},
+		{"depot in an enclosed colony", `{"colonies":[{"no":1,"type":"CENC","tech_level":1,"depot":[{"type":"FUEL","qty":1}]}]}`},
+		{"unknown unit in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot":[{"type":"ORE","qty":1}]}]}`},
+		{"farming group of two tech levels", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":1},{"qty":1,"tech_level":2}]}]}]}`},
 		{"empty group", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[]}]}]}`},
 	} {
 		t.Run("empire/"+tc.name, func(t *testing.T) {

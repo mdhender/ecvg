@@ -93,6 +93,9 @@ type Colony struct {
 	// Operational lists the units in use, and Cargo the units in storage.
 	Operational []Unit `json:"operational"`
 	Cargo       []Unit `json:"cargo"`
+	// Depot lists the units stored outside the entity, which takes no
+	// structural units. Only an open-air surface colony has one (HasDepot).
+	Depot []Unit `json:"depot,omitempty"`
 	// The groups put the operational farm, mine, and factory units to work.
 	FarmingGroups []Group       `json:"farming_groups"`
 	MiningGroups  []MiningGroup `json:"mining_groups"`
@@ -129,7 +132,9 @@ func IdleUnits(qty, percent int) int {
 	return (max(0, qty)*percent + 99) / 100
 }
 
-// Group is a farming or factory group.
+// Group is a farming or factory group. Every unit of a farming group is of
+// the same tech level, so its Units has one entry; a factory group can mix
+// tech levels.
 type Group struct {
 	// No numbers the colony's groups of one kind from 1. A lower number is
 	// more senior, and gets resources first.
@@ -146,9 +151,14 @@ type MiningGroup struct {
 	No int `json:"no"`
 	// IdlePercent is as for Group.
 	IdlePercent int `json:"idle_percent,omitzero"`
-	// DepositID is the ID of the deposit the group works.
-	DepositID int          `json:"deposit_id"`
-	Units     []GroupUnits `json:"units"`
+	// DepositID is the ID of the deposit the group works. A deposit is
+	// worked by at most one mining group.
+	DepositID int `json:"deposit_id"`
+	// Units has one entry: every unit of a mining group is of the same tech
+	// level.
+	Units []GroupUnits `json:"units"`
+	// Mined is what the group did in the prior turn.
+	Mined Mined `json:"mined,omitzero"`
 }
 
 // GroupUnits is a quantity of a group's units at one tech level.

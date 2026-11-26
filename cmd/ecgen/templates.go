@@ -166,6 +166,7 @@ type TemplateColony struct {
 	Population    game.Population `json:"population"`
 	Operational   []game.Unit     `json:"operational"`
 	Cargo         []game.Unit     `json:"cargo"`
+	Depot         []game.Unit     `json:"depot,omitempty"`
 	FarmingGroups []game.Group    `json:"farming_groups"`
 	FactoryGroups []game.Group    `json:"factory_groups"`
 }
@@ -189,7 +190,9 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 // least 1. No population
 // may be negative. Units need a type from the unit catalogue (not population
 // or research points), a quantity of at least 1, and a tech level that is
-// valid for the unit; operational units must be of a kind that is assembled. Groups of each kind must be numbered from 1 in
+// valid for the unit; operational units must be of a kind that is assembled. Only an open-air
+// surface colony may list units in a depot. A farming group's units are all
+// of one tech level, so it has one entry of units. Groups of each kind must be numbered from 1 in
 // order and hold at least one entry of units, each with a quantity and tech
 // level of at least 1. The errors match errInvalidTemplate.
 func (t EmpireTemplate) Validate() error {
@@ -245,6 +248,10 @@ func (t EmpireTemplate) Validate() error {
 		}
 		list("operational", true, c.Operational)
 		list("cargo", false, c.Cargo)
+		list("depot", false, c.Depot)
+		if len(c.Depot) > 0 && c.Type != game.COPN {
+			bad("colony %d: depot: only an open-air surface colony (COPN) has a depot", i+1)
+		}
 		groups := func(kind string, gs []game.Group) {
 			for j, g := range gs {
 				if g.No != j+1 {
@@ -261,6 +268,11 @@ func (t EmpireTemplate) Validate() error {
 			}
 		}
 		groups("farming", c.FarmingGroups)
+		for j, g := range c.FarmingGroups {
+			if len(g.Units) > 1 {
+				bad("colony %d: farming group %d: %d entries of units: every unit of a farming group is of the same tech level", i+1, j+1, len(g.Units))
+			}
+		}
 		groups("factory", c.FactoryGroups)
 	}
 	return errors.Join(errs...)
