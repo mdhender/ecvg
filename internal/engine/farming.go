@@ -9,74 +9,49 @@ import (
 )
 
 // Farming is the farming production phase of the turn numbered turn. In every
-// colony in d, the FARM units in its farming groups make FOOD, which goes
-// into the colony's cargo, and the colony's Harvest records what they did.
-// Nothing is farmed in turn SetupTurn.
-//
-// The units are taken in group order, and within a group in the order they
-// are listed. A unit works only if it has staff and fuel:
-//
-//   - Staff is game.FarmPRO PRO and game.FarmUSK USK, taken from the colony's
-//     worker cadre (see AllocateResources, which must run first). A unit left
-//     without fuel gives its staff back.
-//   - Fuel is game.FarmFuel, burned from the FUEL in the colony's cargo,
-//     unless the unit is solar powered (game.FarmSolar).
+// colony in d, the FARM units in its farming groups that were allocated staff
+// and fuel make FOOD, which goes into the colony's cargo; the fuel is burned
+// from the cargo; and the colony's Harvest records what happened. Allocs is
+// what AllocateResources returned for the turn. Nothing is farmed in turn
+// SetupTurn.
 //
 // A working FARM-2 to FARM-10 unit makes game.FarmFood that turn. A FARM-1
 // unit delivers only after game.FarmCropTurns consecutive turns of work, and
 // loses the crop it had begun in a turn it doesn't work (game.AdvanceCrop).
-func Farming(d *game.Data, turn int) {
-	orbitNo := map[int]int{} // by planet ID
-	orbits := map[int]int{}
-	for _, o := range d.Orbits {
-		orbits[o.ID] = o.OrbitNo
-	}
-	for _, p := range d.Planets {
-		orbitNo[p.ID] = orbits[p.OrbitID]
-	}
+func Farming(d *game.Data, turn int, allocs []Allocation) {
 	for i := range d.Colonies {
 		c := &d.Colonies[i]
 		c.Harvest = game.Harvest{}
-		if turn <= SetupTurn {
+		if turn <= SetupTurn || i >= len(allocs) {
 			continue
 		}
-		c.Harvest = harvest(c, orbitNo[c.PlanetID])
+		c.Harvest = harvest(c, allocs[i])
 	}
 }
 
-// harvest works the farming groups of c, which is in orbit orbitNo, burning
-// its FUEL and adding to its FOOD.
-func harvest(c *game.Colony, orbitNo int) game.Harvest {
+// harvest works the farming groups of c with what a allocated to them,
+// burning its FUEL and adding to its FOOD.
+func harvest(c *game.Colony, a Allocation) game.Harvest {
 	var h game.Harvest
-	fuel := 0
-	for _, u := range c.Cargo {
-		if u.Type == units.FUEL {
-			fuel += u.Qty
-		}
-	}
-	for _, g := range c.FarmingGroups {
+	for j, g := range c.FarmingGroups {
 		for k := range g.Units {
 			u := &g.Units[k]
-			h.Units += u.Qty
-			staffed := c.Workers.Take(u.Qty, game.FarmPRO, game.FarmUSK)
-			h.Unstaffed += u.Qty - staffed
-			worked, burned := staffed, 0
-			if !game.FarmSolar(u.TechLevel, c.Type, orbitNo) {
-				worked = min(staffed, game.FarmsFuelled(u.TechLevel, fuel))
-				burned = game.FarmFuel(u.TechLevel, worked)
+			var w Work
+			if j < len(a.Farms) && k < len(a.Farms[j]) {
+				w = a.Farms[j][k]
 			}
-			h.Unfuelled += staffed - worked
-			c.Workers.Return(staffed-worked, game.FarmPRO, game.FarmUSK)
-			fuel -= burned
-			h.Worked += worked
-			h.Fuel += burned
+			h.Units += u.Qty
+			h.Unstaffed += u.Qty - w.Staffed
+			h.Unfuelled += w.Staffed - w.Worked
+			h.Worked += w.Worked
+			h.Fuel += w.Fuel
 			if u.TechLevel == 1 {
 				var delivered, ruined int
-				u.Pipeline, delivered, ruined = game.AdvanceCrop(u.Qty, u.Pipeline, worked)
+				u.Pipeline, delivered, ruined = game.AdvanceCrop(u.Qty, u.Pipeline, w.Worked)
 				h.Ruined += ruined
 				h.Food += game.FarmFood(u.TechLevel, delivered)
 			} else {
-				h.Food += game.FarmFood(u.TechLevel, worked)
+				h.Food += game.FarmFood(u.TechLevel, w.Worked)
 			}
 		}
 	}
@@ -102,19 +77,4 @@ func harvest(c *game.Colony, orbitNo int) game.Harvest {
 		}
 	}
 	return h
-}
-
-// AllocateResources is the resource allocation phase of the turn numbered
-// turn. It makes each colony's worker cadre for the turn (game.NewWorkers),
-// which the production phases then drain; food has first call on it, so
-// Farming runs before any other production. No cadre is made in turn
-// SetupTurn.
-func AllocateResources(d *game.Data, turn int) {
-	for i := range d.Colonies {
-		c := &d.Colonies[i]
-		c.Workers = game.Workers{}
-		if turn > SetupTurn {
-			c.Workers = game.NewWorkers(*c)
-		}
-	}
 }

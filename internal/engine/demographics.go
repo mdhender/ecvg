@@ -28,8 +28,8 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	if err != nil {
 		return OrdersResult{}, err
 	}
-	AllocateResources(d, d.Game.Turn)
-	Farming(d, d.Game.Turn)
+	allocs := AllocateResources(d, d.Game.Turn)
+	Farming(d, d.Game.Turn, allocs)
 	meals := Rations(d, d.Game.Turn)
 	PopulationChanges(d, meals)
 	Demographics(d, d.Game.Turn)

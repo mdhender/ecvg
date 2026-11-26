@@ -92,8 +92,8 @@ func TestFarming(t *testing.T) {
 			},
 			want: game.Harvest{Units: 100000, Worked: 36000, Unfuelled: 64000, Fuel: 360000, Food: 1800000},
 			fuel: 5, food: 1800000,
-			// The unfuelled farms gave their staff back.
-			workers: game.Workers{PRO: 200000, USK: 300000, IdlePRO: 164000, IdleUSK: 192000},
+			// The unfuelled farms keep their staff.
+			workers: game.Workers{PRO: 200000, USK: 300000, IdlePRO: 100000, IdleUSK: 0},
 		},
 		{
 			name: "short of staff, and the fuel comes from two cargo entries",
@@ -108,7 +108,7 @@ func TestFarming(t *testing.T) {
 			fuel: 100, food: 1,
 		},
 		{
-			name: "groups in order; an unfuelled unit gives its staff back",
+			name: "groups in order of seniority; an unfuelled unit keeps its staff",
 			colony: game.Colony{
 				Type: game.COPN, Population: game.Population{USK: 12, PRO: 4},
 				Cargo: []game.Unit{{Type: "FUEL", Qty: 21}},
@@ -117,10 +117,11 @@ func TestFarming(t *testing.T) {
 					group(2, game.GroupUnits{Qty: 5, TechLevel: 1}),
 				},
 			},
-			// FARM-10: 3 staffed, fuel for 2 (20 FUEL). FARM-2: 2 staffed, fuel
-			// for 1 (1 FUEL). FARM-1: 1 PRO left, and no fuel.
-			want: game.Harvest{Units: 10, Worked: 3, Unstaffed: 4, Unfuelled: 3, Fuel: 21, Food: 110},
+			// Staff: all 3 FARM-10, then 1 of the 2 FARM-2, and none for group
+			// 2. Fuel: 20 runs 2 FARM-10, and the last 1 runs the FARM-2.
+			want: game.Harvest{Units: 10, Worked: 3, Unstaffed: 6, Unfuelled: 1, Fuel: 21, Food: 110},
 			fuel: 0, food: 110,
+			workers: game.Workers{PRO: 4, USK: 12, IdlePRO: 0, IdleUSK: 0},
 		},
 		{
 			name: "automation stands in for USK but not PRO",
@@ -166,8 +167,7 @@ func TestFarming(t *testing.T) {
 				d.Colonies[0].PlanetID = tc.planet
 			}
 			before := d.Colonies[0].Population
-			engine.AllocateResources(&d, 1)
-			engine.Farming(&d, 1)
+			engine.Farming(&d, 1, engine.AllocateResources(&d, 1))
 			c := d.Colonies[0]
 			if c.Harvest != tc.want {
 				t.Errorf("harvest = %+v, want %+v", c.Harvest, tc.want)
@@ -198,8 +198,7 @@ func TestFarming(t *testing.T) {
 			Cargo:         []game.Unit{{Type: "FUEL", Qty: 100}},
 			FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 4, TechLevel: 10})},
 		})
-		engine.AllocateResources(&d, 0)
-		engine.Farming(&d, 0)
+		engine.Farming(&d, 0, engine.AllocateResources(&d, 0))
 		if c := d.Colonies[0]; c.Harvest != (game.Harvest{}) || c.Workers != (game.Workers{}) || c.Cargo[0].Qty != 100 || len(c.Cargo) != 1 {
 			t.Errorf("harvest %+v, cargo %+v; want nothing farmed", c.Harvest, c.Cargo)
 		}
@@ -267,8 +266,7 @@ func TestFarm1Crop(t *testing.T) {
 		if turn == 8 {
 			d.Colonies[0].Cargo[0].Qty = 200
 		}
-		engine.AllocateResources(&d, turn)
-		engine.Farming(&d, turn)
+		engine.Farming(&d, turn, engine.AllocateResources(&d, turn))
 		if got := d.Colonies[0].Harvest; got != want {
 			t.Errorf("turn %d: harvest %+v, want %+v", turn, got, want)
 		}

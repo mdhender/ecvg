@@ -56,9 +56,3 @@ func (w *Workers) Take(want, pro, usk int) int {
 	w.IdleUSK -= n * usk
 	return n
 }
-
-// Return gives back the staff of n units that Take staffed.
-func (w *Workers) Return(n, pro, usk int) {
-	w.IdlePRO += n * pro
-	w.IdleUSK += n * usk
-}
