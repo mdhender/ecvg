@@ -50,10 +50,7 @@ func TestApportion(t *testing.T) {
 
 func TestGenerateRules(t *testing.T) {
 	h, e := defaults(t)
-	d, err := generate("alpha", 0x1234, h, e)
-	if err != nil {
-		t.Fatal(err)
-	}
+	d := generate("alpha", 0x1234, h, e)
 
 	// Stellia: 1 with 5 stars, 3 with 4, 10 with 3, 30 with 2, 56 with 1.
 	if len(d.Stellia) != 100 {
@@ -196,7 +193,7 @@ func TestGenerateRules(t *testing.T) {
 		if c.ID != i+1 || c.EmpireID != emp.ID || c.PlanetID != emp.HomeWorldID || c.Type != tc.Type ||
 			c.Population != tc.Population || !reflect.DeepEqual(c.Cargo, tc.Cargo) ||
 			!reflect.DeepEqual(c.FarmingGroups, tc.FarmingGroups) ||
-			len(c.MiningGroups) != len(tc.MiningGroups) || len(c.FactoryGroups) != len(tc.FactoryGroups) {
+			len(c.MiningGroups) != 0 || len(c.FactoryGroups) != len(tc.FactoryGroups) {
 			t.Errorf("colony %d doesn't match empire %d and the template", c.ID, emp.ID)
 		}
 	}
@@ -209,54 +206,14 @@ func TestGenerateRules(t *testing.T) {
 
 func TestGenerateDependsOnlyOnSeed(t *testing.T) {
 	h, e := defaults(t)
-	a, _ := generate("alpha", 1, h, e)
-	b, _ := generate("alpha", 1, h, e)
-	c, _ := generate("alpha", 2, h, e)
+	a := generate("alpha", 1, h, e)
+	b := generate("alpha", 1, h, e)
+	c := generate("alpha", 2, h, e)
 	if !reflect.DeepEqual(a, b) {
 		t.Error("the same seed gave different games")
 	}
 	if reflect.DeepEqual(a.Stellia, c.Stellia) || reflect.DeepEqual(a.Deposits, c.Deposits) {
 		t.Error("different seeds gave the same Stellia or deposits")
-	}
-}
-
-func TestGenerateAssignsMiningDeposits(t *testing.T) {
-	h, e := defaults(t)
-	e.Colonies[0].MiningGroups = []game.Group{{No: 1, Units: []game.GroupUnits{{Qty: 100, TechLevel: 1}}}}
-	// Leave the home world 6 FUEL, 6 MTL, and 3 NMTL deposits, so NMTL runs out.
-	home := *h.Orbits[2].Planet
-	home.Deposits = home.Deposits[:16]
-	h.Orbits[2].Planet = &home
-
-	d, err := generate("alpha", 7, h, e)
-	if err != nil {
-		t.Fatal(err)
-	}
-	deposits := map[int]game.Deposit{}
-	for _, x := range d.Deposits {
-		deposits[x.ID] = x
-	}
-	var got []string
-	used := map[int]bool{}
-	for _, c := range d.Colonies {
-		x := deposits[c.MiningGroups[0].DepositID]
-		if x.PlanetID != c.PlanetID || used[x.ID] {
-			t.Fatalf("colony %d works deposit %d: on another planet or already taken", c.ID, x.ID)
-		}
-		used[x.ID] = true
-		if c.EmpireID <= 15 {
-			got = append(got, string(x.Type))
-		}
-	}
-	const want = "FUEL MTL NMTL FUEL MTL NMTL FUEL MTL NMTL FUEL MTL FUEL MTL FUEL MTL"
-	if s := strings.Join(got, " "); s != want {
-		t.Errorf("first home world's empires mine\n%s\nwant\n%s", s, want)
-	}
-
-	// One more mining group per empire needs 30 deposits; there are only 15.
-	e.Colonies[0].MiningGroups = append(e.Colonies[0].MiningGroups, game.Group{No: 2, Units: []game.GroupUnits{{Qty: 1, TechLevel: 1}}})
-	if _, err := generate("alpha", 7, h, e); !errors.Is(err, errInvalidTemplate) {
-		t.Errorf("too few deposits: err = %v, want errInvalidTemplate", err)
 	}
 }
 
@@ -267,6 +224,7 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 	}{
 		{"unknown member", `{"colonies":[],"ships":[]}`},
 		{"no colonies", `{"colonies":[]}`},
+		{"mining groups", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"mining_groups":[]}]}`},
 		{"colony numbering", `{"colonies":[{"no":2,"type":"COPN","tech_level":1}]}`},
 		{"missing type", `{"colonies":[{"no":1,"tech_level":1}]}`},
 		{"zero cargo", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FOOD","qty":0}]}]}`},

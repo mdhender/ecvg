@@ -11,6 +11,7 @@
         "sld": 100000
       },
       "operational": [
+        {"type": "FARM", "tech_level": 10, "qty": 100000},
         {"type": "LSPT", "tech_level": 10, "qty": 100},
         {"type": "SDRV", "tech_level": 10, "qty": 1},
         {"type": "STUL", "tech_level": 10, "qty": 20000}
@@ -21,7 +22,6 @@
         {"type": "MTL", "qty": 5354167},
         {"type": "NMTL", "qty": 2645833},
         {"type": "CNGD", "qty": 515279},
-        {"type": "FARM", "tech_level": 10, "qty": 100000},
         {"type": "FACT", "tech_level": 10, "qty": 650000},
         {"type": "MINE", "tech_level": 10, "qty": 100000}
       ],

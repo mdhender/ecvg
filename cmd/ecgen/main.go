@@ -141,10 +141,7 @@ func create(dir string, seed1 uint64, homeStarPath, empirePath string) (game.Dat
 	if err != nil {
 		return game.Data{}, fmt.Errorf("empire template: %w", err)
 	}
-	d, err := generate(code, seed1, h, e)
-	if err != nil {
-		return game.Data{}, err
-	}
+	d := generate(code, seed1, h, e)
 	if err := d.Write(dir); err != nil {
 		return game.Data{}, err
 	}

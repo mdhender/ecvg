@@ -156,8 +156,8 @@ type EmpireTemplate struct {
 }
 
 // TemplateColony is a colony in an EmpireTemplate. It is a game.Colony without
-// the IDs: the generator supplies those, and gives each mining group a deposit
-// on the home world.
+// the IDs, which the generator supplies, and without mining groups: an empire
+// starts with none and claims deposits for itself.
 type TemplateColony struct {
 	No            int             `json:"no"`
 	Type          string          `json:"type"`
@@ -166,7 +166,6 @@ type TemplateColony struct {
 	Operational   []game.Unit     `json:"operational"`
 	Cargo         []game.Unit     `json:"cargo"`
 	FarmingGroups []game.Group    `json:"farming_groups"`
-	MiningGroups  []game.Group    `json:"mining_groups"`
 	FactoryGroups []game.Group    `json:"factory_groups"`
 }
 
@@ -181,16 +180,6 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 		return EmpireTemplate{}, err
 	}
 	return t, nil
-}
-
-// miningGroups returns the number of mining groups in t, which is the number
-// of home world deposits each empire needs.
-func (t EmpireTemplate) miningGroups() int {
-	n := 0
-	for _, c := range t.Colonies {
-		n += len(c.MiningGroups)
-	}
-	return n
 }
 
 // Validate reports every way t breaks the rules for an empire's initial
@@ -252,7 +241,6 @@ func (t EmpireTemplate) Validate() error {
 			}
 		}
 		groups("farming", c.FarmingGroups)
-		groups("mining", c.MiningGroups)
 		groups("factory", c.FactoryGroups)
 	}
 	return errors.Join(errs...)

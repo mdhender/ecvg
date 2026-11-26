@@ -67,11 +67,6 @@ var depositAmounts = map[game.DepositType]struct{ minSize, maxSize, minYield, ma
 	game.NMTL: {1_000_000, 99_000_000, 1, 28},
 }
 
-// miningOrder is the order in which the empires on a home world take its
-// deposits: the first FUEL, the first MTL, the first NMTL, the second FUEL,
-// and so on. GOLD is never assigned.
-var miningOrder = []game.DepositType{game.FUEL, game.MTL, game.NMTL}
-
 // apportion splits total among the weights in proportion, rounding down, then
 // gives what is left over one each to the weights with the largest fractions
 // dropped (the earlier weight first on a tie). The results add up to total.
@@ -124,7 +119,7 @@ func bellCurve(s *prng.Stream, lo, hi int) int {
 // other stars is random. Each home world (the planet in orbit
 // game.HomeWorldOrbitNo of a home star) gets a race and empiresPerHomeWorld
 // empires of that race, each with the colonies in e.
-func generate(code string, seed1 uint64, h HomeStarTemplate, e EmpireTemplate) (game.Data, error) {
+func generate(code string, seed1 uint64, h HomeStarTemplate, e EmpireTemplate) game.Data {
 	var d game.Data
 	d.Game = game.Game{Code: code, Seed1: game.Seed(seed1), Seed2: game.Seed(prng.SplitMix64(seed1))}
 	root := prng.New(uint64(d.Game.Seed1), uint64(d.Game.Seed2))
@@ -138,10 +133,8 @@ func generate(code string, seed1 uint64, h HomeStarTemplate, e EmpireTemplate) (
 	templated := generatePlanets(root, &d, h)
 	markHabitable(root, &d, templated)
 	generateDeposits(root, &d, templated)
-	if err := generateEmpires(&d, templated, e); err != nil {
-		return game.Data{}, err
-	}
-	return d, nil
+	generateEmpires(&d, templated, e)
+	return d
 }
 
 // generateStellia places the Stellia and their stars using the stream
@@ -370,44 +363,13 @@ func generateDeposits(root *prng.Stream, d *game.Data, templated map[int]*Templa
 // generateEmpires sets d.Races, d.Empires, and d.Colonies. For each home
 // world, in planet ID order, it creates a race, whose ID is the home world's
 // ID, and empiresPerHomeWorld empires of that race, named "Empire #ID", with
-// no handle. Each empire gets the colonies in e on its home world.
-//
-// Every mining group works its own deposit on the home world. The empires take
-// the deposits in order of creation, cycling through miningOrder: the first
-// FUEL deposit, the first MTL, the first NMTL, the second FUEL, and so on,
-// skipping a type once it runs out. It is an error if the home world has too
-// few FUEL, MTL, and NMTL deposits for all the mining groups.
-func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTemplate) error {
+// no handle. Each empire gets the colonies in e on its home world, with no
+// mining groups: an empire assembles those, claiming deposits for itself.
+func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTemplate) {
 	for _, planet := range d.Planets {
 		if t := templated[planet.ID]; t == nil || !t.HomeWorld {
 			continue
 		}
-		byType := map[game.DepositType][]int{} // deposit IDs, in deposit number order
-		for _, x := range d.Deposits {
-			if x.PlanetID == planet.ID {
-				byType[x.Type] = append(byType[x.Type], x.ID)
-			}
-		}
-		minable := 0
-		for _, typ := range miningOrder {
-			minable += len(byType[typ])
-		}
-		if need := empiresPerHomeWorld * e.miningGroups(); need > minable {
-			return fmt.Errorf("%w: %d empires with %d mining groups each need %d deposits, but the home world has %d of FUEL, MTL, and NMTL",
-				errInvalidTemplate, empiresPerHomeWorld, e.miningGroups(), need, minable)
-		}
-		turn := 0
-		nextDeposit := func() int {
-			for {
-				typ := miningOrder[turn%len(miningOrder)]
-				turn++
-				if ids := byType[typ]; len(ids) > 0 {
-					byType[typ] = ids[1:]
-					return ids[0]
-				}
-			}
-		}
-
 		d.Races = append(d.Races, game.Race{ID: planet.ID, HomeWorldID: planet.ID})
 		for range empiresPerHomeWorld {
 			empire := game.Empire{ID: len(d.Empires) + 1, RaceID: planet.ID, HomeWorldID: planet.ID}
@@ -428,16 +390,10 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 					FactoryGroups: cloneGroups(tc.FactoryGroups),
 					MiningGroups:  []game.MiningGroup{},
 				}
-				for _, g := range tc.MiningGroups {
-					colony.MiningGroups = append(colony.MiningGroups, game.MiningGroup{
-						No: g.No, DepositID: nextDeposit(), Units: slices.Clone(g.Units),
-					})
-				}
 				d.Colonies = append(d.Colonies, colony)
 			}
 		}
 	}
-	return nil
 }
 
 // cloneGroups returns a copy of groups that shares nothing with it.
