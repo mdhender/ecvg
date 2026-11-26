@@ -105,7 +105,8 @@ func empireData() game.Data {
 			{ID: 2, Name: "Empire #2", RaceID: 40, HomeWorldID: 40},
 		},
 		Colonies: []game.Colony{{ID: 7, EmpireID: 1, PlanetID: 40, No: 1, Type: "COPN", TechLevel: 1,
-			Cargo: []game.Unit{{Type: "FOOD", Qty: 20}}}},
+			Population: game.Population{UEM: 6, USK: 3, PRO: 2, SLD: 1},
+			Cargo:      []game.Unit{{Type: "FOOD", Qty: 20}}}},
 	}
 }
 
@@ -123,6 +124,17 @@ func TestEmpireRows(t *testing.T) {
 	}
 	if len(r.Colonies) != 1 || r.Colonies[0].ID != 7 || len(rows[1].Colonies) != 0 {
 		t.Errorf("colonies: %+v, %+v", r.Colonies, rows[1].Colonies)
+	}
+
+	if c := r.Colonies[0]; c.People != 1200 || c.Mass != 12 || c.Volume != 0 || c.LifeSupport != 0 || c.Food != 3 {
+		t.Errorf("open-air colony: %+v", c)
+	}
+	enclosed := empireData()
+	enclosed.Colonies[0].Type = game.CENC
+	if rows, err := view.EmpireRows(enclosed); err != nil {
+		t.Fatal(err)
+	} else if c := rows[0].Colonies[0]; c.Volume != 12 || c.LifeSupport != 12 {
+		t.Errorf("enclosed colony: volume %d, life support %d; want 12, 12", c.Volume, c.LifeSupport)
 	}
 
 	for _, tc := range []struct {

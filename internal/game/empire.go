@@ -60,9 +60,9 @@ type Colony struct {
 	PlanetID int `json:"planet_id"`
 	// No numbers the empire's colonies from 1.
 	No int `json:"no"`
-	// Type is the kind of colony, such as COPN for an open-air colony.
-	Type      string `json:"type"`
-	TechLevel int    `json:"tech_level"`
+	// Type is the kind of entity the colony is.
+	Type      EntityType `json:"type"`
+	TechLevel int        `json:"tech_level"`
 	// Population is the colony's population units.
 	Population Population `json:"population"`
 	// Operational lists the units in use, and Cargo the units in storage.
@@ -72,14 +72,6 @@ type Colony struct {
 	FarmingGroups []Group       `json:"farming_groups"`
 	MiningGroups  []MiningGroup `json:"mining_groups"`
 	FactoryGroups []Group       `json:"factory_groups"`
-}
-
-// Population counts population units by group.
-type Population struct {
-	UEM int `json:"uem"` // unemployed
-	USK int `json:"usk"` // unskilled
-	PRO int `json:"pro"` // professional
-	SLD int `json:"sld"` // soldier
 }
 
 // Unit is a quantity of one kind of unit, such as FOOD or FACT.

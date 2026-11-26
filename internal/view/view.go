@@ -106,7 +106,21 @@ type EmpireRow struct {
 	SeqNo      int `json:"seq_no"`
 	OrbitNo    int `json:"orbit_no"`
 	// Colonies are the empire's colonies, in the order of d.Colonies.
-	Colonies []game.Colony `json:"colonies"`
+	Colonies []ColonyRow `json:"colonies"`
+}
+
+// ColonyRow is a colony as the empires page shows it: the colony and what its
+// population amounts to.
+type ColonyRow struct {
+	game.Colony
+	People int `json:"people"`
+	// Mass is in MU, Volume in VU, and LifeSupport in LU; the last two are 0
+	// for an open-air colony.
+	Mass        int `json:"mass"`
+	Volume      int `json:"volume"`
+	LifeSupport int `json:"life_support"`
+	// Food is the FOOD the population eats in a turn.
+	Food int `json:"food"`
 }
 
 // EmpireRows pairs each empire in d with the location of its home world and
@@ -158,7 +172,7 @@ func EmpireRows(d game.Data) ([]EmpireRow, error) {
 			Z:          stellium.Z,
 			SeqNo:      star.SeqNo,
 			OrbitNo:    orbit.OrbitNo,
-			Colonies:   []game.Colony{},
+			Colonies:   []ColonyRow{},
 		}
 	}
 	for _, c := range d.Colonies {
@@ -166,7 +180,15 @@ func EmpireRows(d game.Data) ([]EmpireRow, error) {
 		if !ok {
 			return nil, fmt.Errorf("colony %d: unknown empire %d", c.ID, c.EmpireID)
 		}
-		rows[i].Colonies = append(rows[i].Colonies, c)
+		p := c.Population
+		rows[i].Colonies = append(rows[i].Colonies, ColonyRow{
+			Colony:      c,
+			People:      p.People(),
+			Mass:        p.Mass(),
+			Volume:      p.Volume(c.Type),
+			LifeSupport: p.LifeSupport(c.Type),
+			Food:        p.Food(),
+		})
 	}
 	return rows, nil
 }

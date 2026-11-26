@@ -227,6 +227,7 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 		{"mining groups", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"mining_groups":[]}]}`},
 		{"colony numbering", `{"colonies":[{"no":2,"type":"COPN","tech_level":1}]}`},
 		{"missing type", `{"colonies":[{"no":1,"tech_level":1}]}`},
+		{"unknown type", `{"colonies":[{"no":1,"type":"BASE","tech_level":1}]}`},
 		{"zero cargo", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FOOD","qty":0}]}]}`},
 		{"empty group", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[]}]}]}`},
 	} {

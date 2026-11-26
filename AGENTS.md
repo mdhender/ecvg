@@ -36,12 +36,12 @@ The templates are embedded from `cmd/ecgen/homestar-template.json` and `cmd/ecge
 The home star template has 10 `orbits`, each with its `orbit_no`, an optional `note` for the game master (ignored), and a `planet` (`homeworld`, `habitable`, `viability`, `deposits`; a missing boolean or number is false or 0) or `null` for an empty orbit.
 The home world is always the planet in orbit 3, marked `homeworld`, habitable with viability 25; no other planet may be marked.
 The default is an Earth-like system with a planet in all 10 orbits (orbit 5 is an asteroid belt) and 84 deposits.
-The empire template has `colonies`, each with `no`, `type` (such as `COPN`), `tech_level`, `population` (`uem`, `usk`, `pro`, `sld`), `operational` and `cargo` units (`type`, optional `tech_level`, `qty`), and optional `farming_groups` and `factory_groups` (`no` and `units`, each `qty` and `tech_level`). Its default numbers come from the sample turn 1 report in the 1978 manual.
+The empire template has `colonies`, each with `no`, `type` (an entity type: `CSHP`, `COPN`, `CENC`, or `CORB`), `tech_level`, `population` (`uem`, `usk`, `pro`, `sld`), `operational` and `cargo` units (`type`, optional `tech_level`, `qty`), and optional `farming_groups` and `factory_groups` (`no` and `units`, each `qty` and `tech_level`). Its default numbers come from the sample turn 1 report in the 1978 manual.
 Empires start with no mining groups, so a template can't list any (`mining_groups` is rejected), and the default has no factory groups either: those units are in cargo, and empires must assemble the groups, claiming deposits for themselves.
 
 Record IDs of every kind run from 1 with no gaps. JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia (home Stellia glow and are always labelled on the map, and are starred in a sortable Home column), to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
-`ecview --store games/{code} empires` does the same for a page listing the empires for the game master (ID, name, handle, race, home world and its location, population), which can be searched, filtered by race, and sorted; selecting an empire shows its colonies: population, operational units, cargo, and farming, mining, and factory groups.
+`ecview --store games/{code} empires` does the same for a page listing the empires for the game master (ID, name, handle, race, home world and its location, population), which can be searched, filtered by race, and sorted; selecting an empire shows its colonies: population (units, people, and the FOOD, mass, space, and life support it takes), operational units, cargo, and farming, mining, and factory groups.
 
 The plan:
 
@@ -93,7 +93,7 @@ A ship orbiting a Stellium is `(x, y, z, 0, 0, 0, 0, 0)`; one orbiting a Star is
 `ox, oy, oz` are small positive integers giving a position relative to the planet.
 
 - **Planet:** habitability (bool; false forbids open-air colonies), viability (0..25, caps open-air farms), 1..31 deposits, each of type GOLD, FUEL, MTL (metallics), or NMTL (non-metallics).
-- **Entity:** a ship, open-air colony, enclosed colony, or orbital colony. It holds Population and Inventory units, both transferable between entities.
-- **Population:** groups USK, PRO, SLD, UEM; cadres CNW and SPY are population trained for a specific purpose.
+- **Entity:** one of four types: CSHP (ship), COPN (open-air surface colony), CENC (enclosed surface colony), or CORB (enclosed orbital colony). It holds Population and Inventory units, both transferable between entities. All but COPN are enclosed.
+- **Population:** four types of unit: UEM (unemployables), USK (unskilled workers), PRO (professionals), and SLD (soldiers). A unit is a block of 100 people with a mass of 1 MU; on a ship or in an enclosed colony it also takes 1 VU of space and 1 LU (life support unit). Each unit initially eats 0.25 FOOD per turn (`internal/game/population.go` rounds an entity's total up to a whole FOOD).
 - **Units:** manufactured or processed items with mass (MU) and volume (VU). Volume has assembled and unassembled values; most units are bigger assembled.
 - **Production:** farming makes FOOD; mining extracts deposits into GOLD, FUEL, MTL, NMTL; manufacturing turns resource units into manufactured units (CNGD, SDRV, ...).

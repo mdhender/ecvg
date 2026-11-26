@@ -151,8 +151,10 @@ function renderDetail() {
     const p = c.population;
     out.push(el("h3", `Colony ${c.no} · ${c.type} · TL ${c.tech_level} · planet ${c.planet_id}`));
     out.push(el("h4", "Population"));
-    out.push(table(["<Group", "Qty"], [["UEM", num(p.uem)], ["USK", num(p.usk)], ["PRO", num(p.pro)], ["SLD", num(p.sld)],
-      ["Total", num(p.uem + p.usk + p.pro + p.sld)]]));
+    out.push(table(["<Type", "Units", "People"], [["UEM", p.uem], ["USK", p.usk], ["PRO", p.pro], ["SLD", p.sld],
+      ["Total", p.uem + p.usk + p.pro + p.sld]].map(([k, n]) => [k, num(n), num(n * 100)])));
+    out.push(el("p", `Eats ${num(c.food)} FOOD a turn · mass ${num(c.mass)} MU · ` +
+      (c.life_support ? `takes ${num(c.volume)} VU and ${num(c.life_support)} LU` : "open air, so no space or life support needed"), "sub"));
     out.push(...units("Operational", c.operational), ...units("Cargo", c.cargo),
       ...groups("Farming groups", c.farming_groups), ...groups("Mining groups", c.mining_groups, true),
       ...groups("Factory groups", c.factory_groups));

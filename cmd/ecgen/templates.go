@@ -160,7 +160,7 @@ type EmpireTemplate struct {
 // starts with none and claims deposits for itself.
 type TemplateColony struct {
 	No            int             `json:"no"`
-	Type          string          `json:"type"`
+	Type          game.EntityType `json:"type"`
 	TechLevel     int             `json:"tech_level"`
 	Population    game.Population `json:"population"`
 	Operational   []game.Unit     `json:"operational"`
@@ -184,7 +184,8 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 
 // Validate reports every way t breaks the rules for an empire's initial
 // assets. There must be at least one colony, and colonies must be numbered
-// from 1 in order, with a type and a tech level of at least 1. No population
+// from 1 in order, with one of the four entity types and a tech level of at
+// least 1. No population
 // may be negative. Units need a type, a quantity of at least 1, and a tech
 // level that is not negative. Groups of each kind must be numbered from 1 in
 // order and hold at least one entry of units, each with a quantity and tech
