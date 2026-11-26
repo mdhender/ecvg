@@ -43,10 +43,11 @@ type Deposit struct {
 	DepositNo int `json:"deposit_no"`
 	// Type is the resource in the deposit.
 	Type DepositType `json:"type"`
-	// Size is the amount of usable ore in the deposit.
+	// Size is the amount of refined product left in the deposit. It loses
+	// only what a mine refines and puts into storage.
 	Size int `json:"size"`
-	// Yield is the percentage of the ore extracted that can be refined into a
-	// usable resource.
+	// Yield is the percentage that scales what a mine extracts in a turn: a
+	// working MINE unit refines MineOrePerTL x TL x Yield% of product.
 	Yield int `json:"yield"`
 }
 
