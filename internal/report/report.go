@@ -185,6 +185,15 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				}
 			}
 		}
+		if w := c.Workers; w.PRO > 0 || w.USK > 0 {
+			p("")
+			p("WORKERS LAST TURN %7s %14s %14s", "Pool", "Used", "Idle")
+			p("  %-8s %14s %14s %14s", "PRO", commas(w.PRO), commas(w.PRO-w.IdlePRO), commas(w.IdlePRO))
+			p("  %-8s %14s %14s %14s", "USK", commas(w.USK), commas(w.USK-w.IdleUSK), commas(w.IdleUSK))
+			if w.AutoUSK > 0 {
+				p("  %s of the USK were automation (AUTO)", commas(w.AutoUSK))
+			}
+		}
 		groups("FARMING GROUPS", c.FarmingGroups)
 		if h := c.Harvest; h.Units > 0 {
 			p("  LAST TURN: %s of %s units worked, burned %s FUEL, and made %s FOOD",

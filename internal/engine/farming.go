@@ -16,9 +16,9 @@ import (
 // The units are taken in group order, and within a group in the order they
 // are listed. A unit works only if it has staff and fuel:
 //
-//   - Staff is game.FarmPRO PRO and game.FarmUSK USK, from the colony's
-//     population. Nobody staffs two units, and a unit left without fuel gives
-//     its staff back.
+//   - Staff is game.FarmPRO PRO and game.FarmUSK USK, taken from the colony's
+//     worker cadre (see AllocateResources, which must run first). A unit left
+//     without fuel gives its staff back.
 //   - Fuel is game.FarmFuel, burned from the FUEL in the colony's cargo,
 //     unless the unit is solar powered (game.FarmSolar).
 //
@@ -48,7 +48,6 @@ func Farming(d *game.Data, turn int) {
 // its FUEL and adding to its FOOD.
 func harvest(c *game.Colony, orbitNo int) game.Harvest {
 	var h game.Harvest
-	pro, usk := c.Population.PRO, c.Population.USK
 	fuel := 0
 	for _, u := range c.Cargo {
 		if u.Type == units.FUEL {
@@ -59,7 +58,7 @@ func harvest(c *game.Colony, orbitNo int) game.Harvest {
 		for k := range g.Units {
 			u := &g.Units[k]
 			h.Units += u.Qty
-			staffed := max(0, min(u.Qty, pro/game.FarmPRO, usk/game.FarmUSK))
+			staffed := c.Workers.Take(u.Qty, game.FarmPRO, game.FarmUSK)
 			h.Unstaffed += u.Qty - staffed
 			worked, burned := staffed, 0
 			if !game.FarmSolar(u.TechLevel, c.Type, orbitNo) {
@@ -67,8 +66,7 @@ func harvest(c *game.Colony, orbitNo int) game.Harvest {
 				burned = game.FarmFuel(u.TechLevel, worked)
 			}
 			h.Unfuelled += staffed - worked
-			pro -= worked * game.FarmPRO
-			usk -= worked * game.FarmUSK
+			c.Workers.Return(staffed-worked, game.FarmPRO, game.FarmUSK)
 			fuel -= burned
 			h.Worked += worked
 			h.Fuel += burned
@@ -104,4 +102,19 @@ func harvest(c *game.Colony, orbitNo int) game.Harvest {
 		}
 	}
 	return h
+}
+
+// AllocateResources is the resource allocation phase of the turn numbered
+// turn. It makes each colony's worker cadre for the turn (game.NewWorkers),
+// which the production phases then drain; food has first call on it, so
+// Farming runs before any other production. No cadre is made in turn
+// SetupTurn.
+func AllocateResources(d *game.Data, turn int) {
+	for i := range d.Colonies {
+		c := &d.Colonies[i]
+		c.Workers = game.Workers{}
+		if turn > SetupTurn {
+			c.Workers = game.NewWorkers(*c)
+		}
+	}
 }

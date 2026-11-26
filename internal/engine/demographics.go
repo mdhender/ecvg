@@ -20,7 +20,7 @@ const SetupTurn = 0
 // RunTurn processes the game's current turn, d.Game.Turn: it runs each phase
 // in order on the state in d, which becomes the state as of the next turn, and
 // then advances d.Game.Turn. The phases, in order: ApplyOrders, with the
-// orders the empires returned for the turn, Farming, Rations,
+// orders the empires returned for the turn, AllocateResources, Farming, Rations,
 // PopulationChanges, and Demographics. It returns what became of the orders. If it fails, d is not
 // changed.
 func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
@@ -28,6 +28,7 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	if err != nil {
 		return OrdersResult{}, err
 	}
+	AllocateResources(d, d.Game.Turn)
 	Farming(d, d.Game.Turn)
 	meals := Rations(d, d.Game.Turn)
 	PopulationChanges(d, meals)

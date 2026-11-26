@@ -122,6 +122,19 @@ func TestEmpire(t *testing.T) {
 			lack:     []string{"LAST TURN", "units idle"},
 		},
 		{
+			name:     "workers",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Colonies[0].Workers = game.Workers{PRO: 200000, USK: 400000, AutoUSK: 100000, IdlePRO: 100000, IdleUSK: 100000}
+			},
+			want: []string{
+				"WORKERS LAST TURN    Pool           Used           Idle\n",
+				"  PRO             200,000        100,000        100,000\n",
+				"  USK             400,000        300,000        100,000\n",
+				"  100,000 of the USK were automation (AUTO)",
+			},
+		},
+		{
 			name:     "later turn with no orders",
 			empireID: 1,
 			edit:     func(d *game.Data) { d.Game.Turn = 7 },
