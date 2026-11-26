@@ -89,3 +89,80 @@ func TestStelliaPage(t *testing.T) {
 		})
 	}
 }
+
+// empireData returns a game with two empires on one home world; the first has
+// a player and a colony.
+func empireData() game.Data {
+	return game.Data{
+		Game:    game.Game{Code: "alpha"},
+		Stellia: []game.Stellium{{ID: 4, X: -3, Y: 4, Z: 12, HomeStellium: true}},
+		Stars:   []game.Star{{ID: 9, StelliumID: 4, SeqNo: 1, HomeStar: true}},
+		Orbits:  []game.Orbit{{ID: 83, StarID: 9, OrbitNo: 3}},
+		Planets: []game.Planet{{ID: 40, OrbitID: 83, Habitable: true, Viability: 25}},
+		Races:   []game.Race{{ID: 40, HomeWorldID: 40}},
+		Empires: []game.Empire{
+			{ID: 1, Handle: "abcdefgh", Name: "</script><b>", RaceID: 40, HomeWorldID: 40},
+			{ID: 2, Name: "Empire #2", RaceID: 40, HomeWorldID: 40},
+		},
+		Colonies: []game.Colony{{ID: 7, EmpireID: 1, PlanetID: 40, No: 1, Type: "COPN", TechLevel: 1,
+			Cargo: []game.Unit{{Type: "FOOD", Qty: 20}}}},
+	}
+}
+
+func TestEmpireRows(t *testing.T) {
+	rows, err := view.EmpireRows(empireData())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 2 {
+		t.Fatalf("got %d rows, want 2", len(rows))
+	}
+	r := rows[0]
+	if r.ID != 1 || r.StelliumID != 4 || r.X != -3 || r.Y != 4 || r.Z != 12 || r.SeqNo != 1 || r.OrbitNo != 3 {
+		t.Errorf("row 1 = %+v", r)
+	}
+	if len(r.Colonies) != 1 || r.Colonies[0].ID != 7 || len(rows[1].Colonies) != 0 {
+		t.Errorf("colonies: %+v, %+v", r.Colonies, rows[1].Colonies)
+	}
+
+	for _, tc := range []struct {
+		name  string
+		wreck func(d *game.Data)
+	}{
+		{"unknown home world", func(d *game.Data) { d.Planets = nil }},
+		{"unknown orbit", func(d *game.Data) { d.Orbits = nil }},
+		{"unknown star", func(d *game.Data) { d.Stars = nil }},
+		{"unknown stellium", func(d *game.Data) { d.Stellia = nil }},
+		{"colony of unknown empire", func(d *game.Data) { d.Colonies[0].EmpireID = 99 }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := empireData()
+			tc.wreck(&d)
+			if _, err := view.EmpireRows(d); err == nil {
+				t.Error("got nil error, want one")
+			}
+		})
+	}
+}
+
+func TestEmpiresPage(t *testing.T) {
+	var sb strings.Builder
+	if err := view.Empires(&sb, empireData()); err != nil {
+		t.Fatal(err)
+	}
+	page := sb.String()
+	for _, want := range []string{
+		"<title>Empires of alpha</title>",
+		"2 empires of 1 race; 1 has a player.",
+		`"handle":"abcdefgh"`,
+		`"orbit_no":3`,
+		`"cargo":[{"type":"FOOD","qty":20}]`,
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("page lacks %q", want)
+		}
+	}
+	if strings.Contains(page, "</script><b>") {
+		t.Error("the empire name is not escaped in the script")
+	}
+}

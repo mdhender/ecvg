@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empires of {{.Code}}</title>
+<style>
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b72; --line: #d9d7d0;
+  --grid: rgba(0,0,0,.10); --home: #e0261b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0f14; --panel: #161922; --ink: #e8e8ec; --muted: #9a9caa; --line: #2a2e3b;
+    --grid: rgba(255,255,255,.10); --home: #ff5146;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding: 16px 20px 8px; }
+h1 { margin: 0; font-size: 20px; font-weight: 600; }
+h2 { margin: 0; font-size: 17px; font-weight: 600; }
+h3 { margin: 18px 0 4px; font-size: 13px; font-weight: 600; }
+h4 { margin: 12px 0 2px; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+header p, .sub { margin: 4px 0 0; color: var(--muted); }
+main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 8px 20px 20px; align-items: start; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); }
+.toolbar input, .toolbar select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 6px; padding: 4px 8px; }
+.toolbar input { flex: 1; min-width: 120px; }
+.toolbar .hint { color: var(--muted); font-size: 12px; }
+.list { max-height: 82vh; overflow: auto; }
+.detail { padding: 14px 16px 18px; position: sticky; top: 12px; max-height: 92vh; overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; }
+th { color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line); }
+.list th { position: sticky; top: 0; background: var(--panel); cursor: pointer; user-select: none; }
+.list tbody tr { cursor: pointer; }
+.list tbody tr:hover, .list tbody tr.sel { background: var(--grid); }
+.list tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--home); }
+.none { color: var(--muted); }
+.detail table { width: auto; min-width: 60%; }
+.detail td, .detail th { padding: 2px 16px 2px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Empires of {{.Code}}</h1>
+  <p>{{.Count}} {{if eq .Count 1}}empire{{else}}empires{{end}} of {{.Races}} {{if eq .Races 1}}race{{else}}races{{end}}; {{.Players}} {{if eq .Players 1}}has{{else}}have{{end}} a player.</p>
+</header>
+<main>
+  <section class="panel">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search by ID, name, or handle">
+      <select id="race"><option value="">All races</option></select>
+      <span class="hint" id="shown"></span>
+    </div>
+    <div class="list">
+      <table>
+        <thead><tr><th data-k="id">ID</th><th class="l" data-k="name">Name</th><th class="l" data-k="handle">Handle</th><th data-k="race_id">Race</th><th data-k="homeworld_id">Home world</th><th class="l" data-k="loc">Location</th><th data-k="pop">Population</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel detail" id="detail"></section>
+</main>
+<script>
+"use strict";
+const EMPIRES = {{.Empires}};
+const num = n => n.toLocaleString("en-US");
+const el = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; };
+for (const e of EMPIRES) {
+  e.loc = `(${e.x}, ${e.y}, ${e.z}) star ${e.seq_no} orbit ${e.orbit_no}`;
+  e.pop = e.colonies.reduce((n, c) => n + c.population.uem + c.population.usk + c.population.pro + c.population.sld, 0);
+}
+
+const rows = document.getElementById("rows");
+const search = document.getElementById("search");
+const race = document.getElementById("race");
+let sortKey = "id", sortDir = 1, selected = EMPIRES[0] || null;
+
+for (const id of [...new Set(EMPIRES.map(e => e.race_id))].sort((a, b) => a - b)) {
+  const o = el("option", "Race " + id); o.value = id; race.appendChild(o);
+}
+
+function compare(a, b) {
+  const x = a[sortKey], y = b[sortKey];
+  return sortDir * (typeof x === "string" ? x.localeCompare(y) : x - y) || a.id - b.id;
+}
+
+function renderRows() {
+  const q = search.value.trim().toLowerCase();
+  const list = EMPIRES.filter(e => (!race.value || e.race_id === +race.value) &&
+    (!q || String(e.id) === q || e.name.toLowerCase().includes(q) || e.handle.includes(q))).sort(compare);
+  document.getElementById("shown").textContent = `${list.length} of ${EMPIRES.length}`;
+  rows.replaceChildren(...list.map(e => {
+    const tr = el("tr");
+    if (e === selected) tr.classList.add("sel");
+    tr.append(el("td", e.id), el("td", e.name, "l"), el("td", e.handle || "—", e.handle ? "l" : "l none"),
+      el("td", e.race_id), el("td", e.homeworld_id), el("td", e.loc, "l"), el("td", num(e.pop)));
+    tr.addEventListener("click", () => { selected = e; renderRows(); renderDetail(); });
+    return tr;
+  }));
+}
+
+// table builds a table from header labels (a leading "<" left-aligns the column) and rows of cells.
+function table(heads, body) {
+  const t = el("table"), hr = el("tr");
+  const left = heads.map(h => h.startsWith("<"));
+  heads.forEach((h, i) => hr.appendChild(el("th", h.replace(/^</, ""), left[i] ? "l" : "")));
+  t.appendChild(el("thead")).appendChild(hr);
+  const tb = t.appendChild(el("tbody"));
+  for (const r of body) {
+    const tr = tb.appendChild(el("tr"));
+    r.forEach((v, i) => tr.appendChild(el("td", v, left[i] ? "l" : "")));
+  }
+  return t;
+}
+
+function units(title, list) {
+  const out = [el("h4", title)];
+  if (!list || !list.length) out.push(el("p", "None", "sub"));
+  else out.push(table(["<Unit", "TL", "Qty"], list.map(u => [u.type, u.tech_level || "", num(u.qty)])));
+  return out;
+}
+
+function groups(title, list, deposits) {
+  const out = [el("h4", title)];
+  if (!list || !list.length) { out.push(el("p", "None assembled", "sub")); return out; }
+  const body = [];
+  for (const g of list) for (const u of g.units) {
+    body.push(deposits ? [g.no, g.deposit_id, u.tech_level, num(u.qty)] : [g.no, u.tech_level, num(u.qty)]);
+  }
+  out.push(table(deposits ? ["Group", "Deposit", "TL", "Units"] : ["Group", "TL", "Units"], body));
+  return out;
+}
+
+function renderDetail() {
+  const d = document.getElementById("detail");
+  if (!selected) { d.replaceChildren(el("p", "No empires.", "sub")); return; }
+  const e = selected, out = [];
+  out.push(el("h2", `${e.name}`));
+  out.push(el("p", `Empire ${e.id} · ${e.handle ? "player " + e.handle : "no player"} · race ${e.race_id}`, "sub"));
+  out.push(el("p", `Home world: planet ${e.homeworld_id} at ${e.loc}, Stellium ${e.stellium_id}`, "sub"));
+  if (!e.colonies.length) out.push(el("p", "No colonies.", "sub"));
+  for (const c of e.colonies) {
+    const p = c.population;
+    out.push(el("h3", `Colony ${c.no} · ${c.type} · TL ${c.tech_level} · planet ${c.planet_id}`));
+    out.push(el("h4", "Population"));
+    out.push(table(["<Group", "Qty"], [["UEM", num(p.uem)], ["USK", num(p.usk)], ["PRO", num(p.pro)], ["SLD", num(p.sld)],
+      ["Total", num(p.uem + p.usk + p.pro + p.sld)]]));
+    out.push(...units("Operational", c.operational), ...units("Cargo", c.cargo),
+      ...groups("Farming groups", c.farming_groups), ...groups("Mining groups", c.mining_groups, true),
+      ...groups("Factory groups", c.factory_groups));
+  }
+  d.replaceChildren(...out);
+  d.scrollTop = 0;
+}
+
+for (const th of document.querySelectorAll("th[data-k]")) {
+  th.addEventListener("click", () => {
+    if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = 1; }
+    renderRows();
+  });
+}
+search.addEventListener("input", renderRows);
+race.addEventListener("change", renderRows);
+renderRows();
+renderDetail();
+</script>
+</body>
+</html>

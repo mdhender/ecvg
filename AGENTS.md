@@ -41,6 +41,7 @@ Empires start with no mining groups, so a template can't list any (`mining_group
 
 Record IDs of every kind run from 1 with no gaps. JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia (home Stellia glow and are always labelled on the map, and are starred in a sortable Home column), to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
+`ecview --store games/{code} empires` does the same for a page listing the empires for the game master (ID, name, handle, race, home world and its location, population), which can be searched, filtered by race, and sorted; selecting an empire shows its colonies: population, operational units, cargo, and farming, mining, and factory groups.
 
 The plan:
 
@@ -58,6 +59,7 @@ go vet ./...
 go run ./cmd/ecgen create games/{code}          # the folder must already exist
 go run ./cmd/ecgen create --homestar-template h.json --empire-template e.json games/{code}
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
+go run ./cmd/ecview --store games/{code} empires   # the empires and their colonies
 ```
 
 ## Code conventions

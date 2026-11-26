@@ -20,6 +20,11 @@ var stelliaHTML string
 
 var stelliaTemplate = template.Must(template.New("stellia").Parse(stelliaHTML))
 
+//go:embed empires.html
+var empiresHTML string
+
+var empiresTemplate = template.Must(template.New("empires").Parse(empiresHTML))
+
 // StelliumPoint is a Stellium as the map draws it.
 type StelliumPoint struct {
 	ID    int `json:"id"`
@@ -86,5 +91,112 @@ func Stellia(w io.Writer, code string, stellia []game.Stellium, stars []game.Sta
 		Stars:  len(stars),
 		Points: points,
 		JSON:   template.JS(data),
+	})
+}
+
+// EmpireRow is an empire as the empires page shows it: the empire, where its
+// home world is, and its colonies.
+type EmpireRow struct {
+	game.Empire
+	// StelliumID, X, Y, Z, SeqNo, and OrbitNo locate the home world.
+	StelliumID int `json:"stellium_id"`
+	X          int `json:"x"`
+	Y          int `json:"y"`
+	Z          int `json:"z"`
+	SeqNo      int `json:"seq_no"`
+	OrbitNo    int `json:"orbit_no"`
+	// Colonies are the empire's colonies, in the order of d.Colonies.
+	Colonies []game.Colony `json:"colonies"`
+}
+
+// EmpireRows pairs each empire in d with the location of its home world and
+// its colonies, keeping the order of d.Empires. It fails if an empire's home
+// world can't be located, or a colony names an empire that is not in d.
+func EmpireRows(d game.Data) ([]EmpireRow, error) {
+	stellia := make(map[int]game.Stellium, len(d.Stellia))
+	for _, s := range d.Stellia {
+		stellia[s.ID] = s
+	}
+	stars := make(map[int]game.Star, len(d.Stars))
+	for _, s := range d.Stars {
+		stars[s.ID] = s
+	}
+	orbits := make(map[int]game.Orbit, len(d.Orbits))
+	for _, o := range d.Orbits {
+		orbits[o.ID] = o
+	}
+	planets := make(map[int]game.Planet, len(d.Planets))
+	for _, p := range d.Planets {
+		planets[p.ID] = p
+	}
+
+	index := make(map[int]int, len(d.Empires))
+	rows := make([]EmpireRow, len(d.Empires))
+	for i, e := range d.Empires {
+		planet, ok := planets[e.HomeWorldID]
+		if !ok {
+			return nil, fmt.Errorf("empire %d: unknown home world %d", e.ID, e.HomeWorldID)
+		}
+		orbit, ok := orbits[planet.OrbitID]
+		if !ok {
+			return nil, fmt.Errorf("empire %d: planet %d: unknown orbit %d", e.ID, planet.ID, planet.OrbitID)
+		}
+		star, ok := stars[orbit.StarID]
+		if !ok {
+			return nil, fmt.Errorf("empire %d: orbit %d: unknown star %d", e.ID, orbit.ID, orbit.StarID)
+		}
+		stellium, ok := stellia[star.StelliumID]
+		if !ok {
+			return nil, fmt.Errorf("empire %d: star %d: unknown stellium %d", e.ID, star.ID, star.StelliumID)
+		}
+		index[e.ID] = i
+		rows[i] = EmpireRow{
+			Empire:     e,
+			StelliumID: stellium.ID,
+			X:          stellium.X,
+			Y:          stellium.Y,
+			Z:          stellium.Z,
+			SeqNo:      star.SeqNo,
+			OrbitNo:    orbit.OrbitNo,
+			Colonies:   []game.Colony{},
+		}
+	}
+	for _, c := range d.Colonies {
+		i, ok := index[c.EmpireID]
+		if !ok {
+			return nil, fmt.Errorf("colony %d: unknown empire %d", c.ID, c.EmpireID)
+		}
+		rows[i].Colonies = append(rows[i].Colonies, c)
+	}
+	return rows, nil
+}
+
+// Empires writes a page to w listing the empires of the game d, which can be
+// searched, filtered by race, and sorted. Selecting an empire shows its home
+// world and everything in its colonies.
+func Empires(w io.Writer, d game.Data) error {
+	rows, err := EmpireRows(d)
+	if err != nil {
+		return err
+	}
+	players := 0
+	for _, e := range d.Empires {
+		if e.Handle != "" {
+			players++
+		}
+	}
+	return empiresTemplate.Execute(w, struct {
+		Code    string
+		Count   int
+		Races   int
+		Players int
+		// Empires is encoded and escaped for the script by html/template.
+		Empires []EmpireRow
+	}{
+		Code:    d.Game.Code,
+		Count:   len(rows),
+		Races:   len(d.Races),
+		Players: players,
+		Empires: rows,
 	})
 }
