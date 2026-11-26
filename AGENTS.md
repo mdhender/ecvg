@@ -5,40 +5,46 @@ This file provides guidance to coding agents when working in this repository.
 ## Project
 
 `ecvg` (module `github.com/mdhender/ecvg`) is another attempt at implementing Empyrean Challenge from the 1978 rulebook.
-It is at the very beginning: the root `ecvg` package (`version.go`, a `semver.Version`), the `ec` command in `cmd/ec`, the `ecview` command in `cmd/ecview`, and internal packages.
+It is at the very beginning: the root `ecvg` package (`version.go`, a `semver.Version`), the `ecgen` command in `cmd/ecgen` (the game generator), the `ec` command in `cmd/ec` (the engine, which has no subcommands yet), the `ecview` command in `cmd/ecview`, and internal packages.
+The goal is to ship the MVP: the generator follows the original 1978 setup and does not try to build a fair, balanced world.
 
-`ec` uses `peterbourgon/ff/v4`. It loads env files for the environment named by `EC_ENV` (default `development`), then reads flags from the command line and from `EC_`-prefixed environment variables (`--seed` is `EC_SEED`).
-Games live in `games/{code}` (git-ignored); `game.json` holds a game's master data, with its two seeds as 16-digit hex strings, `stellia.json` holds its Stellia, `stars.json` holds their stars, each with the `stellium_id` of its Stellium, `orbits.json` holds 10 orbits per star, each with the `star_id` of its star, and `planets.json` holds 621 planets (4.5 per star on average), each with the `orbit_id` of its orbit.
-Every star gets one planet in a random orbit, then the rest go into random empty orbits, at most one planet per orbit.
-Exactly 125 planets are `habitable`, all in orbits 2..6, split 25:50:45:20:15 (20, 41, 36, 16, 12 planets); within each orbit number the habitable planets are picked at random.
-A planet's `viability` is 0 if it is not habitable, otherwise 1..25 on a three-dice bell curve.
-`deposits.json` holds 9,936 deposits (16 per planet on average), each with the `planet_id` of its planet and a `type`: exactly 3,378 FUEL, 3,180 MTL, 3,180 NMTL, and 198 GOLD.
-Deposits per planet come from a fixed bell-curve list (3d11 + 1, scaled to 621 planets and kept symmetric about 16), shuffled across the planets; the types are a fixed list shuffled across the deposits.
-Each deposit also has a random `size` (usable ore) and `yield` (percentage of extracted ore that refines into a usable resource), each the sum of three dice spanning its range: size 1,000,000..20,000,000 for GOLD and 1,000,000..99,000,000 for the others; yield 1..12 GOLD, 1..22 FUEL, 1..28 MTL and NMTL.
-Home Stellia are the Stellia with exactly 2 stars, so every game has 15 of them, and a game has at most 15 species.
-Each home Stellium has a single home star, and each home star has a single home world (home planet).
-`ec game homestar-template games/{code}` writes `homestar-template.json`, the template for every home star: 10 `orbits`, each with its `orbit_no`, an optional `note` for the game master (ignored by the game), and a `planet` (`homeworld`, `habitable`, `viability`, `deposits`; a missing boolean or number is false or 0) or `null` for an empty orbit.
+The commands use `peterbourgon/ff/v4`. Each loads env files for the environment named by `EC_ENV` (default `development`), then reads flags from the command line and from `EC_`-prefixed environment variables (`--seed` is `EC_SEED`).
+Games live in `games/{code}` (git-ignored). `internal/game` holds the record types and reads and writes the files; all generation logic is in `cmd/ecgen`.
+
+`ecgen create [--seed N] [--homestar-template FILE] [--empire-template FILE] games/{code}` generates a whole game in one step, into an existing folder that holds none of the game's files (all are written, or none):
+
+- `game.json` holds the master data, with its two seeds as 16-digit hex strings.
+- `stellia.json` holds 100 Stellia, placed by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 3×4, 10×3, 30×2, and 56×1 stars, in that order.
+- `stars.json` holds the 163 stars, each with the `stellium_id` of its Stellium.
+  The Stellia with exactly 3 stars are home Stellia (`homestellium`), and the first star (`seq_no` 1) of each is a home star (`homestar`), so a game has 10 home stars.
+- `orbits.json` holds 10 orbits per star, each with the `star_id` of its star.
+- `planets.json` holds the planets, each with the `orbit_id` of its orbit, at most one per orbit.
+  A home star's planets come from the home star template; its home world is the planet in orbit 3.
+  The other 153 stars share 688 planets (4.5 per star, rounded down): every star gets one planet in a random orbit, then the rest go into random empty orbits.
+  138 of those planets (125 per 621) are `habitable`, all in orbits 2..6, split 25:50:45:20:15; within each orbit number they are picked at random.
+  A planet's `viability` is 0 if it is not habitable, otherwise 1..25 on a three-dice bell curve.
+- `deposits.json` holds the deposits, each with the `planet_id` of its planet, a `deposit_no`, and a `type` (FUEL, MTL, NMTL, or GOLD).
+  A home star's deposits come from the template.
+  Deposits per random planet follow 3d11 + 1 (about 16 on average): that distribution is scaled to the 688 planets and shuffled across them; the types are a 34:32:32:2 FUEL:MTL:NMTL:GOLD list shuffled across the deposits.
+  Each random deposit has a `size` (usable ore) and `yield` (percentage of extracted ore that refines into a usable resource), each the sum of three dice spanning its range: size 1,000,000..20,000,000 for GOLD and 1,000,000..99,000,000 for the others; yield 1..12 GOLD, 1..22 FUEL, 1..28 MTL and NMTL.
+- `races.json` holds one race per home world (`id` and `homeworld_id` are both the home world's planet ID).
+- `empires.json` holds 15 empires per home world, 150 in all (`id`, `handle`, `name`, `race_id`, `homeworld_id`), all of that home world's race.
+  The name is `Empire #{id}` and the `handle` (8 to 12 lowercase ASCII letters, the player) is empty until an empire is given to a player.
+- `colonies.json` holds each empire's colonies, copied from the empire template onto its home world, with `empire_id` and `planet_id`.
+
+The templates are embedded from `cmd/ecgen/homestar-template.json` and `cmd/ecgen/empire-template.json`; the two template flags name a file to use instead. Loading either rejects unknown members and invalid values.
+The home star template has 10 `orbits`, each with its `orbit_no`, an optional `note` for the game master (ignored), and a `planet` (`homeworld`, `habitable`, `viability`, `deposits`; a missing boolean or number is false or 0) or `null` for an empty orbit.
 The home world is always the planet in orbit 3, marked `homeworld`, habitable with viability 25; no other planet may be marked.
-The default, edited by the game master, is an Earth-like system with a planet in all 10 orbits (orbit 5 is an asteroid belt) and 84 deposits; it lives in `internal/game/homestar-template.json`, embedded and written out byte for byte, so an edited template can be copied back to become the new default.
-Loading it rejects unknown members and anything outside the planet rules; it is indented, because people edit it by hand, and never overwritten.
-Stellia have a `homestellium` flag and stars a `homestar` flag, both false until the game master designates a home star.
-`ec game designate-home --star {id} games/{code}` does that (or `--stellium {id}` to use that Stellium's first star; give exactly one): the star must be the first star (`seq_no` 1) of a two-star Stellium that is not already a home Stellium.
-It flags the star and its Stellium, deletes the star's orbits, their planets, and those planets' deposits, and creates new ones from the game's `homestar-template.json`; the home world is the new planet in orbit 3.
-New records get IDs past the largest ID of their kind, so IDs are never reused and every file stays in ID order with gaps; all five changed files are written to temporary files and then renamed into place.
-The counts above (orbits per star aside) describe a game as created; designating home stars changes them.
-`ec empire create --handle {handle} [--name {name}] games/{code}` adds an empire to the first available home world: the home world (planet in orbit 3 of a home star) with the lowest ID that has fewer empires than its capacity, the number of its FUEL, MTL, and NMTL deposits (GOLD doesn't count); it is an error if there is none.
-The first empire on a home world also creates a race whose ID is the home world's ID; races are saved in `races.json` (`id`, `homeworld_id`) and empires in `empires.json` (`id`, `handle`, `name`, `race_id`, `homeworld_id`), neither of which exists until the first empire.
-A handle is 8 to 12 lowercase ASCII letters and has at most one empire; empire IDs count up from the largest so far, and the name defaults to `Empire #{id}`.
-`ec empire template games/{code}` writes `empire-template.json`, the template for every new empire's initial assets on its home world: `population` (`type` UEM, USK, PRO, SLD, CNW, or SPY, and `qty`), exactly 1 `farming_groups`, 1 `mining_groups` (with the `deposit_no` of the home world deposit it works), and 4 `factory_groups` (each with `units`, `tech_level`, and factory groups also `orders`, a unit code such as `CNGD` or `AUT-1`), and a `cache` of FOOD, FUEL, MTL, and NMTL (`type`, `qty`).
-Its default numbers come from the sample turn 1 report in the 1978 manual; like the home star template it lives in `internal/game/empire-template.json`, is written out byte for byte, is never overwritten, and loading it rejects unknown members and invalid values.
-It is not yet applied when an empire is created.
-`ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
-JSON uses `encoding/json/v2`.
+The default is an Earth-like system with a planet in all 10 orbits (orbit 5 is an asteroid belt) and 84 deposits.
+The empire template has `colonies`, each with `no`, `type` (such as `COPN`), `tech_level`, `population` (`uem`, `usk`, `pro`, `sld`), `operational` and `cargo` units (`type`, optional `tech_level`, `qty`), and `farming_groups`, `factory_groups`, and optional `mining_groups` (`no` and `units`, each `qty` and `tech_level`). Its default numbers come from the sample turn 1 report in the 1978 manual.
+The default has no mining groups. If a template has them, each gets its own home world deposit (`deposit_id`), taken in order of empire creation by cycling FUEL, MTL, NMTL (first FUEL, first MTL, first NMTL, second FUEL, ...), skipping a type that has run out and never GOLD; generation fails if the home world has too few.
+
+Record IDs of every kind run from 1 with no gaps. JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia (home Stellia glow and are always labelled on the map, and are starred in a sortable Home column), to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
 
 The plan:
 
-- **Engine:** a Go command line tool to initialize a new game, create empires, run a turn, and generate reports.
+- **Engine:** a Go command line tool to run a turn and generate reports for a game made by the generator.
 
 ## Commands
 
@@ -49,11 +55,8 @@ go build ./...
 go test ./...
 go test ./internal/dotenv -run TestLoadPrecedence   # a single test
 go vet ./...
-go run ./cmd/ec game create games/{code}       # the folder must already exist
-go run ./cmd/ec game homestar-template games/{code}    # then edit homestar-template.json
-go run ./cmd/ec game designate-home --star {id} games/{code}     # or --stellium {id}
-go run ./cmd/ec empire template games/{code}                # then edit empire-template.json
-go run ./cmd/ec empire create --handle {handle} games/{code}
+go run ./cmd/ecgen create games/{code}          # the folder must already exist
+go run ./cmd/ecgen create --homestar-template h.json --empire-template e.json games/{code}
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
 
@@ -65,7 +68,7 @@ go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the b
   // SPDX-License-Identifier: AGPL-3.0-or-later
   ```
 - Sentinel errors are untyped constants of `cerrs.Error` (`internal/cerrs`), e.g. `const ErrX = cerrs.Error("x")`, and are matched with `errors.Is`.
-- Tests are black-box (`package foo_test`) and table-driven with `t.Run`.
+- Tests are black-box (`package foo_test`) and table-driven with `t.Run`. Tests of a command (`package main`) are in the package, since a command can't be imported.
 - `internal/dotenv` loads environment files for one of the environments `development`, `test`, `production`, or `agent`.
   `agent` is reserved for the coding agent's local work: use it when you need an environment.
   Precedence, highest first: real process environment, `.env.{env}.local`, `.env.local`, `.env.{env}`, `.env`.

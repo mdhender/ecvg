@@ -4,20 +4,17 @@
 package game
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
-	"slices"
 
 	"github.com/mdhender/ecvg/internal/cerrs"
 )
 
-// RacesFileName and EmpiresFileName are the names of the files in a game's
-// folder that hold the game's races and empires. Neither exists until the
-// first empire is added.
+// RacesFileName, EmpiresFileName, and ColoniesFileName are the names of the
+// files in a game's folder that hold the game's races, empires, and colonies.
 const (
-	RacesFileName   = "races.json"
-	EmpiresFileName = "empires.json"
+	RacesFileName    = "races.json"
+	EmpiresFileName  = "empires.json"
+	ColoniesFileName = "colonies.json"
 )
 
 // MinHandleLength and MaxHandleLength bound the length of a player handle.
@@ -26,11 +23,7 @@ const (
 	MaxHandleLength = 12
 )
 
-const (
-	ErrInvalidHandle   = cerrs.Error("invalid handle")
-	ErrDuplicateHandle = cerrs.Error("handle already has an empire")
-	ErrNoHomeWorld     = cerrs.Error("no home world available")
-)
+const ErrInvalidHandle = cerrs.Error("invalid handle")
 
 // Race is a species. Each race starts on one home world, and every empire on
 // that home world belongs to it.
@@ -41,12 +34,13 @@ type Race struct {
 	HomeWorldID int `json:"homeworld_id"`
 }
 
-// Empire is a player's empire.
+// Empire is an empire. The generator creates every empire in the game; an
+// empire has no player until it is given a handle.
 type Empire struct {
-	// ID numbers the game's empires from 1, in the order they were added.
+	// ID numbers the game's empires from 1, in home world order.
 	ID int `json:"id"`
-	// Handle identifies the player: MinHandleLength..MaxHandleLength
-	// lowercase ASCII letters.
+	// Handle identifies the empire's player: MinHandleLength..MaxHandleLength
+	// lowercase ASCII letters, or empty if the empire has no player yet.
 	Handle string `json:"handle"`
 	// Name is the empire's name, by default "Empire #ID".
 	Name string `json:"name"`
@@ -54,6 +48,67 @@ type Empire struct {
 	RaceID int `json:"race_id"`
 	// HomeWorldID is the ID of the planet the empire started on.
 	HomeWorldID int `json:"homeworld_id"`
+}
+
+// Colony is one of an empire's colonies on a planet.
+type Colony struct {
+	// ID numbers the game's colonies from 1, in empire order.
+	ID int `json:"id"`
+	// EmpireID is the ID of the empire that owns the colony.
+	EmpireID int `json:"empire_id"`
+	// PlanetID is the ID of the planet the colony is on.
+	PlanetID int `json:"planet_id"`
+	// No numbers the empire's colonies from 1.
+	No int `json:"no"`
+	// Type is the kind of colony, such as COPN for an open-air colony.
+	Type      string `json:"type"`
+	TechLevel int    `json:"tech_level"`
+	// Population is the colony's population units.
+	Population Population `json:"population"`
+	// Operational lists the units in use, and Cargo the units in storage.
+	Operational []Unit `json:"operational"`
+	Cargo       []Unit `json:"cargo"`
+	// The groups put the operational farm, mine, and factory units to work.
+	FarmingGroups []Group       `json:"farming_groups"`
+	MiningGroups  []MiningGroup `json:"mining_groups"`
+	FactoryGroups []Group       `json:"factory_groups"`
+}
+
+// Population counts population units by group.
+type Population struct {
+	UEM int `json:"uem"` // unemployed
+	USK int `json:"usk"` // unskilled
+	PRO int `json:"pro"` // professional
+	SLD int `json:"sld"` // soldier
+}
+
+// Unit is a quantity of one kind of unit, such as FOOD or FACT.
+type Unit struct {
+	Type string `json:"type"`
+	// TechLevel is 0 for units that don't have one.
+	TechLevel int `json:"tech_level,omitzero"`
+	Qty       int `json:"qty"`
+}
+
+// Group is a farming or factory group.
+type Group struct {
+	// No numbers the colony's groups of one kind from 1.
+	No    int          `json:"no"`
+	Units []GroupUnits `json:"units"`
+}
+
+// MiningGroup is a group of mines working one deposit.
+type MiningGroup struct {
+	No int `json:"no"`
+	// DepositID is the ID of the deposit the group works.
+	DepositID int          `json:"deposit_id"`
+	Units     []GroupUnits `json:"units"`
+}
+
+// GroupUnits is a quantity of a group's units at one tech level.
+type GroupUnits struct {
+	Qty       int `json:"qty"`
+	TechLevel int `json:"tech_level"`
 }
 
 // ValidateHandle checks that handle is MinHandleLength..MaxHandleLength
@@ -70,128 +125,29 @@ func ValidateHandle(handle string) error {
 	return nil
 }
 
-// HomeWorlds returns the IDs of the game's home worlds, lowest first: the
-// planets in orbit HomeWorldOrbitNo of the home stars.
-func (d Data) HomeWorlds() []int {
-	homeOrbits := map[int]bool{}
-	for _, o := range d.Orbits {
-		if o.OrbitNo == HomeWorldOrbitNo &&
-			slices.ContainsFunc(d.Stars, func(s Star) bool { return s.ID == o.StarID && s.HomeStar }) {
-			homeOrbits[o.ID] = true
-		}
-	}
-	var ids []int
-	for _, p := range d.Planets {
-		if homeOrbits[p.OrbitID] {
-			ids = append(ids, p.ID)
-		}
-	}
-	slices.Sort(ids)
-	return ids
-}
-
-// EmpireCapacity returns the most empires that can share the home world with
-// ID planetID: the number of its FUEL, MTL, and NMTL deposits. GOLD deposits
-// don't count.
-func (d Data) EmpireCapacity(planetID int) int {
-	n := 0
-	for _, x := range d.Deposits {
-		if x.PlanetID == planetID && x.Type != GOLD {
-			n++
-		}
-	}
-	return n
-}
-
-// AddEmpire adds an empire for the player with handle to the first available
-// home world: the one with the lowest ID that has fewer empires than its
-// EmpireCapacity. If it is the first empire on that home
-// world, AddEmpire also adds a race whose ID is the home world's ID, and
-// reports newRace. The empire's ID is one more than the largest empire ID so
-// far, and its name is name, or "Empire #ID" if name is empty.
-//
-// It fails with ErrInvalidHandle or ErrDuplicateHandle if handle is not valid
-// or already has an empire, and with ErrNoHomeWorld if every home world is
-// full or there are none. On error, d is unchanged.
-func (d *Data) AddEmpire(handle, name string) (e Empire, newRace bool, err error) {
-	if err := ValidateHandle(handle); err != nil {
-		return Empire{}, false, err
-	}
-	if slices.ContainsFunc(d.Empires, func(e Empire) bool { return e.Handle == handle }) {
-		return Empire{}, false, fmt.Errorf("%q: %w", handle, ErrDuplicateHandle)
-	}
-
-	onWorld := map[int]int{}
-	for _, e := range d.Empires {
-		onWorld[e.HomeWorldID]++
-	}
-	homeWorld := 0
-	for _, id := range d.HomeWorlds() {
-		if onWorld[id] < d.EmpireCapacity(id) {
-			homeWorld = id
-			break
-		}
-	}
-	if homeWorld == 0 {
-		return Empire{}, false, ErrNoHomeWorld
-	}
-
-	e = Empire{
-		ID:          maxID(d.Empires, func(e Empire) int { return e.ID }) + 1,
-		Handle:      handle,
-		Name:        name,
-		RaceID:      homeWorld,
-		HomeWorldID: homeWorld,
-	}
-	if e.Name == "" {
-		e.Name = fmt.Sprintf("Empire #%d", e.ID)
-	}
-	if !slices.ContainsFunc(d.Races, func(r Race) bool { return r.ID == homeWorld }) {
-		d.Races = append(slices.Clone(d.Races), Race{ID: homeWorld, HomeWorldID: homeWorld})
-		newRace = true
-	}
-	d.Empires = append(slices.Clone(d.Empires), e)
-	return e, newRace, nil
-}
-
-// AddEmpire loads the game in dir, applies Data.AddEmpire, and saves the races
-// and empires.
-func AddEmpire(dir, handle, name string) (e Empire, newRace bool, err error) {
-	d, err := LoadData(dir)
-	if err != nil {
-		return Empire{}, false, err
-	}
-	e, newRace, err = d.AddEmpire(handle, name)
-	if err != nil {
-		return Empire{}, false, err
-	}
-	err = replaceFiles(dir, []struct {
-		name string
-		v    any
-	}{
-		{RacesFileName, d.Races},
-		{EmpiresFileName, d.Empires},
-	})
-	if err != nil {
-		return Empire{}, false, err
-	}
-	return e, newRace, nil
-}
-
-// LoadRaces reads races.json from dir. A missing file means no races.
+// LoadRaces reads races.json from dir.
 func LoadRaces(dir string) ([]Race, error) {
 	var races []Race
-	if err := loadJSON(dir, RacesFileName, &races); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := loadJSON(dir, RacesFileName, &races); err != nil {
 		return nil, err
 	}
 	return races, nil
 }
 
-// LoadEmpires reads empires.json from dir. A missing file means no empires.
+// LoadEmpires reads empires.json from dir.
 func LoadEmpires(dir string) ([]Empire, error) {
 	var empires []Empire
-	if err := loadJSON(dir, EmpiresFileName, &empires); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := loadJSON(dir, EmpiresFileName, &empires); err != nil {
 		return nil, err
 	}
 	return empires, nil
+}
+
+// LoadColonies reads colonies.json from dir.
+func LoadColonies(dir string) ([]Colony, error) {
+	var colonies []Colony
+	if err := loadJSON(dir, ColoniesFileName, &colonies); err != nil {
+		return nil, err
+	}
+	return colonies, nil
 }

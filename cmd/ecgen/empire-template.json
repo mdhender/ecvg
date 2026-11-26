@@ -1,0 +1,65 @@
+{
+  "colonies": [
+    {
+      "no": 1,
+      "type": "COPN",
+      "tech_level": 1,
+      "population": {
+        "uem": 600000,
+        "usk": 300000,
+        "pro": 200000,
+        "sld": 100000
+      },
+      "operational": [
+        {"type": "STUN", "tech_level": 10, "qty": 20000},
+        {"type": "FARM", "tech_level": 1, "qty": 100000},
+        {"type": "FACT", "tech_level": 1, "qty": 650000},
+        {"type": "MINE", "tech_level": 1, "qty": 100000}
+      ],
+      "cargo": [
+        {"type": "FOOD", "qty": 4269990},
+        {"type": "FUEL", "qty": 1360000},
+        {"type": "MTL", "qty": 5354167},
+        {"type": "NMTL", "qty": 2645833},
+        {"type": "CNGD", "qty": 515279}
+      ],
+      "farming_groups": [
+        {
+          "no": 1,
+          "units": [
+            {
+              "qty": 100000,
+              "tech_level": 1
+            }
+          ]
+        }
+      ],
+      "factory_groups": [
+        {
+          "no": 1,
+          "units": [
+            {"qty": 250000, "tech_level": 1}
+          ]
+        },
+        {
+          "no": 2,
+          "units": [
+            {"qty": 250000, "tech_level": 1}
+          ]
+        },
+        {
+          "no": 3,
+          "units": [
+            {"qty": 75000, "tech_level": 1}
+          ]
+        },
+        {
+          "no": 4,
+          "units": [
+            {"qty": 75000, "tech_level": 1}
+          ]
+        }
+      ]
+    }
+  ]
+}

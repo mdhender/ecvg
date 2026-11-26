@@ -20,18 +20,6 @@ type Orbit struct {
 	OrbitNo int `json:"orbit_no"`
 }
 
-// GenerateOrbits returns OrbitsPerStar orbits for each star, in the order of
-// stars and then orbit number. Orbit IDs run from 1 in that order.
-func GenerateOrbits(stars []Star) []Orbit {
-	orbits := make([]Orbit, 0, len(stars)*OrbitsPerStar)
-	for _, star := range stars {
-		for orbitNo := 1; orbitNo <= OrbitsPerStar; orbitNo++ {
-			orbits = append(orbits, Orbit{ID: len(orbits) + 1, StarID: star.ID, OrbitNo: orbitNo})
-		}
-	}
-	return orbits
-}
-
 // LoadOrbits reads orbits.json from dir.
 func LoadOrbits(dir string) ([]Orbit, error) {
 	var orbits []Orbit
