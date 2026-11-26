@@ -62,6 +62,9 @@ type Mined struct {
 	Fuel   int `json:"fuel"`
 	// Product is the refined product that went into the colony's inventory.
 	Product int `json:"product"`
+	// Returned is the product the colony had no room for. It went back into
+	// the deposit: the fuel was spent for nothing.
+	Returned int `json:"returned,omitzero"`
 }
 
 // Stock returns the quantity the colony holds of the unit with the given
@@ -100,22 +103,6 @@ func (c *Colony) Spend(code string, qty int) int {
 // entity, which only an open-air surface colony has.
 func (c *Colony) HasDepot() bool {
 	return c.Type == COPN
-}
-
-// Store adds qty of the unit with the given code and no tech level to the
-// colony's cargo.
-func (c *Colony) Store(code string, qty int) {
-	c.Cargo = store(c.Cargo, code, qty)
-}
-
-// StoreResource adds qty of a mined resource to the colony's inventory: the
-// depot if it has one, otherwise the cargo.
-func (c *Colony) StoreResource(code string, qty int) {
-	if c.HasDepot() {
-		c.Depot = store(c.Depot, code, qty)
-	} else {
-		c.Cargo = store(c.Cargo, code, qty)
-	}
 }
 
 func store(list []Unit, code string, qty int) []Unit {

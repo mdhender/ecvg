@@ -165,10 +165,20 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				p("  %-8s %4s %14s", u.Type, tl, commas(u.Qty))
 			}
 		}
+		p("")
+		p("SPACE %19s", "VU")
+		p("  %-8s %14s", "Capacity", commas(c.Capacity()))
+		p("  %-8s %14s", "Used", commas(c.SpaceUsed()))
+		if free := c.SpaceFree(); free >= 0 {
+			p("  %-8s %14s", "Free", commas(free))
+		} else {
+			p("  %-8s %14s   OVER CAPACITY: nothing more can be stored in cargo", "Over by", commas(-free))
+		}
 		units("OPERATIONAL", c.Operational)
 		units("CARGO", c.Cargo)
 		if c.HasDepot() {
-			units("DEPOT", c.Depot)
+			units("DEPOT, OPERATIONAL", c.DepotOperational)
+			units("DEPOT, STORED", c.Depot)
 		}
 
 		idleRows := func(idle game.Idle) {
@@ -224,6 +234,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			if h.Unfuelled > 0 {
 				p("  %s units idle: no FUEL", commas(h.Unfuelled))
 			}
+			if h.Lost > 0 {
+				p("  %s FOOD LOST: no room to store it", commas(h.Lost))
+			}
 			if h.Ruined > 0 {
 				p("  %s idle FARM-1 units LOST THE CROP they had begun", commas(h.Ruined))
 			}
@@ -248,9 +261,12 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				p("  Group %-3d %14s units at TL %d working deposit %d (%s)", g.No, commas(u.Qty), u.TechLevel, depositNo, resource)
 				idleRows(u.Idle)
 			}
-			if m := g.Mined; m.Worked > 0 || m.Fuel > 0 || m.Product > 0 {
+			if m := g.Mined; m.Worked > 0 || m.Fuel > 0 || m.Product > 0 || m.Returned > 0 {
 				p("            LAST TURN: %s units worked, burned %s FUEL, and mined %s %s",
 					commas(m.Worked), commas(m.Fuel), commas(m.Product), resource)
+				if m.Returned > 0 {
+					p("            %s %s RETURNED TO THE DEPOSIT: no room to store it", commas(m.Returned), resource)
+				}
 			}
 		}
 		groups("FACTORY GROUPS", c.FactoryGroups)

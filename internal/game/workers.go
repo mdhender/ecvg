@@ -29,13 +29,15 @@ type Workers struct {
 }
 
 // NewWorkers returns the worker cadre of the colony c, with none of it taken:
-// every PRO, and every USK plus the USK its operational AUTO units stand in
-// for. (No order allocates population yet, so all of it is idle.)
+// every PRO, and every USK plus the USK its operational AUTO units, in the
+// colony or its depot, stand in for. (No order allocates population yet, so all of it is idle.)
 func NewWorkers(c Colony) Workers {
 	auto := 0
-	for _, u := range c.Operational {
-		if u.Type == units.AUTO {
-			auto += AutoUSK(u.TechLevel, u.Qty)
+	for _, list := range [][]Unit{c.Operational, c.DepotOperational} {
+		for _, u := range list {
+			if u.Type == units.AUTO {
+				auto += AutoUSK(u.TechLevel, u.Qty)
+			}
 		}
 	}
 	pro, usk := max(0, c.Population.PRO), max(0, c.Population.USK)+auto

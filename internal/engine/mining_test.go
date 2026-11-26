@@ -81,6 +81,7 @@ func TestMining(t *testing.T) {
 			name: "an enclosed colony mines into its cargo, and a deposit gives no more than it has",
 			colony: game.Colony{
 				Type: game.CENC, Population: game.Population{USK: 300, PRO: 100},
+				Operational:  []game.Unit{roomy},
 				Cargo:        []game.Unit{{Type: "FUEL", Qty: 1000}},
 				MiningGroups: []game.MiningGroup{mines(1, 2, 100, 10)},
 			},
@@ -95,8 +96,9 @@ func TestMining(t *testing.T) {
 			name: "farms come first, then mines by seniority; fuel is spent from the cargo and then the depot",
 			colony: game.Colony{
 				Type: game.COPN, Population: game.Population{USK: 30, PRO: 20},
-				Cargo: []game.Unit{{Type: "FUEL", Qty: 10}},
-				Depot: []game.Unit{{Type: "FUEL", Qty: 25}, {Type: "GOLD", Qty: 7}},
+				Operational: []game.Unit{roomy},
+				Cargo:       []game.Unit{{Type: "FUEL", Qty: 10}},
+				Depot:       []game.Unit{{Type: "FUEL", Qty: 25}, {Type: "GOLD", Qty: 7}},
 				// Listed out of order.
 				MiningGroups: []game.MiningGroup{
 					mines(2, 1, 9, 2),
@@ -113,6 +115,23 @@ func TestMining(t *testing.T) {
 			cargo:   []game.Unit{{Type: "FUEL", Qty: 0}, {Type: "FOOD", Qty: 90}},
 			depot:   []game.Unit{{Type: "FUEL", Qty: 13}, {Type: "GOLD", Qty: 37}},
 			workers: game.Workers{PRO: 20, USK: 30, IdlePRO: 10},
+		},
+		{
+			name: "product the cargo has no room for goes back to the deposit",
+			colony: game.Colony{
+				Type: game.CENC, Population: game.Population{USK: 300, PRO: 100},
+				// 2,125 STRC-1 enclose 425 VU, which the 400 population units
+				// and the 50 FUEL fill. Burning the FUEL frees 25 VU: room
+				// for 50 FUEL.
+				Operational:  []game.Unit{{Type: "STRC", TechLevel: 1, Qty: 2125}},
+				Cargo:        []game.Unit{{Type: "FUEL", Qty: 50}},
+				MiningGroups: []game.MiningGroup{mines(1, 1, 100, 1)},
+			},
+			mined:   []game.Mined{{Worked: 100, Fuel: 50, Product: 50, Returned: 275}},
+			idle:    []game.Idle{{}},
+			sizes:   []int{999_950, 500, 9_000},
+			cargo:   []game.Unit{{Type: "FUEL", Qty: 50}},
+			workers: game.Workers{PRO: 100, USK: 300},
 		},
 		{
 			name: "a missing deposit still costs the fuel",

@@ -93,9 +93,13 @@ type Colony struct {
 	// Operational lists the units in use, and Cargo the units in storage.
 	Operational []Unit `json:"operational"`
 	Cargo       []Unit `json:"cargo"`
-	// Depot lists the units stored outside the entity, which takes no
-	// structural units. Only an open-air surface colony has one (HasDepot).
-	Depot []Unit `json:"depot,omitempty"`
+	// Depot lists the units stored outside the entity, and DepotOperational
+	// the units assembled and in use there. The depot is unlimited and what
+	// is in it takes none of the colony's space. Only an open-air surface
+	// colony has one (HasDepot), and only units whose class allows it can be
+	// there (units.Def.DepotAllowed).
+	Depot            []Unit `json:"depot,omitempty"`
+	DepotOperational []Unit `json:"depot_operational,omitempty"`
 	// The groups put the operational farm, mine, and factory units to work.
 	FarmingGroups []Group       `json:"farming_groups"`
 	MiningGroups  []MiningGroup `json:"mining_groups"`

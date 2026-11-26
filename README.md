@@ -144,6 +144,8 @@ Each turn after turn 0, the farms in a colony's farming groups make FOOD before 
 
 Mines work the same way, after the farms. Each mining group works one deposit, and each of its MINE units needs 1 PRO, 3 USK, and 0.5 x tech level FUEL a turn. A working mine extracts 25 x its tech level x the deposit's yield of refined GOLD, FUEL, MTL, or NMTL, which goes into the colony's depot (an open-air colony) or cargo (an enclosed one) and comes out of the deposit. No order assembles a mining group yet.
 
+Every colony has a capacity: the space its assembled structure (STRC and STRL) creates. Everything in the colony counts against it except the assembled structure itself, and the report shows the total under SPACE. A colony can't store more than it has room for: FOOD with nowhere to go is lost, and mined product with nowhere to go stays in the deposit, though the fuel is spent. An open-air colony also has a depot, outside the colony and unlimited, for everything except weapons, commodities (FOOD and CNGD), life support, and technology.
+
 Each turn after turn 0, an entity's population eats 0.25 FOOD per population unit, times its rations, out of the entity's cargo. If there isn't enough FOOD, it eats what there is. When the ration the population actually gets is below 25%, part of it starves to death that turn: 20% of it on a 20% ration, 80% on a 5% ration, all of it with no food. The next report says how many starved.
 
 ## Where the files are

@@ -132,19 +132,38 @@ func TestEmpire(t *testing.T) {
 			edit: func(d *game.Data) {
 				c := &d.Colonies[0]
 				c.Depot = []game.Unit{{Type: "FUEL", Qty: 3250000}}
+				c.DepotOperational = []game.Unit{{Type: "MINE", TechLevel: 10, Qty: 100000}}
 				c.MiningGroups = []game.MiningGroup{{
 					No: 1, DepositID: 2, IdlePercent: 25,
 					Units: []game.GroupUnits{{Qty: 100000, TechLevel: 10, Idle: game.Idle{Ordered: 25000, Unstaffed: 50000}}},
-					Mined: game.Mined{Worked: 25000, Fuel: 125000, Product: 812500},
+					Mined: game.Mined{Worked: 25000, Fuel: 125000, Product: 812500, Returned: 1000},
 				}}
 			},
 			want: []string{
-				"DEPOT\n  Unit       TL            Qty\n  FUEL               3,250,000\n",
+				"DEPOT, STORED\n  Unit       TL            Qty\n  FUEL               3,250,000\n",
+				"DEPOT, OPERATIONAL\n  Unit       TL            Qty\n  MINE       10        100,000\n",
+				"            1,000 FUEL RETURNED TO THE DEPOSIT: no room to store it",
+				// The sample colony has no structure.
+				"SPACE                  VU\n  Capacity              0\n  Used         15,409,970\n  Over by      15,409,970   OVER CAPACITY: nothing more can be stored in cargo\n",
 				"  Group 1   ORDERED IDLE: 25% of its units\n  Group 1          100,000 units at TL 10 working deposit 2 (FUEL)\n" +
 					"                    25,000 of them were IDLE last turn: BY ORDER\n" +
 					"                    50,000 of them were IDLE last turn: NO STAFF\n" +
 					"            LAST TURN: 25,000 units worked, burned 125,000 FUEL, and mined 812,500 FUEL\n",
 			},
+		},
+		{
+			name:     "space and lost food",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.Operational = append(c.Operational, game.Unit{Type: "STRL", TechLevel: 10, Qty: 200000})
+				c.Harvest = game.Harvest{Units: 100000, Worked: 100000, Fuel: 1000000, Food: 4000000, Lost: 1000000}
+			},
+			want: []string{
+				"SPACE                  VU\n  Capacity     20,000,000\n  Used         15,409,970\n  Free          4,590,030\n",
+				"  1,000,000 FOOD LOST: no room to store it",
+			},
+			lack: []string{"OVER CAPACITY"},
 		},
 		{
 			name:     "workers",

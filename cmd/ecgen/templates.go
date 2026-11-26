@@ -160,15 +160,16 @@ type EmpireTemplate struct {
 // the IDs, which the generator supplies, and without mining groups: an empire
 // starts with none and claims deposits for itself.
 type TemplateColony struct {
-	No            int             `json:"no"`
-	Type          game.EntityType `json:"type"`
-	TechLevel     int             `json:"tech_level"`
-	Population    game.Population `json:"population"`
-	Operational   []game.Unit     `json:"operational"`
-	Cargo         []game.Unit     `json:"cargo"`
-	Depot         []game.Unit     `json:"depot,omitempty"`
-	FarmingGroups []game.Group    `json:"farming_groups"`
-	FactoryGroups []game.Group    `json:"factory_groups"`
+	No               int             `json:"no"`
+	Type             game.EntityType `json:"type"`
+	TechLevel        int             `json:"tech_level"`
+	Population       game.Population `json:"population"`
+	Operational      []game.Unit     `json:"operational"`
+	Cargo            []game.Unit     `json:"cargo"`
+	Depot            []game.Unit     `json:"depot,omitempty"`
+	DepotOperational []game.Unit     `json:"depot_operational,omitempty"`
+	FarmingGroups    []game.Group    `json:"farming_groups"`
+	FactoryGroups    []game.Group    `json:"factory_groups"`
 }
 
 // parseEmpireTemplate decodes data, rejecting unknown members, and validates
@@ -191,7 +192,10 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 // may be negative. Units need a type from the unit catalogue (not population
 // or research points), a quantity of at least 1, and a tech level that is
 // valid for the unit; operational units must be of a kind that is assembled. Only an open-air
-// surface colony may list units in a depot. A farming group's units are all
+// surface colony may list units in a depot (depot for stored units and
+// depot_operational for assembled ones), and not units of a class that must
+// be kept in the colony. A colony may start with more than it has capacity
+// for; that isn't checked here. A farming group's units are all
 // of one tech level, so it has one entry of units. Groups of each kind must be numbered from 1 in
 // order and hold at least one entry of units, each with a quantity and tech
 // level of at least 1. The errors match errInvalidTemplate.
@@ -249,8 +253,19 @@ func (t EmpireTemplate) Validate() error {
 		list("operational", true, c.Operational)
 		list("cargo", false, c.Cargo)
 		list("depot", false, c.Depot)
-		if len(c.Depot) > 0 && c.Type != game.COPN {
+		list("depot_operational", true, c.DepotOperational)
+		if len(c.Depot)+len(c.DepotOperational) > 0 && c.Type != game.COPN {
 			bad("colony %d: depot: only an open-air surface colony (COPN) has a depot", i+1)
+		}
+		for _, l := range []struct {
+			kind string
+			us   []game.Unit
+		}{{"depot", c.Depot}, {"depot_operational", c.DepotOperational}} {
+			for j, u := range l.us {
+				if d, ok := units.Lookup(u.Type); ok && !d.Population() && !d.DepotAllowed() {
+					bad("colony %d: %s %d: %s (%s) can't be in a depot: it must be in the colony", i+1, l.kind, j+1, u.Type, d.Class)
+				}
+			}
 		}
 		groups := func(kind string, gs []game.Group) {
 			for j, g := range gs {

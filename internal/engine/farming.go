@@ -10,7 +10,8 @@ import (
 
 // Farming is the farming production phase of the turn numbered turn. In every
 // colony in d, the FARM units in its farming groups that were allocated staff
-// and fuel make FOOD, which goes into the colony's cargo; the fuel is burned
+// and fuel make FOOD, which goes into the colony's cargo, as much as there is room
+// for; the fuel is burned
 // from its cargo and then its depot; and the colony's Harvest records what happened. Allocs is
 // what AllocateResources returned for the turn. Nothing is farmed in turn
 // SetupTurn.
@@ -57,6 +58,9 @@ func harvest(c *game.Colony, a Allocation) game.Harvest {
 		}
 	}
 	c.Spend(units.FUEL, h.Fuel)
-	c.Store(units.FOOD, h.Food)
+	// The colony can't accept more FOOD than it has room for.
+	stored := c.StoreCargo(units.FOOD, h.Food)
+	h.Lost = h.Food - stored
+	h.Food = stored
 	return h
 }

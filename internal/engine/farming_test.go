@@ -55,10 +55,16 @@ func TestFarmRules(t *testing.T) {
 	}
 }
 
+// roomy is enough structure that a test colony never runs out of space.
+var roomy = game.Unit{Type: "STRL", TechLevel: 10, Qty: 10_000_000}
+
 func TestFarming(t *testing.T) {
 	group := func(no int, us ...game.GroupUnits) game.Group { return game.Group{No: no, Units: us} }
 	world := func(c game.Colony) game.Data {
 		c.PlanetID = 1
+		if !c.Type.Enclosed() || c.Type == game.CORB {
+			c.Operational = append(c.Operational, roomy)
+		}
 		return game.Data{
 			Orbits:   []game.Orbit{{ID: 1, OrbitNo: 3}, {ID: 2, OrbitNo: 6}},
 			Planets:  []game.Planet{{ID: 1, OrbitID: 1}, {ID: 2, OrbitID: 2}},
@@ -170,6 +176,21 @@ func TestFarming(t *testing.T) {
 			idle: []game.Idle{{Ordered: 50}, {Ordered: 4, Unfuelled: 3}, {Unstaffed: 5, Unfuelled: 2}},
 		},
 		{
+			name: "no room for the harvest",
+			colony: game.Colony{
+				Type: game.CENC, Population: game.Population{USK: 30, PRO: 10},
+				// 60 STRC-5 enclose 60 x 25 / 5 = 300 VU. The 40 population
+				// units take 40, the 10 FARM-6 180 (18 each), the 2 STRC in
+				// cargo 10, and the 20 FUEL 10 (10 once it is burned): 240
+				// used and 60 free, which is room for 20 FOOD at 3 VU each.
+				Operational:   []game.Unit{{Type: "STRC", TechLevel: 5, Qty: 60}, {Type: "FARM", TechLevel: 6, Qty: 10}},
+				Cargo:         []game.Unit{{Type: "FUEL", Qty: 80}, {Type: "STRC", TechLevel: 5, Qty: 2}},
+				FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 10, TechLevel: 6})},
+			},
+			want: game.Harvest{Units: 10, Worked: 10, Fuel: 60, Food: 20, Lost: 280},
+			fuel: 20, food: 20,
+		},
+		{
 			name: "solar power in an inner orbit",
 			colony: game.Colony{
 				Type: game.CORB, Population: game.Population{USK: 30, PRO: 10},
@@ -278,6 +299,7 @@ func TestFarm1Crop(t *testing.T) {
 		Planets: []game.Planet{{ID: 1, OrbitID: 1, Habitable: true, Viability: 25}},
 		Colonies: []game.Colony{{
 			Type: game.COPN, PlanetID: 1, Population: game.Population{USK: 300, PRO: 100},
+			Operational:   []game.Unit{roomy},
 			Cargo:         []game.Unit{{Type: "FUEL", Qty: 50 * 6}},
 			FarmingGroups: []game.Group{{No: 1, Units: []game.GroupUnits{{Qty: 100, TechLevel: 1}}}},
 		}},

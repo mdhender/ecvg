@@ -125,6 +125,17 @@ func (d Def) Population() bool {
 	return d.Class == Living || d.Class == Cadre
 }
 
+// DepotAllowed reports whether the unit can be kept in an open-air colony's
+// depot. Weaponry, commodities, static units, and technology must be in the
+// entity's cargo, and people aren't stored at all.
+func (d Def) DepotAllowed() bool {
+	switch d.Class {
+	case Weaponry, Commodity, Static, Technology, Living, Cadre:
+		return false
+	}
+	return true
+}
+
 // ValidTechLevel reports whether a unit of this kind can be at tech level tl:
 // MinTechLevel..MaxTechLevel if it carries a tech level, otherwise only 0.
 func (d Def) ValidTechLevel(tl int) bool {

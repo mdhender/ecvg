@@ -179,7 +179,11 @@ type Harvest struct {
 	// Ruined is the number of FARM-1 units that didn't work and lost a crop
 	// they had begun. It is part of Ordered, Unstaffed, and Unfuelled.
 	Ruined int `json:"ruined,omitzero"`
-	// Fuel is the FUEL the units burned, and Food is the FOOD they delivered.
+	// Lost is the FOOD the units delivered that the colony had no room to
+	// store.
+	Lost int `json:"lost,omitzero"`
+	// Fuel is the FUEL the units burned, and Food is the FOOD they delivered
+	// that went into the colony's cargo.
 	Fuel int `json:"fuel"`
 	Food int `json:"food"`
 }
