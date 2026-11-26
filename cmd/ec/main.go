@@ -13,10 +13,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/mdhender/ecvg/internal/dotenv"
 	"github.com/mdhender/ecvg/internal/game"
@@ -144,6 +146,41 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			}
 			fmt.Fprintf(stdout, "wrote %s: %d planets in %d orbits, %d deposits\n",
 				filepath.Join(args[0], game.HomeStarTemplateFileName), t.Planets(), len(t.Orbits), deposits)
+			return nil
+		},
+	})
+
+	designateFlags := ff.NewFlagSet("designate-home").SetParent(gameFlags)
+	starID := designateFlags.IntLong("star", 0, "ID of the star to make a home star (required)")
+	gameCmd.Subcommands = append(gameCmd.Subcommands, &ff.Command{
+		Name:      "designate-home",
+		Usage:     "ec game designate-home --star <ID> <PATH>",
+		ShortHelp: "make a star a home star, applying the home star template",
+		LongHelp: "Designate-home makes the star with ID --star a home star, and its Stellium a\n" +
+			"home Stellium, in the game in PATH. The star must be the first star of a\n" +
+			"Stellium with exactly 2 stars that is not already a home Stellium.\n" +
+			"\n" +
+			"The star's orbits, planets, and deposits are deleted and new ones are created\n" +
+			"from PATH/homestar-template.json, with new IDs; IDs are never reused. The\n" +
+			"home world is the new planet in orbit 3.",
+		Flags: designateFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("game designate-home: want exactly one PATH, got %d arguments", len(args))
+			}
+			if *starID == 0 {
+				return fmt.Errorf("game designate-home: --star is required")
+			}
+			c, err := game.DesignateHomeStar(args[0], *starID)
+			if errors.Is(err, fs.ErrNotExist) && strings.Contains(err.Error(), game.HomeStarTemplateFileName) {
+				return fmt.Errorf("game designate-home: %w (run ec game homestar-template first)", err)
+			} else if err != nil {
+				return fmt.Errorf("game designate-home: %w", err)
+			}
+			fmt.Fprintf(stdout, "star %d of stellium %d is a home star; its home world is planet %d\n",
+				c.StarID, c.StelliumID, c.HomeWorldID)
+			fmt.Fprintf(stdout, "deleted %d orbits, %d planets, %d deposits; created %d orbits, %d planets, %d deposits\n",
+				c.Removed.Orbits, c.Removed.Planets, c.Removed.Deposits, c.Added.Orbits, c.Added.Planets, c.Added.Deposits)
 			return nil
 		},
 	})

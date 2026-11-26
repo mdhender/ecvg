@@ -26,6 +26,9 @@ type Stellium struct {
 	X  int `json:"x"`
 	Y  int `json:"y"`
 	Z  int `json:"z"`
+	// HomeStellium is true once the game master designates the Stellium as a
+	// home Stellium (see DesignateHomeStar).
+	HomeStellium bool `json:"homestellium"`
 }
 
 // Star is one star of a Stellium, at coordinates (x, y, z, SeqNo).
@@ -36,6 +39,9 @@ type Star struct {
 	StelliumID int `json:"stellium_id"`
 	// SeqNo numbers the stars of a Stellium from 1.
 	SeqNo int `json:"seq_no"`
+	// HomeStar is true once the game master designates the star as a home
+	// star (see DesignateHomeStar).
+	HomeStar bool `json:"homestar"`
 }
 
 // GenerateStellia places a game's Stellia and their stars using the stream

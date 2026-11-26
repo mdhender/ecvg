@@ -21,6 +21,11 @@ Each home Stellium has a single home star, and each home star has a single home 
 The home world is always the planet in orbit 3, marked `homeworld`, habitable with viability 25; no other planet may be marked.
 The default, edited by the game master, is an Earth-like system with a planet in all 10 orbits (orbit 5 is an asteroid belt) and 84 deposits; it lives in `internal/game/homestar-template.json`, embedded and written out byte for byte, so an edited template can be copied back to become the new default.
 Loading it rejects unknown members and anything outside the planet rules; it is indented, because people edit it by hand, and never overwritten.
+Stellia have a `homestellium` flag and stars a `homestar` flag, both false until the game master designates a home star.
+`ec game designate-home --star {id} games/{code}` does that: the star must be the first star (`seq_no` 1) of a two-star Stellium that is not already a home Stellium.
+It flags the star and its Stellium, deletes the star's orbits, their planets, and those planets' deposits, and creates new ones from the game's `homestar-template.json`; the home world is the new planet in orbit 3.
+New records get IDs past the largest ID of their kind, so IDs are never reused and every file stays in ID order with gaps; all five changed files are written to temporary files and then renamed into place.
+The counts above (orbits per star aside) describe a game as created; designating home stars changes them.
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia, to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
@@ -40,6 +45,7 @@ go test ./internal/dotenv -run TestLoadPrecedence   # a single test
 go vet ./...
 go run ./cmd/ec game create games/{code}       # the folder must already exist
 go run ./cmd/ec game homestar-template games/{code}    # then edit homestar-template.json
+go run ./cmd/ec game designate-home --star {id} games/{code}
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
 
