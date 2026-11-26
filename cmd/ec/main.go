@@ -212,8 +212,9 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		ShortHelp: "add an empire to the first available home world",
 		LongHelp: "Create adds an empire for the player with --handle to the game in PATH. The\n" +
 			"empire goes on the first available home world: the one with the lowest ID that\n" +
-			"has fewer than 15 empires. The first empire on a home world also creates a race,\n" +
-			"whose ID is the home world's ID. It fails if no home world is available or the\n" +
+			"has fewer empires than it has FUEL, MTL, and NMTL deposits (GOLD doesn't\n" +
+			"count). The first empire on a home world also creates a race, whose ID is the\n" +
+			"home world's ID. It fails if no home world is available or the\n" +
 			"handle already has an empire. Races are saved in races.json and empires in\n" +
 			"empires.json.",
 		Flags: empireCreateFlags,

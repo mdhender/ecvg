@@ -20,9 +20,6 @@ const (
 	EmpiresFileName = "empires.json"
 )
 
-// MaxEmpiresPerHomeWorld is the most empires that can share a home world.
-const MaxEmpiresPerHomeWorld = 15
-
 // MinHandleLength and MaxHandleLength bound the length of a player handle.
 const (
 	MinHandleLength = 8
@@ -93,9 +90,22 @@ func (d Data) HomeWorlds() []int {
 	return ids
 }
 
+// EmpireCapacity returns the most empires that can share the home world with
+// ID planetID: the number of its FUEL, MTL, and NMTL deposits. GOLD deposits
+// don't count.
+func (d Data) EmpireCapacity(planetID int) int {
+	n := 0
+	for _, x := range d.Deposits {
+		if x.PlanetID == planetID && x.Type != GOLD {
+			n++
+		}
+	}
+	return n
+}
+
 // AddEmpire adds an empire for the player with handle to the first available
-// home world: the one with the lowest ID that has fewer than
-// MaxEmpiresPerHomeWorld empires. If it is the first empire on that home
+// home world: the one with the lowest ID that has fewer empires than its
+// EmpireCapacity. If it is the first empire on that home
 // world, AddEmpire also adds a race whose ID is the home world's ID, and
 // reports newRace. The empire's ID is one more than the largest empire ID so
 // far, and its name is name, or "Empire #ID" if name is empty.
@@ -117,7 +127,7 @@ func (d *Data) AddEmpire(handle, name string) (e Empire, newRace bool, err error
 	}
 	homeWorld := 0
 	for _, id := range d.HomeWorlds() {
-		if onWorld[id] < MaxEmpiresPerHomeWorld {
+		if onWorld[id] < d.EmpireCapacity(id) {
 			homeWorld = id
 			break
 		}

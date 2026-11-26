@@ -43,13 +43,16 @@ func TestValidateHandle(t *testing.T) {
 
 // homeData returns the golden game with the first stars of Stellia 12 and 11
 // designated as home stars, in that order, and their home world IDs, lowest
-// first.
+// first. Stellium 12 gets the default template; Stellium 11 gets smallTemplate.
 func homeData(t *testing.T) (game.Data, []int) {
 	t.Helper()
 	d := goldenData(t)
 	var worlds []int
-	for _, stellium := range []int{12, 11} {
-		c, err := d.DesignateHomeStar(starOf(t, d, stellium, 1), game.DefaultHomeStarTemplate())
+	for _, tc := range []struct {
+		stellium int
+		tmpl     game.HomeStarTemplate
+	}{{12, game.DefaultHomeStarTemplate()}, {11, smallTemplate()}} {
+		c, err := d.DesignateHomeStar(starOf(t, d, tc.stellium, 1), tc.tmpl)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,6 +62,54 @@ func homeData(t *testing.T) (game.Data, []int) {
 		worlds[0], worlds[1] = worlds[1], worlds[0]
 	}
 	return d, worlds
+}
+
+// smallTemplate is the default home star template with a home world of 1
+// GOLD, 1 FUEL, and 2 MTL deposits, so 3 empires can share it.
+func smallTemplate() game.HomeStarTemplate {
+	t := game.DefaultHomeStarTemplate()
+	t.Orbits[game.HomeWorldOrbitNo-1].Planet.Deposits = []game.TemplateDeposit{
+		{Type: game.GOLD, Size: 1_000_000, Yield: 1},
+		{Type: game.FUEL, Size: 1_000_000, Yield: 1},
+		{Type: game.MTL, Size: 1_000_000, Yield: 1},
+		{Type: game.MTL, Size: 1_000_000, Yield: 1},
+	}
+	return t
+}
+
+func TestEmpireCapacity(t *testing.T) {
+	d := goldenData(t)
+	tmplCapacity := func(tmpl game.HomeStarTemplate) int {
+		n := 0
+		for _, x := range tmpl.Orbits[game.HomeWorldOrbitNo-1].Planet.Deposits {
+			if x.Type != game.GOLD {
+				n++
+			}
+		}
+		return n
+	}
+	for _, tc := range []struct {
+		name     string
+		stellium int
+		tmpl     game.HomeStarTemplate
+		want     int
+	}{
+		{name: "default template", stellium: 11, tmpl: game.DefaultHomeStarTemplate(), want: tmplCapacity(game.DefaultHomeStarTemplate())},
+		{name: "small template", stellium: 12, tmpl: smallTemplate(), want: 3},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c, err := d.DesignateHomeStar(starOf(t, d, tc.stellium, 1), tc.tmpl)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := d.EmpireCapacity(c.HomeWorldID); got != tc.want {
+				t.Errorf("got capacity %d, want %d", got, tc.want)
+			}
+		})
+	}
+	if got := tmplCapacity(game.DefaultHomeStarTemplate()); got != 18 {
+		t.Errorf("default home world has capacity %d, want 18", got)
+	}
 }
 
 func TestHomeWorlds(t *testing.T) {
@@ -78,17 +129,26 @@ func handle(i int) string {
 
 func TestAddEmpireFillsHomeWorldsInOrder(t *testing.T) {
 	d, worlds := homeData(t)
-	for i := range 2 * game.MaxEmpiresPerHomeWorld {
+	// Each home world takes empires up to its own capacity before the next.
+	var want []int // the home world of each empire, in order
+	for _, w := range worlds {
+		for range d.EmpireCapacity(w) {
+			want = append(want, w)
+		}
+	}
+	if caps := []int{d.EmpireCapacity(worlds[0]), d.EmpireCapacity(worlds[1])}; caps[0] == caps[1] {
+		t.Fatalf("home worlds have the same capacity %v; the test needs them to differ", caps)
+	}
+	for i, world := range want {
 		e, newRace, err := d.AddEmpire(handle(i), "")
 		if err != nil {
 			t.Fatalf("empire %d: %v", i+1, err)
 		}
-		world := worlds[i/game.MaxEmpiresPerHomeWorld]
-		want := game.Empire{ID: i + 1, Handle: handle(i), Name: fmt.Sprintf("Empire #%d", i+1), RaceID: world, HomeWorldID: world}
-		if e != want {
-			t.Fatalf("empire %d: got %+v, want %+v", i+1, e, want)
+		wantEmpire := game.Empire{ID: i + 1, Handle: handle(i), Name: fmt.Sprintf("Empire #%d", i+1), RaceID: world, HomeWorldID: world}
+		if e != wantEmpire {
+			t.Fatalf("empire %d: got %+v, want %+v", i+1, e, wantEmpire)
 		}
-		if wantNew := i%game.MaxEmpiresPerHomeWorld == 0; newRace != wantNew {
+		if wantNew := i == 0 || want[i-1] != world; newRace != wantNew {
 			t.Errorf("empire %d: got newRace %v, want %v", i+1, newRace, wantNew)
 		}
 	}
