@@ -140,18 +140,40 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 	})
 
 	rollbackFlags := ff.NewFlagSet("rollback").SetParent(turnFlags)
+	confirm := rollbackFlags.BoolLong("confirm", "delete the current turn's folder (without it, rollback only says what it would do)")
 	turnCmd.Subcommands = append(turnCmd.Subcommands, &ff.Command{
 		Name:      "rollback",
-		Usage:     "ec turn rollback <PATH>",
+		Usage:     "ec turn rollback [--confirm] <PATH>",
 		ShortHelp: "undo the last turn run",
 		LongHelp: "Rollback undoes the last ec turn run of the game in PATH. If the current turn\n" +
 			"is N, it makes N-1 the current turn in game.json and deletes PATH/turns/N:\n" +
 			"the state as of turn N and any reports and orders in that folder. The orders\n" +
-			"for turn N-1 are kept, so the turn can be run again. It fails at turn 0.",
+			"for turn N-1 are kept, so the turn can be run again. It fails at turn 0.\n" +
+			"\n" +
+			"Without --confirm, rollback changes nothing: it says what it would delete and\n" +
+			"fails.",
 		Flags: rollbackFlags,
 		Exec: func(ctx context.Context, args []string) error {
 			if len(args) != 1 {
 				return fmt.Errorf("turn rollback: want exactly one PATH, got %d arguments", len(args))
+			}
+			if !*confirm {
+				g, turns, err := game.Turns(args[0])
+				if err != nil {
+					return fmt.Errorf("turn rollback: %w", err)
+				}
+				if g.Turn <= 0 {
+					return fmt.Errorf("turn rollback: turn %d: %w", g.Turn, game.ErrNoPriorTurn)
+				}
+				reports, orders := 0, 0
+				for _, t := range turns {
+					if t.Current {
+						reports, orders = t.Reports, t.Orders
+					}
+				}
+				_, _ = fmt.Fprintf(stdout, "rollback would return game %s to turn %d and delete %s (the state as of turn %d, %d reports, %d orders)\n",
+					g.Code, g.Turn-1, game.TurnDir(args[0], g.Turn), g.Turn, reports, orders)
+				return fmt.Errorf("turn rollback: nothing changed; run again with --confirm to do it")
 			}
 			g, err := game.Rollback(args[0])
 			if err != nil {

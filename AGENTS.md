@@ -63,7 +63,7 @@ go run ./cmd/ecgen create --homestar-template h.json --empire-template e.json ga
 go run ./cmd/ec turn report games/{code}            # write the current turn's reports
 go run ./cmd/ec turn run games/{code}               # process the current turn
 go run ./cmd/ec turn show games/{code}              # current turn and turn folders
-go run ./cmd/ec turn rollback games/{code}          # undo the last run
+go run ./cmd/ec turn rollback --confirm games/{code}   # undo the last run
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 go run ./cmd/ecview --store games/{code} empires   # the empires and their colonies
 ```
@@ -105,7 +105,7 @@ A ship orbiting a Stellium is `(x, y, z, 0, 0, 0, 0, 0)`; one orbiting a Star is
 - **Running a turn:** `ec turn run games/{code}` loads the state as of the current turn N from `turns/N`, runs the phases (`engine.RunTurn`), writes the new state to a new `turns/N+1` (built under a temporary name and renamed), and then replaces `game.json` to make N+1 the current turn. `turns/N` is never changed, and it is an error if `turns/N+1` already exists. Orders are not implemented yet.
 - **Turn folders:** `turns/N` holds everything about turn N: the state as of its start (which is the result of turn N-1), `reports/`, the reports made from that state and sent to players, and `orders/`, the orders the players return for turn N. So state(N) + orders(N) -> state(N+1), then reports(N+1). Turn 0 holds the setup state.
 - **Reports:** `ec turn report games/{code}` writes a plain text report per empire as of the current turn to `turns/N/reports/empire-{id}.txt` (`internal/report`), replacing any already there: the empire, each colony (population, units, cargo, groups), and the home world's deposits.
-- **Show and rollback:** `ec turn show games/{code}` prints the current turn and each turn folder's report and order counts. `ec turn rollback games/{code}` undoes the last run: it makes N-1 current in `game.json` and deletes `turns/N` (state, reports, and orders); it fails at turn 0.
+- **Show and rollback:** `ec turn show games/{code}` prints the current turn and each turn folder's report and order counts. `ec turn rollback --confirm games/{code}` undoes the last run (without `--confirm` it only says what it would delete, and fails): it makes N-1 current in `game.json` and deletes `turns/N` (state, reports, and orders); it fails at turn 0.
 - **Turns:** the first turn of a game is turn 0, the players' setup turn, in which demographic changes don't apply. A year is 4 turns, and a turn whose number is greater than 0 and divides by 4 is an end-of-year turn. A turn is processed in phases, in `internal/engine`. So far there is one, demographic changes (`engine.Demographics`), run by `engine.RunTurn`: (1) if UEM is strictly more than 30% of an entity's population, 2% of UEM (rounded up) become USK; then (2) if the prior turn was an end-of-year turn (prior turn > 0 and divides by 4, so this happens in turns 5, 9, 13, ...), 5% of SLD (rounded up) become PRO.
 - **Units:** manufactured or processed items with mass (MU) and volume (VU). Volume has assembled and unassembled values; most units are bigger assembled.
 - **Production:** farming makes FOOD; mining extracts deposits into GOLD, FUEL, MTL, NMTL; manufacturing turns resource units into manufactured units (CNGD, SDRV, ...).
