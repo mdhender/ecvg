@@ -238,15 +238,10 @@ func (d Data) WriteTurn(dir string) error {
 		return err
 	}
 
-	gameTmp := filepath.Join(dir, "."+FileName+".tmp")
-	if err := os.WriteFile(gameTmp, append(gameJSON, '\n'), 0o644); err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(gameTmp) }()
 	if err := os.Rename(tmp, turnDir); err != nil {
 		return err
 	}
-	if err := os.Rename(gameTmp, filepath.Join(dir, FileName)); err != nil {
+	if err := replaceFile(filepath.Join(dir, FileName), append(gameJSON, '\n')); err != nil {
 		_ = os.RemoveAll(turnDir)
 		return err
 	}

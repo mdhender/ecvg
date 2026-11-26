@@ -313,3 +313,63 @@ func TestWriteTurn(t *testing.T) {
 		t.Errorf("turns folder holds %d entries, %v; want 2", len(entries), err)
 	}
 }
+
+func TestTurnsAndRollback(t *testing.T) {
+	dir := t.TempDir()
+	d := sampleData()
+	if err := d.Write(dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := game.Rollback(dir); !errors.Is(err, game.ErrNoPriorTurn) {
+		t.Fatalf("Rollback at turn 0 = %v, want ErrNoPriorTurn", err)
+	}
+
+	d.Game.Turn = 1
+	if err := d.WriteTurn(dir); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"reports", "orders"} {
+		if err := os.Mkdir(filepath.Join(dir, "turns", "1", name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, name := range []string{"reports/a.txt", "reports/b.txt", "orders/a.txt"} {
+		if err := os.WriteFile(filepath.Join(dir, "turns", "1", filepath.FromSlash(name)), nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Mkdir(filepath.Join(dir, "turns", "notes"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	g, turns, err := game.Turns(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []game.TurnInfo{{Turn: 0}, {Turn: 1, Current: true, Reports: 2, Orders: 1}}
+	if g.Turn != 1 || !reflect.DeepEqual(turns, want) {
+		t.Errorf("Turns = turn %d, %+v; want turn 1, %+v", g.Turn, turns, want)
+	}
+
+	g, err = game.Rollback(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g.Turn != 0 {
+		t.Errorf("Rollback left the game at turn %d, want 0", g.Turn)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "turns", "1")); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("turn 1 folder: stat = %v, want it gone", err)
+	}
+	got, err := game.LoadData(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := sampleData(); !reflect.DeepEqual(got, want) {
+		t.Errorf("after Rollback, LoadData =\n%+v\nwant\n%+v", got, want)
+	}
+	entries, _ := os.ReadDir(filepath.Join(dir, "turns"))
+	if len(entries) != 2 { // 0 and notes
+		t.Errorf("turns folder holds %d entries, want 2", len(entries))
+	}
+}

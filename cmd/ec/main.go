@@ -18,6 +18,7 @@ import (
 	"github.com/mdhender/ecvg/internal/dotenv"
 	"github.com/mdhender/ecvg/internal/engine"
 	"github.com/mdhender/ecvg/internal/game"
+	"github.com/mdhender/ecvg/internal/report"
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
 )
@@ -102,6 +103,88 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			}
 			_, _ = fmt.Fprintf(stdout, "ran turn %d of game %s; the state as of turn %d is in %s\n",
 				turn, d.Game.Code, d.Game.Turn, game.TurnDir(args[0], d.Game.Turn))
+			return nil
+		},
+	})
+
+	showFlags := ff.NewFlagSet("show").SetParent(turnFlags)
+	turnCmd.Subcommands = append(turnCmd.Subcommands, &ff.Command{
+		Name:      "show",
+		Usage:     "ec turn show <PATH>",
+		ShortHelp: "show a game's current turn and its turn folders",
+		LongHelp: "Show prints the current turn of the game in PATH and, for every turn folder\n" +
+			"in PATH/turns, how many reports and orders it holds.",
+		Flags: showFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("turn show: want exactly one PATH, got %d arguments", len(args))
+			}
+			g, turns, err := game.Turns(args[0])
+			if err != nil {
+				return fmt.Errorf("turn show: %w", err)
+			}
+			_, _ = fmt.Fprintf(stdout, "game %s is at turn %d\n", g.Code, g.Turn)
+			found := false
+			for _, t := range turns {
+				mark := ""
+				if t.Current {
+					mark, found = "  <- current", true
+				}
+				_, _ = fmt.Fprintf(stdout, "turn %3d: %4d reports, %4d orders%s\n", t.Turn, t.Reports, t.Orders, mark)
+			}
+			if !found {
+				return fmt.Errorf("turn show: %s is missing", game.TurnDir(args[0], g.Turn))
+			}
+			return nil
+		},
+	})
+
+	rollbackFlags := ff.NewFlagSet("rollback").SetParent(turnFlags)
+	turnCmd.Subcommands = append(turnCmd.Subcommands, &ff.Command{
+		Name:      "rollback",
+		Usage:     "ec turn rollback <PATH>",
+		ShortHelp: "undo the last turn run",
+		LongHelp: "Rollback undoes the last ec turn run of the game in PATH. If the current turn\n" +
+			"is N, it makes N-1 the current turn in game.json and deletes PATH/turns/N:\n" +
+			"the state as of turn N and any reports and orders in that folder. The orders\n" +
+			"for turn N-1 are kept, so the turn can be run again. It fails at turn 0.",
+		Flags: rollbackFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("turn rollback: want exactly one PATH, got %d arguments", len(args))
+			}
+			g, err := game.Rollback(args[0])
+			if err != nil {
+				return fmt.Errorf("turn rollback: %w", err)
+			}
+			_, _ = fmt.Fprintf(stdout, "rolled game %s back to turn %d; deleted %s\n",
+				g.Code, g.Turn, game.TurnDir(args[0], g.Turn+1))
+			return nil
+		},
+	})
+
+	reportFlags := ff.NewFlagSet("report").SetParent(turnFlags)
+	turnCmd.Subcommands = append(turnCmd.Subcommands, &ff.Command{
+		Name:      "report",
+		Usage:     "ec turn report <PATH>",
+		ShortHelp: "write the reports for a game's current turn",
+		LongHelp: "Report writes a plain text report for every empire of the game in PATH, as of\n" +
+			"the current turn, N, into PATH/turns/N/reports, one file per empire named\n" +
+			"empire-{id}.txt. It replaces reports already there.",
+		Flags: reportFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("turn report: want exactly one PATH, got %d arguments", len(args))
+			}
+			d, err := game.LoadData(args[0])
+			if err != nil {
+				return fmt.Errorf("turn report: %w", err)
+			}
+			out, n, err := report.WriteAll(args[0], d)
+			if err != nil {
+				return fmt.Errorf("turn report: %w", err)
+			}
+			_, _ = fmt.Fprintf(stdout, "wrote %d reports for turn %d of game %s to %s\n", n, d.Game.Turn, d.Game.Code, out)
 			return nil
 		},
 	})
