@@ -11,6 +11,6 @@ The project guidance lives in two files shared with other coding agents; keep th
 
 - Every commit that changes code must bump the version in `version.go` in the same commit (patch for fixes, minor for features or breaking changes); keep `PreRelease: "alpha"`.
 - `go vet ./...` and `go test ./...` must both pass before committing.
-- Commit directly to `main`, locally only: there is no remote, so don't push, tag, or run `gh`.
+- Commit directly to `main` and push to `origin` (`github.com/mdhender/ecvg`) as each task is completed. Don't create tags.
 - Prefer `go run` over `go build`; any build output goes in `tmp/`, never the repository root.
 - Use the `agent` environment when code needs `internal/dotenv`.

@@ -38,7 +38,7 @@ go test ./...
 - Do not create git tags.
   Versions will be tagged on GitHub once the project achieves v1.0.0.
 - Agents are authorized to commit and push each task as it is completed, provided all tests pass and the version has been bumped.
-- The repository has no remote yet, so commit locally and do not try to push. The `gh` commands here, such as the open-bug check, cannot run until it has one. The developer will say when the remote exists.
+- The remote is `origin`, `github.com/mdhender/ecvg`.
 - Agents may create GitHub labels as needed.
 
 ## CI
