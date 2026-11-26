@@ -12,9 +12,9 @@
       },
       "operational": [
         {"type": "FARM", "tech_level": 10, "qty": 100000},
-        {"type": "LSPT", "tech_level": 10, "qty": 100},
+        {"type": "LFSU", "tech_level": 10, "qty": 100},
         {"type": "SDRV", "tech_level": 10, "qty": 1},
-        {"type": "STUL", "tech_level": 10, "qty": 20000}
+        {"type": "STRL", "tech_level": 10, "qty": 20000}
       ],
       "cargo": [
         {"type": "FOOD", "qty": 4269990},
