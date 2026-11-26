@@ -67,3 +67,61 @@ func CanInstallFarm(tl int, t EntityType, orbitNo int, p Planet) error {
 	}
 	return nil
 }
+
+// What a FARM unit needs to work for a turn, whatever its tech level.
+const (
+	// FarmPRO and FarmUSK are the population units that staff one FARM unit.
+	FarmPRO = 1
+	FarmUSK = 3
+)
+
+// FarmFood returns the FOOD that qty working FARM units of tech level tl make
+// in a turn, a quarter of their annual production: 100 FOOD a year for
+// FARM-1, and 20 x TL a year for the others.
+func FarmFood(tl, qty int) int {
+	if tl == 1 {
+		return 25 * qty
+	}
+	return 5 * tl * qty
+}
+
+// FarmSolar reports whether FARM units of tech level tl run without FUEL in
+// an entity of type t in orbit orbitNo: FARM-2 to FARM-5 in an orbital colony
+// in orbits 1..MaxSurfaceFarmOrbit are solar powered.
+func FarmSolar(tl int, t EntityType, orbitNo int) bool {
+	return t == CORB && 2 <= tl && tl <= 5 && 1 <= orbitNo && orbitNo <= MaxSurfaceFarmOrbit
+}
+
+// FarmFuel returns the FUEL that qty FARM units of tech level tl burn in a
+// turn: 0.5 x TL each for FARM-1 to FARM-5, and 1 x TL each for the others.
+// The total is rounded up. See FarmSolar for the farms that burn none.
+func FarmFuel(tl, qty int) int {
+	if tl <= 5 {
+		return (tl*qty + 1) / 2
+	}
+	return tl * qty
+}
+
+// FarmsFuelled returns the most FARM units of tech level tl that fuel FUEL
+// can run for a turn.
+func FarmsFuelled(tl, fuel int) int {
+	if tl <= 5 {
+		return 2 * fuel / tl
+	}
+	return fuel / tl
+}
+
+// Harvest is what a colony's farming groups did in a turn.
+type Harvest struct {
+	// Units is the number of FARM units in the farming groups, and Worked is
+	// how many of them made food.
+	Units  int `json:"units"`
+	Worked int `json:"worked"`
+	// Unstaffed units had no PRO and USK to work them, and Unfuelled units
+	// had the staff but no FUEL.
+	Unstaffed int `json:"unstaffed,omitzero"`
+	Unfuelled int `json:"unfuelled,omitzero"`
+	// Fuel is the FUEL the units burned, and Food is the FOOD they made.
+	Fuel int `json:"fuel"`
+	Food int `json:"food"`
+}

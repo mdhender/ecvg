@@ -79,6 +79,8 @@ type Colony struct {
 	Rations int `json:"rations"`
 	// Starved is the population that starved to death in the prior turn.
 	Starved Population `json:"starved,omitzero"`
+	// Harvest is what the colony's farming groups did in the prior turn.
+	Harvest Harvest `json:"harvest,omitzero"`
 	// SOL is the standard of living, by default DefaultSOL.
 	SOL float64 `json:"sol"`
 	// DeathRate and BirthRate are fractions of the population per turn (0.01

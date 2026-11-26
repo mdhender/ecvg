@@ -181,6 +181,16 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 		}
 		groups("FARMING GROUPS", c.FarmingGroups)
+		if h := c.Harvest; h.Units > 0 {
+			p("  LAST TURN: %s of %s units worked, burned %s FUEL, and made %s FOOD",
+				commas(h.Worked), commas(h.Units), commas(h.Fuel), commas(h.Food))
+			if h.Unstaffed > 0 {
+				p("  %s units idle: no staff (each needs %d PRO and %d USK)", commas(h.Unstaffed), game.FarmPRO, game.FarmUSK)
+			}
+			if h.Unfuelled > 0 {
+				p("  %s units idle: no FUEL", commas(h.Unfuelled))
+			}
+		}
 		p("")
 		p("MINING GROUPS")
 		if len(c.MiningGroups) == 0 {

@@ -139,6 +139,8 @@ SET   RATIONS   FOR 1 TO 75%  # the same order: case and spacing don't matter
 | ----- | ------ |
 | `set rations for EntityID to PercentageAmount` | Sets the rations of an entity (a ship or colony) the empire controls. EntityID is the "Entity ID" in the empire's report. PercentageAmount is a whole number from `1%` to `500%`; the `%` is required and must be joined to the number (`50%`, not `50 %`). A new entity is at 100%. If an entity gets more than one, the last wins. |
 
+Each turn after turn 0, the farms in a colony's farming groups make FOOD before anyone eats. A FARM-1 makes 25 FOOD a turn and the others 5 x their tech level. Each farm needs 1 PRO and 3 USK to staff it, and burns FUEL from the colony's cargo: 0.5 x tech level a turn for FARM-1 to FARM-5, and 1 x tech level for FARM-6 to FARM-10. (FARM-2 to FARM-5 in an orbital colony in orbits 1 to 5 are solar powered and burn none.) Farms without staff or fuel sit idle, and the next report says how many worked, what they burned, and what they made.
+
 Each turn after turn 0, an entity's population eats 0.25 FOOD per population unit, times its rations, out of the entity's cargo. If there isn't enough FOOD, it eats what there is. When the ration the population actually gets is below 25%, part of it starves to death that turn: 20% of it on a 20% ration, 80% on a 5% ration, all of it with no food. The next report says how many starved.
 
 ## Where the files are

@@ -101,6 +101,23 @@ func TestEmpire(t *testing.T) {
 			},
 		},
 		{
+			name:     "harvest",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Colonies[0].Harvest = game.Harvest{Units: 100000, Worked: 36000, Unstaffed: 4000, Unfuelled: 60000, Fuel: 360000, Food: 1800000}
+			},
+			want: []string{
+				"  LAST TURN: 36,000 of 100,000 units worked, burned 360,000 FUEL, and made 1,800,000 FOOD",
+				"  4,000 units idle: no staff (each needs 1 PRO and 3 USK)",
+				"  60,000 units idle: no FUEL",
+			},
+		},
+		{
+			name:     "no harvest",
+			empireID: 1,
+			lack:     []string{"LAST TURN", "units idle"},
+		},
+		{
 			name:     "later turn with no orders",
 			empireID: 1,
 			edit:     func(d *game.Data) { d.Game.Turn = 7 },
