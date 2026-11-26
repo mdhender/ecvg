@@ -85,9 +85,10 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		Usage:     "ecgen create [FLAGS] <PATH>",
 		ShortHelp: "generate a new game in an existing folder",
 		LongHelp: "Create writes game.json, stellia.json, stars.json, orbits.json, planets.json,\n" +
-			"deposits.json, races.json, empires.json, and colonies.json into PATH, an\n" +
-			"existing folder, by convention games/{code}. The folder's name is the game\n" +
-			"code. Create never creates folders, and it fails if PATH is missing, is not a\n" +
+			"and races.json into PATH, an existing folder, by convention games/{code}. The\n" +
+			"folder's name is the game code. The game starts at turn 0, and its state as\n" +
+			"of that turn (deposits.json, empires.json, and colonies.json) goes in\n" +
+			"PATH/turns/0, which Create makes. Create fails if PATH is missing, is not a\n" +
 			"folder, or already holds any of those files.\n" +
 			"\n" +
 			"The game has 100 Stellia: 1 with 5 stars, 3 with 4, 10 with 3, 30 with 2, and\n" +

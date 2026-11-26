@@ -50,7 +50,7 @@ th { color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line)
 <body>
 <header>
   <h1>Empires of {{.Code}}</h1>
-  <p>{{.Count}} {{if eq .Count 1}}empire{{else}}empires{{end}} of {{.Races}} {{if eq .Races 1}}race{{else}}races{{end}}; {{.Players}} {{if eq .Players 1}}has{{else}}have{{end}} a player.</p>
+  <p>Turn {{.Turn}}: {{.Count}} {{if eq .Count 1}}empire{{else}}empires{{end}} of {{.Races}} {{if eq .Races 1}}race{{else}}races{{end}}; {{.Players}} {{if eq .Players 1}}has{{else}}have{{end}} a player.</p>
 </header>
 <main>
   <section class="panel">

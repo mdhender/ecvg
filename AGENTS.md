@@ -11,9 +11,11 @@ The goal is to ship the MVP: the generator follows the original 1978 setup and d
 The commands use `peterbourgon/ff/v4`. Each loads env files for the environment named by `EC_ENV` (default `development`), then reads flags from the command line and from `EC_`-prefixed environment variables (`--seed` is `EC_SEED`).
 Games live in `games/{code}` (git-ignored). `internal/game` holds the record types and reads and writes the files; all generation logic is in `cmd/ecgen`.
 
-`ecgen create [--seed N] [--homestar-template FILE] [--empire-template FILE] games/{code}` generates a whole game in one step, into an existing folder that holds none of the game's files (all are written, or none):
+`ecgen create [--seed N] [--homestar-template FILE] [--empire-template FILE] games/{code}` generates a whole game in one step, into an existing folder that holds none of the game's files (all are written, or none).
+Files that don't change from turn to turn go in the game's folder; the state as of a turn goes in `turns/{turn}` (`deposits.json`, `empires.json`, and `colonies.json`). A new game is at turn 0, so the generator makes `turns/0`, and `game.LoadData` reads the state from the folder of the turn in `game.json`.
 
-- `game.json` holds the master data, with its two seeds as 16-digit hex strings.
+
+- `game.json` holds the master data: the code, the two seeds as 16-digit hex strings, and `turn`, the number of the current turn.
 - `stellia.json` holds 100 Stellia, placed by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 3×4, 10×3, 30×2, and 56×1 stars, in that order.
 - `stars.json` holds the 163 stars, each with the `stellium_id` of its Stellium.
   The Stellia with exactly 3 stars are home Stellia (`homestellium`), and the first star (`seq_no` 1) of each is a home star (`homestar`), so a game has 10 home stars.
@@ -23,14 +25,14 @@ Games live in `games/{code}` (git-ignored). `internal/game` holds the record typ
   The other 153 stars share 688 planets (4.5 per star, rounded down): every star gets one planet in a random orbit, then the rest go into random empty orbits.
   138 of those planets (125 per 621) are `habitable`, all in orbits 2..6, split 25:50:45:20:15; within each orbit number they are picked at random.
   A planet's `viability` is 0 if it is not habitable, otherwise 1..25 on a three-dice bell curve.
-- `deposits.json` holds the deposits, each with the `planet_id` of its planet, a `deposit_no`, and a `type` (FUEL, MTL, NMTL, or GOLD).
+- `turns/0/deposits.json` holds the deposits, each with the `planet_id` of its planet, a `deposit_no`, and a `type` (FUEL, MTL, NMTL, or GOLD).
   A home star's deposits come from the template.
   Deposits per random planet follow 3d11 + 1 (about 16 on average): that distribution is scaled to the 688 planets and shuffled across them; the types are a 34:32:32:2 FUEL:MTL:NMTL:GOLD list shuffled across the deposits.
   Each random deposit has a `size` (usable ore) and `yield` (percentage of extracted ore that refines into a usable resource), each the sum of three dice spanning its range: size 1,000,000..20,000,000 for GOLD and 1,000,000..99,000,000 for the others; yield 1..12 GOLD, 1..22 FUEL, 1..28 MTL and NMTL.
 - `races.json` holds one race per home world (`id` and `homeworld_id` are both the home world's planet ID).
-- `empires.json` holds 15 empires per home world, 150 in all (`id`, `handle`, `name`, `race_id`, `homeworld_id`), all of that home world's race.
+- `turns/0/empires.json` holds 15 empires per home world, 150 in all (`id`, `handle`, `name`, `race_id`, `homeworld_id`), all of that home world's race.
   The name is `Empire #{id}` and the `handle` (8 to 12 lowercase ASCII letters, the player) is empty until an empire is given to a player.
-- `colonies.json` holds each empire's colonies, copied from the empire template onto its home world, with `empire_id` and `planet_id`, and the default `sol`, `drt`, and `brt`.
+- `turns/0/colonies.json` holds each empire's colonies, copied from the empire template onto its home world, with `empire_id` and `planet_id`, and the default `sol`, `drt`, and `brt`.
 
 The templates are embedded from `cmd/ecgen/homestar-template.json` and `cmd/ecgen/empire-template.json`; the two template flags name a file to use instead. Loading either rejects unknown members and invalid values.
 The home star template has 10 `orbits`, each with its `orbit_no`, an optional `note` for the game master (ignored), and a `planet` (`homeworld`, `habitable`, `viability`, `deposits`; a missing boolean or number is false or 0) or `null` for an empty orbit.

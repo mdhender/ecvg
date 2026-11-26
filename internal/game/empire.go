@@ -9,8 +9,9 @@ import (
 	"github.com/mdhender/ecvg/internal/cerrs"
 )
 
-// RacesFileName, EmpiresFileName, and ColoniesFileName are the names of the
-// files in a game's folder that hold the game's races, empires, and colonies.
+// RacesFileName is the name of the file in a game's folder that holds the
+// game's races. EmpiresFileName and ColoniesFileName are the names of the
+// files in a turn's folder that hold the empires and their colonies.
 const (
 	RacesFileName    = "races.json"
 	EmpiresFileName  = "empires.json"
@@ -132,7 +133,7 @@ func LoadRaces(dir string) ([]Race, error) {
 	return races, nil
 }
 
-// LoadEmpires reads empires.json from dir.
+// LoadEmpires reads empires.json from dir, a turn's folder.
 func LoadEmpires(dir string) ([]Empire, error) {
 	var empires []Empire
 	if err := loadJSON(dir, EmpiresFileName, &empires); err != nil {
@@ -141,7 +142,7 @@ func LoadEmpires(dir string) ([]Empire, error) {
 	return empires, nil
 }
 
-// LoadColonies reads colonies.json from dir.
+// LoadColonies reads colonies.json from dir, a turn's folder.
 func LoadColonies(dir string) ([]Colony, error) {
 	var colonies []Colony
 	if err := loadJSON(dir, ColoniesFileName, &colonies); err != nil {

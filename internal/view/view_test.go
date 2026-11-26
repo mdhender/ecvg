@@ -165,7 +165,7 @@ func TestEmpiresPage(t *testing.T) {
 	page := sb.String()
 	for _, want := range []string{
 		"<title>Empires of alpha</title>",
-		"2 empires of 1 race; 1 has a player.",
+		"Turn 0: 2 empires of 1 race; 1 has a player.",
 		`"handle":"abcdefgh"`,
 		`"orbit_no":3`,
 		`"cargo":[{"type":"FOOD","qty":20}]`,

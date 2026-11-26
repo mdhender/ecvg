@@ -5,7 +5,7 @@ package game
 
 import "fmt"
 
-// DepositsFileName is the name of the file in a game's folder that holds the
+// DepositsFileName is the name of the file in a turn's folder that holds the
 // planets' deposits.
 const DepositsFileName = "deposits.json"
 
@@ -50,7 +50,7 @@ type Deposit struct {
 	Yield int `json:"yield"`
 }
 
-// LoadDeposits reads deposits.json from dir.
+// LoadDeposits reads deposits.json from dir, a turn's folder.
 func LoadDeposits(dir string) ([]Deposit, error) {
 	var deposits []Deposit
 	if err := loadJSON(dir, DepositsFileName, &deposits); err != nil {

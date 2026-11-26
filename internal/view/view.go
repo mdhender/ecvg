@@ -209,6 +209,7 @@ func Empires(w io.Writer, d game.Data) error {
 	}
 	return empiresTemplate.Execute(w, struct {
 		Code    string
+		Turn    int
 		Count   int
 		Races   int
 		Players int
@@ -216,6 +217,7 @@ func Empires(w io.Writer, d game.Data) error {
 		Empires []EmpireRow
 	}{
 		Code:    d.Game.Code,
+		Turn:    d.Game.Turn,
 		Count:   len(rows),
 		Races:   len(d.Races),
 		Players: players,

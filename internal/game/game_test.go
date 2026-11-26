@@ -40,9 +40,13 @@ func sampleData() game.Data {
 	}
 }
 
+// fileNames are the files Write creates, relative to the game's folder.
 var fileNames = []string{
 	game.FileName, game.StelliaFileName, game.StarsFileName, game.OrbitsFileName, game.PlanetsFileName,
-	game.DepositsFileName, game.RacesFileName, game.EmpiresFileName, game.ColoniesFileName,
+	game.RacesFileName,
+	filepath.Join("turns", "0", game.DepositsFileName),
+	filepath.Join("turns", "0", game.EmpiresFileName),
+	filepath.Join("turns", "0", game.ColoniesFileName),
 }
 
 func TestWriteThenLoadData(t *testing.T) {
@@ -56,7 +60,7 @@ func TestWriteThenLoadData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const wantJSON = `{"code":"alpha","seed1":"fedcba9876543210","seed2":"0000000000000001"}` + "\n"
+	const wantJSON = `{"code":"alpha","seed1":"fedcba9876543210","seed2":"0000000000000001","turn":0}` + "\n"
 	if string(data) != wantJSON {
 		t.Errorf("game.json =\n%s\nwant\n%s", data, wantJSON)
 	}
@@ -78,6 +82,9 @@ func TestWriteWritesAllFilesOrNone(t *testing.T) {
 		t.Run(existing+" exists", func(t *testing.T) {
 			dir := t.TempDir()
 			const contents = "keep me"
+			if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, existing)), 0o755); err != nil {
+				t.Fatal(err)
+			}
 			if err := os.WriteFile(filepath.Join(dir, existing), []byte(contents), 0o644); err != nil {
 				t.Fatal(err)
 			}
@@ -94,6 +101,11 @@ func TestWriteWritesAllFilesOrNone(t *testing.T) {
 				if _, err := os.Stat(filepath.Join(dir, name)); !errors.Is(err, fs.ErrNotExist) {
 					t.Errorf("%s was left behind: stat = %v", name, err)
 				}
+			}
+			// Write removes the turn folders only if it made them.
+			_, err := os.Stat(filepath.Join(dir, "turns"))
+			if made := filepath.Dir(existing) == "."; made != errors.Is(err, fs.ErrNotExist) {
+				t.Errorf("turns folder: stat = %v, want it removed: %v", err, made)
 			}
 		})
 	}
@@ -230,5 +242,32 @@ func TestValidateHandle(t *testing.T) {
 				t.Errorf("got error %v, want ErrInvalidHandle", err)
 			}
 		})
+	}
+}
+
+func TestWriteAndLoadDataUseTheGameTurn(t *testing.T) {
+	dir := t.TempDir()
+	d := sampleData()
+	d.Game.Turn = 3
+	if err := d.Write(dir); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := game.TurnDir(dir, 3), filepath.Join(dir, "turns", "3"); got != want {
+		t.Errorf("TurnDir = %s, want %s", got, want)
+	}
+	for _, name := range []string{game.DepositsFileName, game.EmpiresFileName, game.ColoniesFileName} {
+		if _, err := os.Stat(filepath.Join(dir, "turns", "3", name)); err != nil {
+			t.Errorf("turn file: %v", err)
+		}
+		if _, err := os.Stat(filepath.Join(dir, name)); !errors.Is(err, fs.ErrNotExist) {
+			t.Errorf("%s is in the game folder: stat = %v", name, err)
+		}
+	}
+	got, err := game.LoadData(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(got, d) {
+		t.Errorf("LoadData =\n%+v\nwant\n%+v", got, d)
 	}
 }
