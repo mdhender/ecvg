@@ -44,6 +44,7 @@ type OrdersResult struct {
 // ApplyOrders is the orders phase: it carries out each empire's orders on d,
 // file by file and line by line. An order that is not valid, or that its
 // empire may not give, is rejected and the rest are still carried out. It
+// replaces d.OrderResults with a record of every order, accepted or not. It
 // fails with ErrNoSuchEmpire, before changing d, if a file is for an empire
 // that is not in the game.
 func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
@@ -57,12 +58,18 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 		}
 	}
 	var result OrdersResult
+	d.OrderResults = nil
 	for _, f := range files {
 		for _, line := range f.Lines {
 			err := line.Err
 			if err == nil {
 				err = applyOrder(d, f.EmpireID, line.Order)
 			}
+			record := game.OrderResult{EmpireID: f.EmpireID, Line: line.No, Text: line.Text, Accepted: err == nil}
+			if err != nil {
+				record.Reason = err.Error()
+			}
+			d.OrderResults = append(d.OrderResults, record)
 			if err != nil {
 				result.Rejected = append(result.Rejected, Rejection{
 					EmpireID: f.EmpireID, File: f.Name, Line: line.No, Text: line.Text, Err: err,

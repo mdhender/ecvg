@@ -38,6 +38,10 @@ func sampleData() game.Data {
 			MiningGroups:  []game.MiningGroup{{No: 1, DepositID: 1, Units: []game.GroupUnits{{Qty: 5, TechLevel: 1}}}},
 			FactoryGroups: []game.Group{},
 		}},
+		OrderResults: []game.OrderResult{
+			{EmpireID: 1, Line: 1, Text: "set rations for 1 to 50%", Accepted: true},
+			{EmpireID: 1, Line: 3, Text: "dance", Reason: "unknown order"},
+		},
 	}
 }
 
@@ -48,6 +52,7 @@ var fileNames = []string{
 	filepath.Join("turns", "0", game.DepositsFileName),
 	filepath.Join("turns", "0", game.EmpiresFileName),
 	filepath.Join("turns", "0", game.ColoniesFileName),
+	filepath.Join("turns", "0", game.OrderResultsFileName),
 }
 
 func TestWriteThenLoadData(t *testing.T) {
@@ -256,7 +261,7 @@ func TestWriteAndLoadDataUseTheGameTurn(t *testing.T) {
 	if got, want := game.TurnDir(dir, 3), filepath.Join(dir, "turns", "3"); got != want {
 		t.Errorf("TurnDir = %s, want %s", got, want)
 	}
-	for _, name := range []string{game.DepositsFileName, game.EmpiresFileName, game.ColoniesFileName} {
+	for _, name := range []string{game.DepositsFileName, game.EmpiresFileName, game.ColoniesFileName, game.OrderResultsFileName} {
 		if _, err := os.Stat(filepath.Join(dir, "turns", "3", name)); err != nil {
 			t.Errorf("turn file: %v", err)
 		}

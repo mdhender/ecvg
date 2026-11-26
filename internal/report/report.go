@@ -57,7 +57,8 @@ var entityNames = map[game.EntityType]string{
 }
 
 // Empire writes the report for the empire with ID empireID as of the game's
-// current turn: the empire, each of its colonies (population, units, cargo,
+// current turn: the empire, what became of the orders it gave in the prior
+// turn, each of its colonies (population, units, cargo,
 // and groups), and the deposits of its home world.
 func Empire(w io.Writer, d game.Data, empireID int) error {
 	var empire *game.Empire
@@ -89,6 +90,29 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 	p("Player: %s", player)
 	p("Race:   %d", empire.RaceID)
 	p("Home world: planet %d at %s", empire.HomeWorldID, home)
+
+	if d.Game.Turn > 0 {
+		p("")
+		p("%s", strings.Repeat("-", 72))
+		p("ORDERS RECEIVED FOR TURN %d", d.Game.Turn-1)
+		p("%s", strings.Repeat("-", 72))
+		received := 0
+		for _, r := range d.OrderResults {
+			if r.EmpireID != empireID {
+				continue
+			}
+			received++
+			p("  Line %d: %s", r.Line, r.Text)
+			if r.Accepted {
+				p("    Accepted")
+			} else {
+				p("    REJECTED: %s", r.Reason)
+			}
+		}
+		if received == 0 {
+			p("  None")
+		}
+	}
 
 	colonies := 0
 	for _, c := range d.Colonies {

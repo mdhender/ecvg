@@ -134,6 +134,7 @@ func generate(code string, seed1 uint64, h HomeStarTemplate, e EmpireTemplate) g
 	markHabitable(root, &d, templated)
 	generateDeposits(root, &d, templated)
 	generateEmpires(&d, templated, e)
+	d.OrderResults = []game.OrderResult{} // no orders have been given yet
 	return d
 }
 

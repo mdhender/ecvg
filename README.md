@@ -87,7 +87,7 @@ orders from 2 empires: 4 accepted, 1 rejected
 ran turn 0 of game alpha; the state as of turn 1 is in games/alpha/turns/1
 ```
 
-If a rejection was a typo, roll back, fix the file, and run again. A file in the orders folder that is not named for an empire in the game stops the run before anything changes.
+Every order and what became of it is saved in `turns/N+1/order-results.json`, and each empire's next report lists its own orders as accepted or rejected, with the reason. If a rejection was a typo, roll back, fix the file, and run again. A file in the orders folder that is not named for an empire in the game stops the run before anything changes.
 
 Then go back to step 1, which now reports on the new turn.
 
@@ -156,6 +156,7 @@ games/alpha/
       deposits.json  \
       empires.json    } state at the start of turn 0
       colonies.json  /
+      order-results.json   what became of the orders given in the prior turn
       reports/
         empire-001.txt   one plain text report per empire
         ...

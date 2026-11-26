@@ -93,6 +93,9 @@ type Data struct {
 	Races    []Race
 	Empires  []Empire
 	Colonies []Colony
+	// OrderResults is what became of the orders given in the prior turn, in
+	// empire ID and then line order. It is empty in the game's first turn.
+	OrderResults []OrderResult
 }
 
 // Code returns the game code for the game folder dir: the folder's name. It
@@ -140,12 +143,14 @@ func (d *Data) turnFiles() []file {
 		{DepositsFileName, &d.Deposits},
 		{EmpiresFileName, &d.Empires},
 		{ColoniesFileName, &d.Colonies},
+		{OrderResultsFileName, &d.OrderResults},
 	}
 }
 
 // Write writes a new game's files into dir. Game.json, stellia.json,
 // stars.json, orbits.json, planets.json, and races.json go in dir. The state
-// as of the game's turn (deposits.json, empires.json, and colonies.json) goes
+// as of the game's turn (deposits.json, empires.json, colonies.json, and
+// order-results.json) goes
 // in TurnDir(dir, d.Game.Turn).
 //
 // Dir must exist; Write creates only the turns folder and the turn's folder

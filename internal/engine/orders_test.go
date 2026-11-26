@@ -5,6 +5,7 @@ package engine_test
 
 import (
 	"errors"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -85,6 +86,19 @@ func TestApplyOrders(t *testing.T) {
 	}
 	if result.Accepted != 3 || len(result.Rejected) != 2 {
 		t.Fatalf("result = %+v, want 3 accepted and 2 rejected", result)
+	}
+	wantRecords := []game.OrderResult{
+		{EmpireID: 1, Line: 1, Text: "set rations for 1 to 50%", Accepted: true},
+		{EmpireID: 1, Line: 2, Text: "set rations for 3 to 1%   # not ours", Reason: "entity 3: " + engine.ErrNotControlled.Error()},
+		{EmpireID: 1, Line: 3, Text: "set rations for 1 to 75%", Accepted: true},
+		{EmpireID: 1, Line: 4, Text: "dance", Reason: orders.ErrUnknownOrder.Error()},
+		{EmpireID: 2, Line: 1, Text: "SET RATIONS FOR 3 TO 200%", Accepted: true},
+	}
+	if !reflect.DeepEqual(d.OrderResults, wantRecords) {
+		t.Errorf("order results =\n%+v\nwant\n%+v", d.OrderResults, wantRecords)
+	}
+	if _, err := engine.ApplyOrders(&d, nil); err != nil || len(d.OrderResults) != 0 {
+		t.Errorf("after a turn with no orders: %d order results, %v; want none", len(d.OrderResults), err)
 	}
 	r := result.Rejected[0]
 	if r.EmpireID != 1 || r.Line != 2 || !errors.Is(r.Err, engine.ErrNotControlled) {

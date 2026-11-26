@@ -74,7 +74,7 @@ func TestEmpire(t *testing.T) {
 				"    1  GOLD      12,000,000     1%",
 				"    2  FUEL      20,000,000    13%",
 			},
-			lack: []string{"77,000,000", "Life support"},
+			lack: []string{"77,000,000", "Life support", "ORDERS RECEIVED"},
 		},
 		{
 			name:     "enclosed colony needs space and life support",
@@ -89,10 +89,28 @@ func TestEmpire(t *testing.T) {
 			lack:     []string{"COLONY 1"},
 		},
 		{
-			name:     "later turn",
+			name:     "later turn with no orders",
 			empireID: 1,
 			edit:     func(d *game.Data) { d.Game.Turn = 7 },
-			want:     []string{"Turn 7"},
+			want:     []string{"Turn 7", "ORDERS RECEIVED FOR TURN 6", "  None\n"},
+		},
+		{
+			name:     "orders received",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Game.Turn = 1
+				d.OrderResults = []game.OrderResult{
+					{EmpireID: 1, Line: 2, Text: "set rations for 7 to 50%", Accepted: true},
+					{EmpireID: 2, Line: 1, Text: "set rations for 7 to 1%", Reason: "not theirs"},
+					{EmpireID: 1, Line: 5, Text: "dance", Reason: "unknown order"},
+				}
+			},
+			want: []string{
+				"ORDERS RECEIVED FOR TURN 0",
+				"  Line 2: set rations for 7 to 50%\n    Accepted",
+				"  Line 5: dance\n    REJECTED: unknown order",
+			},
+			lack: []string{"not theirs", "to 1%"},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
