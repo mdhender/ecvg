@@ -200,3 +200,15 @@ func TestSetIdle(t *testing.T) {
 		}
 	})
 }
+
+func TestDraftIsNotCarriedOutYet(t *testing.T) {
+	d := twoEmpires()
+	want := twoEmpires()
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "draft 5,000 CWRK from 1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, engine.ErrNotImplemented) || !reflect.DeepEqual(d.Colonies, want.Colonies) {
+		t.Errorf("rejected %+v, colonies %+v; want the order rejected as not implemented and nothing changed", result.Rejected, d.Colonies)
+	}
+}

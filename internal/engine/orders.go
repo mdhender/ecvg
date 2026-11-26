@@ -87,6 +87,10 @@ func applyOrder(d *game.Data, empireID int, order orders.Order) error {
 	switch o := order.(type) {
 	case orders.SetRations:
 		return SetRations(d, empireID, o.EntityID, o.Percent)
+	case orders.Draft:
+		// The order is read, but the rules for carrying it out aren't
+		// settled: what population a draft takes, and when.
+		return fmt.Errorf("draft %s: %w", o.Unit, ErrNotImplemented)
 	case orders.SetIdle:
 		return SetIdle(d, empireID, o.EntityID, o.Kind, o.GroupNo, o.Percent)
 	}
@@ -110,6 +114,10 @@ func SetRations(d *game.Data, empireID, entityID, percent int) error {
 	}
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }
+
+// ErrNotImplemented is the error for an order that the engine can read but
+// can't carry out yet.
+const ErrNotImplemented = cerrs.Error("the engine can't carry out this order yet")
 
 // ErrNoSuchGroup is the error for an order that names a group its entity
 // doesn't have.

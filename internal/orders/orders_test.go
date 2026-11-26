@@ -275,3 +275,57 @@ func TestParseSetIdle(t *testing.T) {
 		})
 	}
 }
+
+func TestParseDraft(t *testing.T) {
+	for _, tc := range []struct {
+		line string
+		want orders.Order
+		err  error
+	}{
+		{line: "draft 3,600 SLD from 13", want: orders.Draft{EntityID: 13, Unit: "SLD", Qty: 3600}},
+		{line: "draft 16880 TRNE from 78", want: orders.Draft{EntityID: 78, Unit: "TRNE", Qty: 16880}},
+		{line: "draft 5,000 CWRK from 99", want: orders.Draft{EntityID: 99, Unit: "CWRK", Qty: 5000}},
+		{line: "DRAFT 1,234,567 cwrk FROM 099 // lots", want: orders.Draft{EntityID: 99, Unit: "CWRK", Qty: 1234567}},
+		{line: "draft 1 spy from 1", want: orders.Draft{EntityID: 1, Unit: "SPY", Qty: 1}},
+		{line: "draft 0 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft -5 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft 36,00 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft 3,6000 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft ,600 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft 3,600, SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft 1234,567 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft 3.5 SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: "draft many SLD from 13", err: orders.ErrInvalidQuantity},
+		{line: `draft "3,600" SLD from 13`, err: orders.ErrInvalidQuantity},
+		{line: "draft 3,600 FARM from 13", err: orders.ErrInvalidUnit},
+		{line: "draft 3,600 FOOD from 13", err: orders.ErrInvalidUnit},
+		{line: "draft 3,600 troops from 13", err: orders.ErrInvalidUnit},
+		{line: `draft 3,600 "SLD" from 13`, err: orders.ErrInvalidUnit},
+		{line: "draft 3,600 SLD from 0", err: orders.ErrInvalidEntityID},
+		{line: "draft 3,600 SLD from home", err: orders.ErrInvalidEntityID},
+		{line: "draft 3,600 SLD in 13", err: orders.ErrInvalidOrder},
+		{line: "draft 3,600 SLD from 13 .", err: orders.ErrInvalidOrder},
+		{line: "draft 3,600 SLD", err: orders.ErrInvalidOrder},
+		{line: "draft", err: orders.ErrInvalidOrder},
+	} {
+		t.Run(tc.line, func(t *testing.T) {
+			lines, err := orders.Parse(strings.NewReader(tc.line))
+			if err != nil || len(lines) != 1 {
+				t.Fatalf("Parse = %+v, %v; want one line", lines, err)
+			}
+			got := lines[0]
+			if !errors.Is(got.Err, tc.err) || (tc.err == nil && got.Err != nil) {
+				t.Fatalf("error = %v, want %v", got.Err, tc.err)
+			}
+			if got.Order != tc.want {
+				t.Errorf("order = %+v, want %+v", got.Order, tc.want)
+			}
+			if tc.want != nil {
+				again, err := orders.Parse(strings.NewReader(tc.want.String()))
+				if err != nil || len(again) != 1 || again[0].Order != tc.want {
+					t.Errorf("String() = %q, which parses to %+v, %v", tc.want.String(), again, err)
+				}
+			}
+		})
+	}
+}
