@@ -45,15 +45,32 @@ func TestFeed(t *testing.T) {
 		{"no food", p, 100, 0, 400, 0, 0, all(400)},
 		{"short at 24.75%: 1% starve, the least", p, 100, 99, 400, 99, 24.75, all(4)},
 		{"short at 24.9%: still 1%", game.Population{UEM: 4000}, 100, 249, 1000, 249, 24.9, game.Population{UEM: 40}},
-		{"starved units round up by type", game.Population{UEM: 7, USK: 1}, 20, 9999, 1, 1, 20, game.Population{UEM: 2, USK: 1}},
-		{"food rounds up", game.Population{UEM: 5}, 100, 9999, 2, 2, 100, game.Population{}},
-		{"no population", game.Population{}, 100, 50, 0, 0, 100, game.Population{}},
-		{"no population and no food", game.Population{}, 100, 0, 0, 0, 100, game.Population{}},
+		{"food rounds up, and the ration is what was eaten", game.Population{UEM: 5}, 100, 9999, 2, 2, 160, game.Population{}},
+		{"rounding food up can save a small population", game.Population{UEM: 7, USK: 1}, 20, 9999, 1, 1, 50, game.Population{}},
+		{"no population", game.Population{}, 100, 50, 0, 0, 0, game.Population{}},
+		{"no population and no food", game.Population{}, 100, 0, 0, 0, 0, game.Population{}},
+
+		// 1,000 units that ate 51 FOOD got a 20.4% ration, so 18.4% starve:
+		// 184 units. The shares round down and the rest go to UEM first.
+		{"deaths left over go to UEM", game.Population{UEM: 10, USK: 330, PRO: 330, SLD: 330}, 100, 51, 250, 51, 20.4,
+			game.Population{UEM: 4, USK: 60, PRO: 60, SLD: 60}},
+		{"UEM can't lose more than it has", game.Population{UEM: 1, USK: 333, PRO: 333, SLD: 333}, 100, 50, 250, 50, 20,
+			game.Population{UEM: 1, USK: 66, PRO: 66, SLD: 67}},
+		{"then to SLD", game.Population{USK: 334, PRO: 333, SLD: 333}, 100, 51, 250, 51, 20.4,
+			game.Population{USK: 61, PRO: 61, SLD: 62}},
+		{"then to USK", game.Population{USK: 500, PRO: 500}, 100, 51, 250, 51, 20.4,
+			game.Population{USK: 92, PRO: 92}},
+		{"then to PRO", game.Population{PRO: 1000}, 100, 51, 250, 51, 20.4, game.Population{PRO: 184}},
+		{"deaths round up to a whole unit", game.Population{USK: 3}, 20, 0, 1, 0, 0, game.Population{USK: 3}},
+		{"one unit of 150 starves at 1%", game.Population{UEM: 50, USK: 100}, 100, 9, 38, 9, 24, game.Population{UEM: 2, USK: 4}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			m := engine.Feed(tc.p, tc.rations, tc.food)
 			if m.Wanted != tc.wanted || m.Eaten != tc.eaten || m.Ration() != tc.ration {
 				t.Errorf("wanted %d, ate %d, ration %v; want %d, %d, %v", m.Wanted, m.Eaten, m.Ration(), tc.wanted, tc.eaten, tc.ration)
+			}
+			if m.Units != tc.p.Units() {
+				t.Errorf("units %d, want %d", m.Units, tc.p.Units())
 			}
 			if got := m.Starved(tc.p); got != tc.starved {
 				t.Errorf("starved %+v, want %+v", got, tc.starved)
@@ -62,7 +79,7 @@ func TestFeed(t *testing.T) {
 	}
 }
 
-func TestRationsAndPopulationIncrease(t *testing.T) {
+func TestRationsAndPopulationChanges(t *testing.T) {
 	colonies := func() []game.Colony {
 		return []game.Colony{
 			{ID: 1, Rations: 100, Population: game.Population{UEM: 400}, Cargo: []game.Unit{{Type: "FUEL", Qty: 9}, {Type: "FOOD", Qty: 150}}},
@@ -73,7 +90,7 @@ func TestRationsAndPopulationIncrease(t *testing.T) {
 	t.Run("setup turn", func(t *testing.T) {
 		d := game.Data{Colonies: colonies()}
 		meals := engine.Rations(&d, 0)
-		engine.PopulationIncrease(&d, meals)
+		engine.PopulationChanges(&d, meals)
 		if meals != nil || d.Colonies[0].Cargo[1].Qty != 150 || d.Colonies[2].Population.PRO != 400 {
 			t.Errorf("meals %v, colonies %+v; want nothing eaten and nobody starved", meals, d.Colonies)
 		}
@@ -91,10 +108,11 @@ func TestRationsAndPopulationIncrease(t *testing.T) {
 		if c := d.Colonies; c[0].Cargo[0].Qty != 9 || c[0].Cargo[1].Qty != 50 || c[1].Cargo[0].Qty != 0 || c[1].Cargo[1].Qty != 79 {
 			t.Errorf("cargo = %+v, %+v", c[0].Cargo, c[1].Cargo)
 		}
-		engine.PopulationIncrease(&d, meals)
+		engine.PopulationChanges(&d, meals)
 		for i, want := range []struct{ p, starved game.Population }{
 			{game.Population{UEM: 400}, game.Population{}},
-			{game.Population{USK: 320, SLD: 4}, game.Population{USK: 80, SLD: 1}},
+			// 405 units ate 21 FOOD, a 20.74% ration: 69 of them starve.
+			{game.Population{USK: 332, SLD: 4}, game.Population{USK: 68, SLD: 1}},
 			{game.Population{}, game.Population{PRO: 400}},
 		} {
 			if c := d.Colonies[i]; c.Population != want.p || c.Starved != want.starved {

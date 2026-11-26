@@ -14,52 +14,65 @@ const StarvationRation = 25
 
 // Meal is what one entity's population ate in a turn.
 type Meal struct {
+	// Units is the number of population units that ate.
+	Units int
 	// Wanted is the FOOD the population would eat at the entity's rations,
 	// and Eaten the FOOD it ate, which is less if the entity ran short.
 	Wanted, Eaten int
-	// The ration eaten is num/den percent of a full ration.
-	num, den int
 }
 
 // Feed returns the meal of the population p in an entity that is on rations
 // percent rations and holds food FOOD. The population eats
-// p.FoodWanted(rations) if the entity has it. If not, it eats all there is,
-// and the ration it gets is that much FOOD shared among its units.
+// p.FoodWanted(rations) if the entity has it, and if not, all there is.
 func Feed(p game.Population, rations, food int) Meal {
-	rations, food = max(rations, 0), max(food, 0)
-	wanted := p.FoodWanted(rations)
-	if food >= wanted {
-		return Meal{Wanted: wanted, Eaten: wanted, num: rations, den: 1}
-	}
-	return Meal{
-		Wanted: wanted, Eaten: food,
-		num: food * game.PopulationUnitsPerFood * 100, den: p.Units(), // wanted > 0, so there are units
-	}
+	wanted := p.FoodWanted(max(rations, 0))
+	return Meal{Units: p.Units(), Wanted: wanted, Eaten: min(wanted, max(food, 0))}
 }
 
 // Ration returns the ration the population got, as a percentage of a full
-// ration.
+// ration of 0.25 FOOD per unit. It is worked out from the FOOD eaten, so it
+// can differ from the entity's rations: it is less if the entity ran short,
+// and a little more when the FOOD eaten was rounded up to a whole unit.
 func (m Meal) Ration() float64 {
-	if m.den == 0 {
+	if m.Units == 0 {
 		return 0
 	}
-	return float64(m.num) / float64(m.den)
+	return float64(m.Eaten*game.PopulationUnitsPerFood*100) / float64(m.Units)
 }
 
-// Starved returns the part of the population p that starves to death after
-// the meal. Nobody starves on a ration R of StarvationRation percent or more.
-// Below that, max(1, 100-4R) percent of the units of each type starve,
-// rounded up to a whole unit.
+// Starved returns the part of the population p, the population that ate the
+// meal, that starves to death after it. Nobody starves on a ration R (see
+// Ration) of StarvationRation percent or more. Below that, max(1, 100-4R)
+// percent of the units starve, rounded up to a whole unit.
+//
+// The deaths are shared among the types of unit in proportion to their
+// numbers, each share rounded down. The deaths left over are taken first from
+// UEM, then SLD, then USK, then PRO.
 func (m Meal) Starved(p game.Population) game.Population {
-	if m.den == 0 || m.num >= StarvationRation*m.den {
+	units := p.Units()
+	// R is 400*Eaten/units, so R < 25 is 16*Eaten < units.
+	if units == 0 || 16*m.Eaten >= units {
 		return game.Population{}
 	}
-	// The percentage that starves is pctNum/m.den.
-	pctNum := max(100*m.den-4*m.num, m.den)
-	starve := func(units int) int {
-		return (units*pctNum + 100*m.den - 1) / (100 * m.den)
+	// The percentage is (100*units - 1600*Eaten)/units, and at least 1.
+	pct := max(100*units-16*100*m.Eaten, units)
+	deaths := (pct + 99) / 100 // pct/units percent of units, rounded up
+	var s game.Population
+	left := deaths
+	for _, t := range []struct{ starved, alive *int }{
+		{&s.UEM, &p.UEM}, {&s.USK, &p.USK}, {&s.PRO, &p.PRO}, {&s.SLD, &p.SLD},
+	} {
+		*t.starved = *t.alive * deaths / units
+		left -= *t.starved
 	}
-	return game.Population{UEM: starve(p.UEM), USK: starve(p.USK), PRO: starve(p.PRO), SLD: starve(p.SLD)}
+	for _, t := range []struct{ starved, alive *int }{
+		{&s.UEM, &p.UEM}, {&s.SLD, &p.SLD}, {&s.USK, &p.USK}, {&s.PRO, &p.PRO},
+	} {
+		n := min(left, *t.alive-*t.starved)
+		*t.starved += n
+		left -= n
+	}
+	return s
 }
 
 // Rations is the rations phase of the turn numbered turn: the population of
@@ -92,11 +105,11 @@ func Rations(d *game.Data, turn int) []Meal {
 	return meals
 }
 
-// PopulationIncrease is the population increases phase. So far it only
+// PopulationChanges is the population changes phase. So far it only
 // starves: each colony in d loses the part of its population that starves
 // after its meal (see Meal.Starved), and the colony's Starved records the
 // loss. Meals is what Rations returned; with no meals nobody starves.
-func PopulationIncrease(d *game.Data, meals []Meal) {
+func PopulationChanges(d *game.Data, meals []Meal) {
 	for i := range d.Colonies {
 		c := &d.Colonies[i]
 		c.Starved = game.Population{}
