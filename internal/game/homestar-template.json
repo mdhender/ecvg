@@ -1,0 +1,108 @@
+{
+  "orbits": [
+    {"orbit_no": 1, "note": "small, hot, metal-rich (Mercury)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "MTL", "size": 60000000, "yield": 18},
+        {"type": "MTL", "size": 45000000, "yield": 15},
+        {"type": "MTL", "size": 30000000, "yield": 12},
+        {"type": "MTL", "size": 20000000, "yield": 10},
+        {"type": "NMTL", "size": 25000000, "yield": 8},
+        {"type": "NMTL", "size": 15000000, "yield": 6},
+        {"type": "GOLD", "size": 8000000, "yield": 5}
+      ]
+    }},
+    {"orbit_no": 2, "note": "hot, crushing atmosphere (Venus)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "NMTL", "size": 70000000, "yield": 14},
+        {"type": "NMTL", "size": 50000000, "yield": 12},
+        {"type": "NMTL", "size": 35000000, "yield": 10},
+        {"type": "MTL", "size": 40000000, "yield": 12},
+        {"type": "MTL", "size": 25000000, "yield": 9},
+        {"type": "FUEL", "size": 30000000, "yield": 8},
+        {"type": "FUEL", "size": 20000000, "yield": 6},
+        {"type": "GOLD", "size": 5000000, "yield": 4}
+      ]
+    }},
+    {"orbit_no": 3, "note": "home world (Earth)", "planet": {
+      "habitable": true, "viability": 25, "deposits": [
+        {"type": "GOLD", "size": 12000000, "yield": 8},
+        {"type": "GOLD", "size": 6000000, "yield": 5},
+        {"type": "FUEL", "size": 80000000, "yield": 16},
+        {"type": "FUEL", "size": 65000000, "yield": 14},
+        {"type": "FUEL", "size": 50000000, "yield": 12},
+        {"type": "FUEL", "size": 40000000, "yield": 11},
+        {"type": "FUEL", "size": 30000000, "yield": 9},
+        {"type": "FUEL", "size": 20000000, "yield": 7},
+        {"type": "MTL", "size": 85000000, "yield": 20},
+        {"type": "MTL", "size": 70000000, "yield": 18},
+        {"type": "MTL", "size": 55000000, "yield": 15},
+        {"type": "MTL", "size": 45000000, "yield": 13},
+        {"type": "MTL", "size": 30000000, "yield": 11},
+        {"type": "MTL", "size": 20000000, "yield": 8},
+        {"type": "NMTL", "size": 85000000, "yield": 20},
+        {"type": "NMTL", "size": 70000000, "yield": 18},
+        {"type": "NMTL", "size": 55000000, "yield": 15},
+        {"type": "NMTL", "size": 45000000, "yield": 13},
+        {"type": "NMTL", "size": 30000000, "yield": 11},
+        {"type": "NMTL", "size": 20000000, "yield": 8}
+      ]
+    }},
+    {"orbit_no": 4, "note": "cold, thin atmosphere (Mars)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "MTL", "size": 50000000, "yield": 14},
+        {"type": "MTL", "size": 35000000, "yield": 12},
+        {"type": "MTL", "size": 20000000, "yield": 9},
+        {"type": "NMTL", "size": 60000000, "yield": 15},
+        {"type": "NMTL", "size": 40000000, "yield": 12},
+        {"type": "NMTL", "size": 25000000, "yield": 9},
+        {"type": "FUEL", "size": 15000000, "yield": 6},
+        {"type": "GOLD", "size": 4000000, "yield": 4}
+      ]
+    }},
+    {"orbit_no": 5, "note": "empty: asteroid belt", "planet": null},
+    {"orbit_no": 6, "note": "gas giant (Jupiter)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "FUEL", "size": 99000000, "yield": 20},
+        {"type": "FUEL", "size": 95000000, "yield": 18},
+        {"type": "FUEL", "size": 90000000, "yield": 16},
+        {"type": "FUEL", "size": 80000000, "yield": 14},
+        {"type": "FUEL", "size": 70000000, "yield": 12},
+        {"type": "FUEL", "size": 60000000, "yield": 10}
+      ]
+    }},
+    {"orbit_no": 7, "note": "gas giant (Saturn)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "FUEL", "size": 95000000, "yield": 18},
+        {"type": "FUEL", "size": 85000000, "yield": 16},
+        {"type": "FUEL", "size": 75000000, "yield": 14},
+        {"type": "FUEL", "size": 60000000, "yield": 12},
+        {"type": "FUEL", "size": 50000000, "yield": 10}
+      ]
+    }},
+    {"orbit_no": 8, "note": "ice giant (Uranus)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "FUEL", "size": 70000000, "yield": 13},
+        {"type": "FUEL", "size": 50000000, "yield": 11},
+        {"type": "FUEL", "size": 35000000, "yield": 9},
+        {"type": "NMTL", "size": 40000000, "yield": 10},
+        {"type": "NMTL", "size": 25000000, "yield": 8}
+      ]
+    }},
+    {"orbit_no": 9, "note": "ice giant (Neptune)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "FUEL", "size": 65000000, "yield": 12},
+        {"type": "FUEL", "size": 45000000, "yield": 10},
+        {"type": "FUEL", "size": 30000000, "yield": 8},
+        {"type": "NMTL", "size": 45000000, "yield": 11},
+        {"type": "NMTL", "size": 30000000, "yield": 8}
+      ]
+    }},
+    {"orbit_no": 10, "note": "icy dwarf (Pluto)", "planet": {
+      "habitable": false, "viability": 0, "deposits": [
+        {"type": "NMTL", "size": 10000000, "yield": 6},
+        {"type": "NMTL", "size": 5000000, "yield": 4},
+        {"type": "FUEL", "size": 5000000, "yield": 3}
+      ]
+    }}
+  ]
+}

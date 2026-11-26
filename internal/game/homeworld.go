@@ -86,22 +86,7 @@ func (t HomeWorldTemplate) Validate() error {
 	if t.Viability < MinViability || t.Viability > MaxViability {
 		bad("viability %d: want %d..%d", t.Viability, MinViability, MaxViability)
 	}
-	if n := len(t.Deposits); n < 1 || n > MaxDepositsPerPlanet {
-		bad("%d deposits: want 1..%d", n, MaxDepositsPerPlanet)
-	}
-	for i, d := range t.Deposits {
-		a, ok := depositAmounts[d.Type]
-		if !ok {
-			bad("deposit %d: invalid type %q", i+1, d.Type)
-			continue
-		}
-		if d.Size < a.minSize || d.Size > a.maxSize {
-			bad("deposit %d: %s size %d: want %d..%d", i+1, d.Type, d.Size, a.minSize, a.maxSize)
-		}
-		if d.Yield < a.minYield || d.Yield > a.maxYield {
-			bad("deposit %d: %s yield %d: want %d..%d", i+1, d.Type, d.Yield, a.minYield, a.maxYield)
-		}
-	}
+	checkDeposits(t.Deposits, bad)
 	return errors.Join(errs...)
 }
 

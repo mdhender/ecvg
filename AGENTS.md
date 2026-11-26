@@ -21,6 +21,10 @@ Each home Stellium has a single home star, and each home star has a single home 
 It is indented, unlike the other game files, because people edit it by hand, and it is never overwritten.
 The default is orbit 3, viability 20, and 16 deposits: 1 GOLD and 5 each of FUEL, MTL, and NMTL, each at the middle of its size and yield ranges.
 Loading the template rejects unknown members and values outside the planet rules (orbit 1..10, viability 1..25, 1..31 deposits, sizes and yields within their type's ranges).
+`ec game homestar-template games/{code}` writes `homestar-template.json`, the template for every home star: 10 `orbits`, each with its `orbit_no`, an optional `note` for the game master (ignored by the game), and a `planet` (`habitable`, `viability`, `deposits`) or `null` for an empty orbit.
+The home world is always the planet in orbit 3, habitable with viability 25.
+The default is an Earth-like system of 9 planets and 67 deposits, with orbit 5 empty where the asteroid belt would be; it lives in `internal/game/homestar-template.json`, embedded and written out byte for byte, so an edited template can be copied back to become the new default.
+Loading it rejects unknown members and anything outside the planet rules; it is indented and never overwritten, like the home world template.
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia, to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
@@ -40,6 +44,7 @@ go test ./internal/dotenv -run TestLoadPrecedence   # a single test
 go vet ./...
 go run ./cmd/ec game create games/{code}       # the folder must already exist
 go run ./cmd/ec game homeworld-template games/{code}   # then edit homeworld-template.json
+go run ./cmd/ec game homestar-template games/{code}    # then edit homestar-template.json
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
 

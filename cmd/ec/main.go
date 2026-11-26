@@ -139,5 +139,37 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		},
 	})
 
+	homeStarFlags := ff.NewFlagSet("homestar-template").SetParent(gameFlags)
+	gameCmd.Subcommands = append(gameCmd.Subcommands, &ff.Command{
+		Name:      "homestar-template",
+		Usage:     "ec game homestar-template <PATH>",
+		ShortHelp: "write the default home star template for a game",
+		LongHelp: "Homestar-template writes homestar-template.json into PATH, the folder of an\n" +
+			"existing game. It describes every home star: the planet, if any, in each of\n" +
+			"its 10 orbits, with each planet's habitability, viability, and deposits. The\n" +
+			"home world is always the planet in orbit 3, habitable with viability 25.\n" +
+			"Edit it before creating the home stars. It is never overwritten: delete it\n" +
+			"first to start again from the default.",
+		Flags: homeStarFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("game homestar-template: want exactly one PATH, got %d arguments", len(args))
+			}
+			t, err := game.CreateHomeStarTemplate(args[0])
+			if err != nil {
+				return fmt.Errorf("game homestar-template: %w", err)
+			}
+			deposits := 0
+			for _, o := range t.Orbits {
+				if o.Planet != nil {
+					deposits += len(o.Planet.Deposits)
+				}
+			}
+			fmt.Fprintf(stdout, "wrote %s: %d planets in %d orbits, %d deposits\n",
+				filepath.Join(args[0], game.HomeStarTemplateFileName), t.Planets(), len(t.Orbits), deposits)
+			return nil
+		},
+	})
+
 	return root
 }
