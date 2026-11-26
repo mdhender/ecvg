@@ -15,6 +15,12 @@ A planet's `viability` is 0 if it is not habitable, otherwise 1..25 on a three-d
 `deposits.json` holds 9,936 deposits (16 per planet on average), each with the `planet_id` of its planet and a `type`: exactly 3,378 FUEL, 3,180 MTL, 3,180 NMTL, and 198 GOLD.
 Deposits per planet come from a fixed bell-curve list (3d11 + 1, scaled to 621 planets and kept symmetric about 16), shuffled across the planets; the types are a fixed list shuffled across the deposits.
 Each deposit also has a random `size` (usable ore) and `yield` (percentage of extracted ore that refines into a usable resource), each the sum of three dice spanning its range: size 1,000,000..20,000,000 for GOLD and 1,000,000..99,000,000 for the others; yield 1..12 GOLD, 1..22 FUEL, 1..28 MTL and NMTL.
+Home Stellia are the Stellia with exactly 2 stars, so every game has 15 of them, and a game has at most 15 species.
+Each home Stellium has a single home star, and each home star has a single home world (home planet); home worlds are always habitable.
+`ec game homeworld-template games/{code}` writes `homeworld-template.json`, the template for every home world (`orbit_no`, `viability`, and a list of `deposits`, each with `type`, `size`, and `yield`), for the game master to edit before the home worlds are created.
+It is indented, unlike the other game files, because people edit it by hand, and it is never overwritten.
+The default is orbit 3, viability 20, and 16 deposits: 1 GOLD and 5 each of FUEL, MTL, and NMTL, each at the middle of its size and yield ranges.
+Loading the template rejects unknown members and values outside the planet rules (orbit 1..10, viability 1..25, 1..31 deposits, sizes and yields within their type's ranges).
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia, to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
@@ -33,6 +39,7 @@ go test ./...
 go test ./internal/dotenv -run TestLoadPrecedence   # a single test
 go vet ./...
 go run ./cmd/ec game create games/{code}       # the folder must already exist
+go run ./cmd/ec game homeworld-template games/{code}   # then edit homeworld-template.json
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
 

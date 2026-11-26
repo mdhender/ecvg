@@ -15,6 +15,7 @@ import (
 	"io"
 	"math/rand/v2"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/mdhender/ecvg/internal/dotenv"
@@ -110,6 +111,30 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			}
 			fmt.Fprintf(stdout, "created game %s in %s: %d stellia, %d stars, %d orbits, %d planets, %d deposits\n",
 				d.Game.Code, args[0], len(d.Stellia), len(d.Stars), len(d.Orbits), len(d.Planets), len(d.Deposits))
+			return nil
+		},
+	})
+
+	templateFlags := ff.NewFlagSet("homeworld-template").SetParent(gameFlags)
+	gameCmd.Subcommands = append(gameCmd.Subcommands, &ff.Command{
+		Name:      "homeworld-template",
+		Usage:     "ec game homeworld-template <PATH>",
+		ShortHelp: "write the default home world template for a game",
+		LongHelp: "Homeworld-template writes homeworld-template.json into PATH, the folder of an\n" +
+			"existing game. It describes every home world: the orbit of its home star, its\n" +
+			"viability, and its deposits. Edit it before creating the home worlds. It is\n" +
+			"never overwritten: delete it first to start again from the default.",
+		Flags: templateFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("game homeworld-template: want exactly one PATH, got %d arguments", len(args))
+			}
+			t, err := game.CreateHomeWorldTemplate(args[0])
+			if err != nil {
+				return fmt.Errorf("game homeworld-template: %w", err)
+			}
+			fmt.Fprintf(stdout, "wrote %s: orbit %d, viability %d, %d deposits\n",
+				filepath.Join(args[0], game.HomeWorldTemplateFileName), t.OrbitNo, t.Viability, len(t.Deposits))
 			return nil
 		},
 	})
