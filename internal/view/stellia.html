@@ -9,14 +9,14 @@
   --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b72; --line: #d9d7d0;
   --grid: rgba(0,0,0,.10); --axis: rgba(0,0,0,.35);
   --s1: #4a78c2; --s2: #2f9e8f; --s3: #c79a1c; --s4: #d0632b; --s5: #b23a6e;
-  --hl: #000;
+  --hl: #000; --home: #e0261b;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0d0f14; --panel: #161922; --ink: #e8e8ec; --muted: #9a9caa; --line: #2a2e3b;
     --grid: rgba(255,255,255,.10); --axis: rgba(255,255,255,.35);
     --s1: #7fa6ea; --s2: #4fd1bd; --s3: #f0c443; --s4: #ff8a4c; --s5: #ff6fae;
-    --hl: #fff;
+    --hl: #fff; --home: #ff5146;
   }
 }
 * { box-sizing: border-box; }
@@ -25,7 +25,7 @@ body { margin: 0; background: var(--bg); color: var(--ink);
 header { padding: 16px 20px 8px; }
 h1 { margin: 0; font-size: 20px; font-weight: 600; }
 header p { margin: 4px 0 0; color: var(--muted); }
-main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; padding: 8px 20px 20px; }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; padding: 8px 20px 20px; }
 @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .map { position: relative; }
@@ -40,11 +40,14 @@ canvas.dragging { cursor: grabbing; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { display: inline-block; border-radius: 50%; }
+.legend i.home { width: 10px; height: 10px; background: var(--s2); box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--home), 0 0 8px 4px var(--home); margin: 0 4px; }
+td.home { color: var(--home); font-weight: 600; }
+tbody tr.home td:first-child { box-shadow: inset 3px 0 0 var(--home); }
 #tip { position: absolute; pointer-events: none; display: none; background: var(--panel); border: 1px solid var(--line);
   border-radius: 6px; padding: 6px 8px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.2); white-space: nowrap; }
 .list { max-height: calc(min(78vh, 760px) + 90px); overflow: auto; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-th, td { padding: 4px 10px; text-align: right; }
+th, td { padding: 4px 8px; text-align: right; }
 th { position: sticky; top: 0; background: var(--panel); border-bottom: 1px solid var(--line);
   color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; }
 tbody tr { cursor: pointer; }
@@ -54,7 +57,7 @@ tbody tr:hover, tbody tr.sel { background: var(--grid); }
 <body>
 <header>
   <h1>Stellia of {{.Code}}</h1>
-  <p>{{.Count}} Stellia holding {{.Stars}} stars, all within {{.Radius}} units of the origin.</p>
+  <p>{{.Count}} Stellia holding {{.Stars}} stars, all within {{.Radius}} units of the origin. {{.Homes}} {{if eq .Homes 1}}is a home Stellium{{else}}are home Stellia{{end}}.</p>
 </header>
 <main>
   <section class="panel map">
@@ -75,12 +78,13 @@ tbody tr:hover, tbody tr.sel { background: var(--grid); }
       <span><i style="width:12px;height:12px;background:var(--s3)"></i>3 stars</span>
       <span><i style="width:14px;height:14px;background:var(--s4)"></i>4 stars</span>
       <span><i style="width:16px;height:16px;background:var(--s5)"></i>5 stars</span>
+      <span><i class="home"></i>home Stellium</span>
       <span>Stems drop to the X–Y plane; nearer Stellia are drawn brighter.</span>
     </div>
   </section>
   <section class="panel list">
     <table>
-      <thead><tr><th data-k="id">ID</th><th data-k="x">X</th><th data-k="y">Y</th><th data-k="z">Z</th><th data-k="stars">Stars</th><th data-k="d">Dist</th></tr></thead>
+      <thead><tr><th data-k="id">ID</th><th data-k="x">X</th><th data-k="y">Y</th><th data-k="z">Z</th><th data-k="stars">Stars</th><th data-k="home">Home</th><th data-k="d">Dist</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </section>
@@ -166,24 +170,31 @@ function draw() {
   for (const q of projected) {
     const { p, s } = q;
     const rad = 2.5 + 1.5 * p.stars;
+    if (p.home) {
+      ctx.save();
+      ctx.strokeStyle = ctx.shadowColor = css("--home");
+      ctx.shadowBlur = 14; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(s[0], s[1], rad + 4, 0, 2 * Math.PI); ctx.stroke();
+      ctx.restore();
+    }
     ctx.globalAlpha = 0.45 + 0.55 * (s[2] + RADIUS) / (2 * RADIUS);
     ctx.fillStyle = css("--s" + Math.min(p.stars, 5));
     ctx.beginPath(); ctx.arc(s[0], s[1], rad, 0, 2 * Math.PI); ctx.fill();
     ctx.globalAlpha = 1;
     if (p === selected || p === hovered) {
       ctx.strokeStyle = css("--hl"); ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(s[0], s[1], rad + 3, 0, 2 * Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.arc(s[0], s[1], rad + (p.home ? 8 : 3), 0, 2 * Math.PI); ctx.stroke();
       ctx.lineWidth = 1;
     }
-    if (showLabels.checked || p === selected) {
-      ctx.fillStyle = css("--ink");
-      ctx.fillText(p.id, s[0] + rad + 2, s[1] - rad);
+    if (showLabels.checked || p === selected || p.home) {
+      ctx.fillStyle = css(p.home ? "--home" : "--ink");
+      ctx.fillText(p.id, s[0] + rad + (p.home ? 6 : 2), s[1] - rad - (p.home ? 3 : 0));
     }
   }
 }
 
 function describe(p) {
-  return `Stellium ${p.id} · (${p.x}, ${p.y}, ${p.z}) · ${p.stars} star${p.stars === 1 ? "" : "s"} · ${p.d.toFixed(1)} from origin`;
+  return `Stellium ${p.id} · (${p.x}, ${p.y}, ${p.z}) · ${p.stars} star${p.stars === 1 ? "" : "s"} · ${p.d.toFixed(1)} from origin${p.home ? " · home Stellium" : ""}`;
 }
 
 function nearest(mx, my) {
@@ -255,17 +266,20 @@ function renderRows() {
   rows.replaceChildren(...list.map(p => {
     const tr = document.createElement("tr");
     tr.dataset.id = p.id;
-    if (p === selected) tr.className = "sel";
-    for (const v of [p.id, p.x, p.y, p.z, p.stars, p.d.toFixed(1)]) {
+    if (p === selected) tr.classList.add("sel");
+    if (p.home) tr.classList.add("home");
+    for (const v of [p.id, p.x, p.y, p.z, p.stars, p.home ? "★" : "", p.d.toFixed(1)]) {
       const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
     }
+    if (p.home) tr.children[5].className = "home";
     tr.addEventListener("click", () => select(p === selected ? null : p, false));
     return tr;
   }));
 }
 for (const th of document.querySelectorAll("th[data-k]")) {
   th.addEventListener("click", () => {
-    if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = 1; }
+    // Home sorts home Stellia first on the first click.
+    if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = sortKey === "home" ? -1 : 1; }
     renderRows();
   });
 }

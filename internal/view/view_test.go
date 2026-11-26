@@ -13,7 +13,7 @@ import (
 )
 
 func TestStelliaPoints(t *testing.T) {
-	stellia := []game.Stellium{{ID: 1, X: 1, Y: 2, Z: 3}, {ID: 2, X: -4, Y: 0, Z: 5}, {ID: 3, X: 0, Y: 0, Z: -1}}
+	stellia := []game.Stellium{{ID: 1, X: 1, Y: 2, Z: 3}, {ID: 2, X: -4, Y: 0, Z: 5, HomeStellium: true}, {ID: 3, X: 0, Y: 0, Z: -1}}
 	for _, tc := range []struct {
 		name    string
 		stars   []game.Star
@@ -25,7 +25,7 @@ func TestStelliaPoints(t *testing.T) {
 			stars: []game.Star{{ID: 1, StelliumID: 1, SeqNo: 1}, {ID: 2, StelliumID: 1, SeqNo: 2}, {ID: 3, StelliumID: 3, SeqNo: 1}},
 			want: []view.StelliumPoint{
 				{ID: 1, X: 1, Y: 2, Z: 3, Stars: 2},
-				{ID: 2, X: -4, Y: 0, Z: 5, Stars: 0},
+				{ID: 2, X: -4, Y: 0, Z: 5, Stars: 0, Home: true},
 				{ID: 3, X: 0, Y: 0, Z: -1, Stars: 1},
 			},
 		},
@@ -54,8 +54,8 @@ func TestStelliaPoints(t *testing.T) {
 }
 
 func TestStelliaPage(t *testing.T) {
-	stellia := []game.Stellium{{ID: 7, X: -3, Y: 4, Z: 12}}
-	stars := []game.Star{{ID: 1, StelliumID: 7, SeqNo: 1}}
+	stellia := []game.Stellium{{ID: 7, X: -3, Y: 4, Z: 12, HomeStellium: true}, {ID: 8, X: 1, Y: 1, Z: 1}}
+	stars := []game.Star{{ID: 1, StelliumID: 7, SeqNo: 1}, {ID: 2, StelliumID: 8, SeqNo: 1}}
 	for _, tc := range []struct {
 		name string
 		code string
@@ -66,7 +66,8 @@ func TestStelliaPage(t *testing.T) {
 			code: "alpha",
 			want: []string{
 				"<title>Stellia of alpha</title>",
-				`const POINTS = [{"id":7,"x":-3,"y":4,"z":12,"stars":1}];`,
+				`const POINTS = [{"id":7,"x":-3,"y":4,"z":12,"stars":1,"home":true},{"id":8,"x":1,"y":1,"z":1,"stars":1,"home":false}];`,
+				"1 is a home Stellium.",
 			},
 		},
 		{

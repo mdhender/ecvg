@@ -27,6 +27,8 @@ type StelliumPoint struct {
 	Y     int `json:"y"`
 	Z     int `json:"z"`
 	Stars int `json:"stars"`
+	// Home is true for a home Stellium.
+	Home bool `json:"home"`
 }
 
 // StelliaPoints pairs each Stellium with the number of its stars, keeping the
@@ -37,7 +39,7 @@ func StelliaPoints(stellia []game.Stellium, stars []game.Star) ([]StelliumPoint,
 	points := make([]StelliumPoint, len(stellia))
 	for i, s := range stellia {
 		index[s.ID] = i
-		points[i] = StelliumPoint{ID: s.ID, X: s.X, Y: s.Y, Z: s.Z}
+		points[i] = StelliumPoint{ID: s.ID, X: s.X, Y: s.Y, Z: s.Z, Home: s.HomeStellium}
 	}
 	for _, star := range stars {
 		i, ok := index[star.StelliumID]
@@ -50,7 +52,8 @@ func StelliaPoints(stellia []game.Stellium, stars []game.Star) ([]StelliumPoint,
 }
 
 // Stellia writes a page to w showing a rotatable 3D map of the Stellia of the
-// game named code, with a table listing them.
+// game named code, with a table listing them. Home Stellia glow on the map
+// and are starred in the table.
 func Stellia(w io.Writer, code string, stellia []game.Stellium, stars []game.Star) error {
 	points, err := StelliaPoints(stellia, stars)
 	if err != nil {
@@ -60,16 +63,24 @@ func Stellia(w io.Writer, code string, stellia []game.Stellium, stars []game.Sta
 	if err != nil {
 		return err
 	}
+	homes := 0
+	for _, p := range points {
+		if p.Home {
+			homes++
+		}
+	}
 	return stelliaTemplate.Execute(w, struct {
 		Code   string
+		Homes  int
 		Radius int
 		Count  int
 		Stars  int
 		Points []StelliumPoint
-		// JSON is safe to inline in a script: it holds only numbers.
+		// JSON is safe to inline in a script: it holds only numbers and booleans.
 		JSON template.JS
 	}{
 		Code:   code,
+		Homes:  homes,
 		Radius: game.StelliaRadius,
 		Count:  len(points),
 		Stars:  len(stars),
