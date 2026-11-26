@@ -197,7 +197,7 @@ func TestRounding(t *testing.T) {
 }
 
 func TestLookup(t *testing.T) {
-	for _, code := range []string{"", "fact", "GOLD", "FACTS", "ZZZZ"} {
+	for _, code := range []string{"", "fact", "ORE", "FACTS", "ZZZZ"} {
 		if d, ok := units.Lookup(code); ok {
 			t.Errorf("Lookup(%q) = %+v, want none", code, d)
 		}

@@ -27,6 +27,7 @@ const (
 	FARM = "FARM" // farm
 	FOOD = "FOOD" // food
 	FUEL = "FUEL" // fuel
+	GOLD = "GOLD" // gold
 	HDRV = "HDRV" // hyper drive
 	LAB  = "LAB"  // laboratory
 	LFSU = "LFSU" // life support
@@ -243,6 +244,8 @@ func build() []Def {
 		made(FARM, "Farm", Infrastructure, true, linear(1, 4), linear(1, 2), linear(2, 6), linear(2, 6), linear(1, 3)),
 		raw(FOOD, "Food", Commodity, fixed(6), fixed(3)),
 		raw(FUEL, "Fuel", Resource, fixed(1), halves(0, 1)),
+		// Gold is only for trading. It is stored like MTL.
+		raw(GOLD, "Gold", Resource, fixed(1), halves(0, 1)),
 		made(HDRV, "Hyper Drive", Propulsion, true, perTL(25), perTL(20), perTL(45), perTL(45), halves(45, 0)),
 		made(LAB, "Laboratory", Infrastructure, true, linear(1, 5), linear(1, 3), linear(2, 8), linear(2, 8), linear(1, 4)),
 		made(LFSU, "Life Support", Static, true, perTL(3), perTL(5), perTL(8), perTL(8), perTL(4)),

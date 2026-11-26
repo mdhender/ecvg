@@ -19,6 +19,7 @@
 | FARM      | Farm                | Infrastructure |
 | FOOD      | Food                | Commodity      |
 | FUEL      | Fuel                | Resource       |
+| GOLD      | Gold                | Resource       |
 | HDRV      | Hyper Drive         | Propulsion     |
 | LAB       | Laboratory          | Infrastructure |
 | LFSU      | Life Support        | Static         |
@@ -141,6 +142,7 @@ These units must be assembled before they can be used.
 | FARM      | 2 x (TL + 3)    | 2 x (TL + 3)    | TL + 3          |
 | FOOD      | 6               | 3               | 3               |
 | FUEL      | 1               | 0.5             | 0.5             |
+| GOLD      | 1               | 0.5             | 0.5             |
 | HDRV      | 45 x TL         | 45 x TL         | 22.5 x TL       |
 | LAB       | 2 x TL + 8      | 2 x TL + 8      | TL + 4          |
 | LFSU      | 8 x TL          | 8 x TL          | 4 x TL          |
@@ -185,6 +187,7 @@ These units must be assembled before they can be used.
 | FARM      | 1 professional 3 unskilled fuel or power varies                        | Production varies via TL see Farming                                                 |
 | FOOD      |                                                                        | Feeds 4 to 16 population each turn see Basic Needs                                   |
 | FUEL      |                                                                        | Raw material used by many units                                                      |
+| GOLD      |                                                                        | Used in trading only; stored like MTL                                                |
 | HDRV      | 1 professional / 100 and 40 fuel only per light year                   | Lift capacity 1045 x TL range is (Square root of TL) + 4                             |
 | LAB       | 3 professional 1 unskilled, 0.5 x TL fuel or power                     | Produces 0.25 x TL research per turn                                                 |
 | LFSU      | 1 x TL fuel or power                                                   | Supports 1 x TL^2 population                                                         |
@@ -252,7 +255,7 @@ The `tech_level?` flag marks whether a unit carries Tech Levels.
 
 Generation rules applied:
 
-- Resource units (`FUEL`, `MTL`, `NMTL`) and `FOOD` have only a TL0 row.
+- Resource units (`FUEL`, `GOLD`, `MTL`, `NMTL`) and `FOOD` have only a TL0 row.
 - Living (`PRO`, `SLD`, `UEM`, `USK`) and Cadre (`CWRK`, `POL`, `RBL`, `SPAG`, `SPY`, `TRNE`, `WRKR`) entries have no rows.
 - `RP` is a non-physical bookkeeping unit and has no row.
 - All remaining units have TL1–TL10 rows, except `CNGD` and `CSUP` (TL0 only).
@@ -279,6 +282,7 @@ Notes:
 | FARM      | yes         | yes                |
 | FOOD      | no          | no                 |
 | FUEL      | no          | no                 |
+| GOLD      | no          | no                 |
 | HDRV      | yes         | yes                |
 | LAB       | yes         | yes                |
 | LFSU      | yes         | yes                |
@@ -384,6 +388,7 @@ Notes:
 | FARM      | 10         | 1        | 14         | 12         | 26         | 26           | 13                  |
 | FOOD      | 0          | 1        | N/A        | N/A        | 6          | 3            | 3                   |
 | FUEL      | 0          | 1        | N/A        | N/A        | 1          | 0.5          | 0.5                 |
+| GOLD      | 0          | 1        | N/A        | N/A        | 1          | 0.5          | 0.5                 |
 | HDRV      | 1          | 1        | 25         | 20         | 45         | 45           | 22.5                |
 | HDRV      | 2          | 1        | 50         | 40         | 90         | 90           | 45                  |
 | HDRV      | 3          | 1        | 75         | 60         | 135        | 135          | 67.5                |

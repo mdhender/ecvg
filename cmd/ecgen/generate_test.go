@@ -229,7 +229,7 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 		{"missing type", `{"colonies":[{"no":1,"tech_level":1}]}`},
 		{"unknown type", `{"colonies":[{"no":1,"type":"BASE","tech_level":1}]}`},
 		{"zero cargo", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FOOD","qty":0}]}]}`},
-		{"unknown unit", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"GOLD","qty":1}]}]}`},
+		{"unknown unit", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"ORE","qty":1}]}]}`},
 		{"population as a unit", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"USK","qty":1}]}]}`},
 		{"unit missing its tech level", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FACT","qty":1}]}]}`},
 		{"unit tech level too high", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FACT","tech_level":11,"qty":1}]}]}`},
