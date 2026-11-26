@@ -5,7 +5,7 @@ This file provides guidance to coding agents when working in this repository.
 ## Project
 
 `ecvg` (module `github.com/mdhender/ecvg`) is another attempt at implementing Empyrean Challenge from the 1978 rulebook.
-It is at the very beginning: the root `ecvg` package (`version.go`, a `semver.Version`), the `ecgen` command in `cmd/ecgen` (the game generator), the `ec` command in `cmd/ec` (the engine, which has no subcommands yet), the `ecview` command in `cmd/ecview`, and internal packages.
+It is at the very beginning: the root `ecvg` package (`version.go`, a `semver.Version`), the `ecgen` command in `cmd/ecgen` (the game generator), the `ec` command in `cmd/ec` (the engine), the `ecview` command in `cmd/ecview`, and internal packages.
 The goal is to ship the MVP: the generator follows the original 1978 setup and does not try to build a fair, balanced world.
 
 The commands use `peterbourgon/ff/v4`. Each loads env files for the environment named by `EC_ENV` (default `development`), then reads flags from the command line and from `EC_`-prefixed environment variables (`--seed` is `EC_SEED`).
@@ -60,6 +60,7 @@ go test ./internal/dotenv -run TestLoadPrecedence   # a single test
 go vet ./...
 go run ./cmd/ecgen create games/{code}          # the folder must already exist
 go run ./cmd/ecgen create --homestar-template h.json --empire-template e.json games/{code}
+go run ./cmd/ec turn run games/{code}               # process the current turn
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 go run ./cmd/ecview --store games/{code} empires   # the empires and their colonies
 ```
@@ -98,6 +99,7 @@ A ship orbiting a Stellium is `(x, y, z, 0, 0, 0, 0, 0)`; one orbiting a Star is
 - **Entity:** one of four types: CSHP (ship), COPN (open-air surface colony), CENC (enclosed surface colony), or CORB (enclosed orbital colony). It holds Population and Inventory units, both transferable between entities. All but COPN are enclosed. Every entity has an SOL (standard of living, default 1.0), a DRT (death rate, default 0.625%), and a BRT (birth rate, default 0.625%); the rates are stored as fractions (`"drt": 0.00625`).
 - **Population:** four types of unit: UEM (unemployables), USK (unskilled workers), PRO (professionals), and SLD (soldiers). A unit is a block of 100 people with a mass of 1 MU; on a ship or in an enclosed colony it also takes 1 VU of space and 1 LU (life support unit). Each unit initially eats 0.25 FOOD per turn (`internal/game/population.go` rounds an entity's total up to a whole FOOD). Population quantities everywhere, including the empire template, are units, not people.
 - **Cadres (not yet implemented):** CNW (construction workers) and SPY (spies) are population trained for a specific purpose. They must be assembled via orders, so they wait until orders are implemented; nothing starts with them.
-- **Turns:** the first turn of a game is turn 0, the players' setup turn, in which demographic changes don't apply. A year is 4 turns, and a turn whose number is greater than 0 and divides by 4 is an end-of-year turn. A turn is processed in phases, in `internal/engine`. So far there is one, demographic changes (`engine.Demographics`), which is not yet wired to a command: (1) if UEM is strictly more than 30% of an entity's population, 2% of UEM (rounded up) become USK; then (2) if the prior turn was an end-of-year turn (prior turn > 0 and divides by 4, so this happens in turns 5, 9, 13, ...), 5% of SLD (rounded up) become PRO.
+- **Running a turn:** `ec turn run games/{code}` loads the state as of the current turn N from `turns/N`, runs the phases (`engine.RunTurn`), writes the new state to a new `turns/N+1` (built under a temporary name and renamed), and then replaces `game.json` to make N+1 the current turn. `turns/N` is never changed, and it is an error if `turns/N+1` already exists. Orders and reports are not implemented yet.
+- **Turns:** the first turn of a game is turn 0, the players' setup turn, in which demographic changes don't apply. A year is 4 turns, and a turn whose number is greater than 0 and divides by 4 is an end-of-year turn. A turn is processed in phases, in `internal/engine`. So far there is one, demographic changes (`engine.Demographics`), run by `engine.RunTurn`: (1) if UEM is strictly more than 30% of an entity's population, 2% of UEM (rounded up) become USK; then (2) if the prior turn was an end-of-year turn (prior turn > 0 and divides by 4, so this happens in turns 5, 9, 13, ...), 5% of SLD (rounded up) become PRO.
 - **Units:** manufactured or processed items with mass (MU) and volume (VU). Volume has assembled and unassembled values; most units are bigger assembled.
 - **Production:** farming makes FOOD; mining extracts deposits into GOLD, FUEL, MTL, NMTL; manufacturing turns resource units into manufactured units (CNGD, SDRV, ...).

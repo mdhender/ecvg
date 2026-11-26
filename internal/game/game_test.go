@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/mdhender/ecvg/internal/game"
@@ -269,5 +270,46 @@ func TestWriteAndLoadDataUseTheGameTurn(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, d) {
 		t.Errorf("LoadData =\n%+v\nwant\n%+v", got, d)
+	}
+}
+
+func TestWriteTurn(t *testing.T) {
+	dir := t.TempDir()
+	d := sampleData()
+	if err := d.Write(dir); err != nil {
+		t.Fatal(err)
+	}
+	turn0 := d
+
+	d.Game.Turn = 1
+	d.Colonies = slices.Clone(d.Colonies)
+	d.Colonies[0].Population.UEM = 99
+	if err := d.WriteTurn(dir); err != nil {
+		t.Fatal(err)
+	}
+	got, err := game.LoadData(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(got, d) {
+		t.Errorf("LoadData =\n%+v\nwant\n%+v", got, d)
+	}
+	// Turn 0 is still there, unchanged.
+	colonies, err := game.LoadColonies(game.TurnDir(dir, 0))
+	if err != nil || !reflect.DeepEqual(colonies, turn0.Colonies) {
+		t.Errorf("turn 0 colonies = %+v, %v; want %+v", colonies, err, turn0.Colonies)
+	}
+
+	// Writing the same turn again fails and changes nothing.
+	d.Colonies[0].Population.UEM = 1
+	if err := d.WriteTurn(dir); !errors.Is(err, game.ErrTurnExists) {
+		t.Fatalf("second WriteTurn = %v, want ErrTurnExists", err)
+	}
+	if colonies, err := game.LoadColonies(game.TurnDir(dir, 1)); err != nil || colonies[0].Population.UEM != 99 {
+		t.Errorf("turn 1 changed: %+v, %v", colonies, err)
+	}
+	entries, err := os.ReadDir(filepath.Join(dir, "turns"))
+	if err != nil || len(entries) != 2 {
+		t.Errorf("turns folder holds %d entries, %v; want 2", len(entries), err)
 	}
 }

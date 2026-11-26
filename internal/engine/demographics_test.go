@@ -107,3 +107,23 @@ func TestDemographics(t *testing.T) {
 		}
 	}
 }
+
+func TestRunTurn(t *testing.T) {
+	d := game.Data{Colonies: []game.Colony{{ID: 1, Population: game.Population{UEM: 100, SLD: 100}}}}
+	for _, want := range []struct {
+		turn int
+		p    game.Population
+	}{
+		{1, game.Population{UEM: 100, SLD: 100}},                // turn 0, the setup turn: no changes
+		{2, game.Population{UEM: 98, USK: 2, SLD: 100}},         // turn 1
+		{3, game.Population{UEM: 96, USK: 4, SLD: 100}},         // turn 2
+		{4, game.Population{UEM: 94, USK: 6, SLD: 100}},         // turn 3
+		{5, game.Population{UEM: 92, USK: 8, SLD: 100}},         // turn 4, the end of the year
+		{6, game.Population{UEM: 90, USK: 10, PRO: 5, SLD: 95}}, // turn 5 follows it
+	} {
+		engine.RunTurn(&d)
+		if d.Game.Turn != want.turn || d.Colonies[0].Population != want.p {
+			t.Fatalf("got turn %d, %+v; want turn %d, %+v", d.Game.Turn, d.Colonies[0].Population, want.turn, want.p)
+		}
+	}
+}

@@ -32,6 +32,7 @@ const (
 	ErrInvalidCode  = cerrs.Error("invalid game code")
 	ErrInvalidSeed  = cerrs.Error("invalid seed")
 	ErrNotDirectory = cerrs.Error("not a directory")
+	ErrTurnExists   = cerrs.Error("turn already exists")
 )
 
 // Game is a game's master data.
@@ -193,6 +194,61 @@ func (d Data) Write(dir string) error {
 			return err
 		}
 		created = append(created, o.path)
+	}
+	return nil
+}
+
+// WriteTurn saves the game's state as of its turn, d.Game.Turn, as a new turn
+// of the game in dir: it writes deposits.json, empires.json, and colonies.json
+// into TurnDir(dir, d.Game.Turn), then replaces game.json, which makes that
+// turn the game's current turn. The files that don't change from turn to turn
+// are left alone.
+//
+// It fails with ErrTurnExists if the turn's folder already exists. The folder
+// is built under a temporary name and renamed into place, and game.json is
+// replaced by renaming a temporary file, so a failure leaves the game as it
+// was.
+func (d Data) WriteTurn(dir string) error {
+	turnDir := TurnDir(dir, d.Game.Turn)
+	if _, err := os.Stat(turnDir); err == nil {
+		return fmt.Errorf("%s: %w", turnDir, ErrTurnExists)
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	gameJSON, err := json.Marshal(&d.Game)
+	if err != nil {
+		return fmt.Errorf("%s: %w", FileName, err)
+	}
+
+	tmp, err := os.MkdirTemp(filepath.Dir(turnDir), ".turn-*")
+	if err != nil {
+		return err
+	}
+	defer func() { _ = os.RemoveAll(tmp) }() // a no-op once tmp is renamed
+	for _, f := range d.turnFiles() {
+		data, err := json.Marshal(f.v)
+		if err != nil {
+			return fmt.Errorf("%s: %w", f.name, err)
+		}
+		if err := writeNew(filepath.Join(tmp, f.name), append(data, '\n')); err != nil {
+			return err
+		}
+	}
+	if err := os.Chmod(tmp, 0o755); err != nil {
+		return err
+	}
+
+	gameTmp := filepath.Join(dir, "."+FileName+".tmp")
+	if err := os.WriteFile(gameTmp, append(gameJSON, '\n'), 0o644); err != nil {
+		return err
+	}
+	defer func() { _ = os.Remove(gameTmp) }()
+	if err := os.Rename(tmp, turnDir); err != nil {
+		return err
+	}
+	if err := os.Rename(gameTmp, filepath.Join(dir, FileName)); err != nil {
+		_ = os.RemoveAll(turnDir)
+		return err
 	}
 	return nil
 }

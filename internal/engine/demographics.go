@@ -14,6 +14,14 @@ const TurnsPerYear = 4
 // SetupTurn is the number of a game's first turn, the players' setup turn.
 const SetupTurn = 0
 
+// RunTurn processes the game's current turn, d.Game.Turn: it runs each phase
+// in order on the state in d, which becomes the state as of the next turn, and
+// then advances d.Game.Turn. The phases so far: Demographics.
+func RunTurn(d *game.Data) {
+	Demographics(d, d.Game.Turn)
+	d.Game.Turn++
+}
+
 // Demographics is the demographic changes phase of the turn numbered turn. It
 // applies ChangePopulation to the population of every entity in d.
 func Demographics(d *game.Data, turn int) {
