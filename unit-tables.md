@@ -22,7 +22,7 @@
 | HDRV      | Hyper Drive         | Propulsion     |
 | LAB       | Laboratory          | Infrastructure |
 | LFSU      | Life Support        | Static         |
-| METL      | Metallics           | Resource       |
+| MTL       | Metallics           | Resource       |
 | MRBT      | Military Robot      | Weaponry       |
 | MINE      | Mine                | Infrastructure |
 | MLNC      | Missile Launcher    | Weaponry       |
@@ -144,7 +144,7 @@ These units must be assembled before they can be used.
 | HDRV      | 45 x TL         | 45 x TL         | 22.5 x TL       |
 | LAB       | 2 x TL + 8      | 2 x TL + 8      | TL + 4          |
 | LFSU      | 8 x TL          | 8 x TL          | 4 x TL          |
-| METL      | 1               | 0.5             | 0.5             |
+| MTL       | 1               | 0.5             | 0.5             |
 | MRBT      | 2 x (TL + 10)   | 2 x (TL + 10)   | TL + 10         |
 | MINE      | 2 x (TL + 5)    | 2 x (TL + 5)    | TL + 5          |
 | MLNC      | 25 x TL         | 25 x TL         | 12.5 x TL       |
@@ -188,7 +188,7 @@ These units must be assembled before they can be used.
 | HDRV      | 1 professional / 100 and 40 fuel only per light year                   | Lift capacity 1045 x TL range is (Square root of TL) + 4                             |
 | LAB       | 3 professional 1 unskilled, 0.5 x TL fuel or power                     | Produces 0.25 x TL research per turn                                                 |
 | LFSU      | 1 x TL fuel or power                                                   | Supports 1 x TL^2 population                                                         |
-| METL      |                                                                        | Raw material used in production                                                      |
+| MTL       |                                                                        | Raw material used in production                                                      |
 | MRBT      |                                                                        | Same as 2 x TL soldiers                                                              |
 | MINE      | 1 professional 3 unskilled, 0.5 x TL fuel or power                     | Mines 25 x TL per turn in raw ore. Actual net depends on yield of deposit see Mining |
 | MLNC      | 1 soldier / 100                                                        | Launches 1 missile per attack see Combat                                             |
@@ -242,7 +242,7 @@ Assembled structure does not count against the space it creates, but its mass st
 
 Generated from the tables above:
 * `lot_size` from **Lot Sizes**,
-* `metl_input` and `nmtl_input` from **Unit Inputs**,
+* `mtl_input` and `nmtl_input` from **Unit Inputs**,
 * `mass_units` from **Mass**,
 * `volume_units` from **Volume**,
 * `stowed_volume_units` from **Volume Stowed** (all three in **Unit Mass and Volume**), and
@@ -252,13 +252,13 @@ The `tech_level?` flag marks whether a unit carries Tech Levels.
 
 Generation rules applied:
 
-- Resource units (`FUEL`, `METL`, `NMTL`) and `FOOD` have only a TL0 row.
+- Resource units (`FUEL`, `MTL`, `NMTL`) and `FOOD` have only a TL0 row.
 - Living (`PRO`, `SLD`, `UEM`, `USK`) and Cadre (`CWRK`, `POL`, `RBL`, `SPAG`, `SPY`, `TRNE`, `WRKR`) entries have no rows.
 - `RP` is a non-physical bookkeeping unit and has no row.
 - All remaining units have TL1–TL10 rows, except `CNGD` and `CSUP` (TL0 only).
 - Invariant: a unit code never has both a TL0 row and a positive-TL row.
 - `stowed_volume_units` may be fractional (`ACFT`, `HDRV`, `MLNC`, `SDRV` at odd Tech Levels); see the rounding note under **Unit Mass and Volume**.
-- `metl_input`, `nmtl_input`, `mass_units`, `volume_units`, and `stowed_volume_units` are per lot; divide by `lot_size` for a single unit.
+- `mtl_input`, `nmtl_input`, `mass_units`, `volume_units`, and `stowed_volume_units` are per lot; divide by `lot_size` for a single unit.
 
 Notes:
 
@@ -282,7 +282,7 @@ Notes:
 | HDRV      | yes         | yes                |
 | LAB       | yes         | yes                |
 | LFSU      | yes         | yes                |
-| METL      | no          | no                 |
+| MTL       | no          | no                 |
 | MINE      | yes         | yes                |
 | MLNC      | yes         | yes                |
 | MRBT      | yes         | no                 |
@@ -298,7 +298,7 @@ Notes:
 | TRNS      | yes         | no                 |
 
 
-| unit_code | tech_level | lot_size | metl_input | nmtl_input | mass_units | volume_units | stowed_volume_units |
+| unit_code | tech_level | lot_size | mtl_input  | nmtl_input | mass_units | volume_units | stowed_volume_units |
 |-----------|------------|----------|------------|------------|------------|--------------|---------------------|
 | ACFT      | 1          | 1        | 3          | 2          | 5          | 5            | 2.5                 |
 | ACFT      | 2          | 1        | 6          | 4          | 10         | 10           | 5                   |
@@ -414,7 +414,7 @@ Notes:
 | LFSU      | 8          | 1        | 24         | 40         | 64         | 64           | 32                  |
 | LFSU      | 9          | 1        | 27         | 45         | 72         | 72           | 36                  |
 | LFSU      | 10         | 1        | 30         | 50         | 80         | 80           | 40                  |
-| METL      | 0          | 1        | N/A        | N/A        | 1          | 0.5          | 0.5                 |
+| MTL       | 0          | 1        | N/A        | N/A        | 1          | 0.5          | 0.5                 |
 | MINE      | 1          | 1        | 6          | 6          | 12         | 12           | 6                   |
 | MINE      | 2          | 1        | 7          | 7          | 14         | 14           | 7                   |
 | MINE      | 3          | 1        | 8          | 8          | 16         | 16           | 8                   |
