@@ -4,50 +4,54 @@
 
 ## Units and Classes
 
-| Item Code | Item Name           | Class          |
-|-----------|---------------------|----------------|
-| AMSL      | Anti-Missile        | Ammunition     |
-| ACFT      | Assault Craft       | Weaponry       |
-| AWPN      | Assault Weapons     | Weaponry       |
-| AUTO      | Automation          | Infrastructure |
-| CNGD      | Consumer Goods      | Commodity      |
-| CSUP      | Combat Supplies     | Ammunition     |
-| CWRK      | Construction Worker | Cadre          |
-| ESHD      | Energy Shield       | Weaponry       |
-| EWPN      | Energy Weapon       | Weaponry       |
-| FACT      | Factory             | Infrastructure |
-| FARM      | Farm                | Infrastructure |
-| FOOD      | Food                | Commodity      |
-| FUEL      | Fuel                | Resource       |
-| GOLD      | Gold                | Resource       |
-| HDRV      | Hyper Drive         | Propulsion     |
-| LAB       | Laboratory          | Infrastructure |
-| LFSU      | Life Support        | Static         |
-| MTL       | Metallics           | Resource       |
-| MRBT      | Military Robot      | Weaponry       |
-| MINE      | Mine                | Infrastructure |
-| MLNC      | Missile Launcher    | Weaponry       |
-| MSSL      | Missile             | Ammunition     |
-| NMTL      | Non-Metallics       | Resource       |
-| POL       | Police              | Cadre          |
-| POWR      | Power Plant         | Infrastructure |
-| PRO       | Professionals       | Living         |
-| PRTO      | Prototype           | Technology     |
-| PROB      | Probe               | Recon          |
-| RBL       | Rebel               | Cadre          |
-| RP        | Research Point      | Technology     |
-| SENS      | Sensor              | Recon          |
-| SLD       | Soldiers            | Living         |
-| SDRV      | Space Drive         | Propulsion     |
-| SPAG      | Special Agent       | Cadre          |
-| SPY       | Spy                 | Cadre          |
-| STRC      | Structure           | Structural     |
-| STRL      | Light Structure     | Structural     |
-| TRNE      | Trainee             | Cadre          |
-| TRNS      | Transport           | Transportation |
-| UEM       | Unemployables       | Living         |
-| USK       | Unskilled Workers   | Living         |
-| WRKR      | Worker              | Cadre          |
+| Item Code | Item Name           | Class          | Depot? |
+|-----------|---------------------|----------------|--------|
+| AMSL      | Anti-Missile        | Ammunition     | yes    |
+| ACFT      | Assault Craft       | Weaponry       | no     |
+| AWPN      | Assault Weapons     | Weaponry       | no     |
+| AUTO      | Automation          | Infrastructure | yes    |
+| CNGD      | Consumer Goods      | Commodity      | no     |
+| CSUP      | Combat Supplies     | Ammunition     | yes    |
+| CWRK      | Construction Worker | Cadre          | no     |
+| ESHD      | Energy Shield       | Weaponry       | no     |
+| EWPN      | Energy Weapon       | Weaponry       | no     |
+| FACT      | Factory             | Infrastructure | yes    |
+| FARM      | Farm                | Infrastructure | yes    |
+| FOOD      | Food                | Commodity      | no     |
+| FUEL      | Fuel                | Resource       | yes    |
+| GOLD      | Gold                | Resource       | yes    |
+| HDRV      | Hyper Drive         | Propulsion     | yes    |
+| LAB       | Laboratory          | Infrastructure | yes    |
+| LFSU      | Life Support        | Static         | no     |
+| MTL       | Metallics           | Resource       | yes    |
+| MRBT      | Military Robot      | Weaponry       | no     |
+| MINE      | Mine                | Infrastructure | yes    |
+| MLNC      | Missile Launcher    | Weaponry       | no     |
+| MSSL      | Missile             | Ammunition     | yes    |
+| NMTL      | Non-Metallics       | Resource       | yes    |
+| POL       | Police              | Cadre          | no     |
+| POWR      | Power Plant         | Infrastructure | yes    |
+| PRO       | Professionals       | Living         | no     |
+| PRTO      | Prototype           | Technology     | no     |
+| PROB      | Probe               | Recon          | yes    |
+| RBL       | Rebel               | Cadre          | no     |
+| RP        | Research Point      | Technology     | no     |
+| SENS      | Sensor              | Recon          | yes    |
+| SLD       | Soldiers            | Living         | no     |
+| SDRV      | Space Drive         | Propulsion     | yes    |
+| SPAG      | Special Agent       | Cadre          | no     |
+| SPY       | Spy                 | Cadre          | no     |
+| STRC      | Structure           | Structural     | yes    |
+| STRL      | Light Structure     | Structural     | yes    |
+| TRNE      | Trainee             | Cadre          | no     |
+| TRNS      | Transport           | Transportation | yes    |
+| UEM       | Unemployables       | Living         | no     |
+| USK       | Unskilled Workers   | Living         | no     |
+| WRKR      | Worker              | Cadre          | no     |
+
+**Depot?** says whether the unit may be kept in an open-air surface colony's depot, which is outside the colony, unlimited, and takes none of the colony's space.
+Weaponry, Commodity, Static, and Technology units must be kept in the entity itself, and Living and Cadre units are population, which is never stored.
+Only open-air surface colonies have a depot.
 
 ## Lot Sizes
 

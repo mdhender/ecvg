@@ -52,11 +52,12 @@ func rows(t *testing.T, header string) [][]string {
 	return r
 }
 
-// TestClasses checks every unit's name and class against the document, and
+// TestClasses checks every unit's name, class, and whether it may be kept in
+// a depot against the document, and
 // that the catalogue holds exactly the document's units.
 func TestClasses(t *testing.T) {
 	seen := map[string]bool{}
-	for _, r := range rows(t, "Item Code|Item Name|Class") {
+	for _, r := range rows(t, "Item Code|Item Name|Class|Depot?") {
 		code, name, class := r[0], r[1], r[2]
 		seen[code] = true
 		d, ok := units.Lookup(code)
@@ -66,6 +67,9 @@ func TestClasses(t *testing.T) {
 		}
 		if d.Code != code || d.Name != name || string(d.Class) != class {
 			t.Errorf("%s: got %q, %q, %q; want name %q, class %q", code, d.Code, d.Name, d.Class, name, class)
+		}
+		if depot := r[3] == "yes"; d.DepotAllowed() != depot || (r[3] != "yes" && r[3] != "no") {
+			t.Errorf("%s: DepotAllowed = %v, but the document says %q", code, d.DepotAllowed(), r[3])
 		}
 	}
 	for _, d := range units.All() {
