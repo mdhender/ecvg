@@ -12,6 +12,7 @@ import (
 
 	"github.com/mdhender/ecvg/internal/cerrs"
 	"github.com/mdhender/ecvg/internal/game"
+	"github.com/mdhender/ecvg/internal/units"
 )
 
 const errInvalidTemplate = cerrs.Error("invalid template")
@@ -186,8 +187,9 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 // assets. There must be at least one colony, and colonies must be numbered
 // from 1 in order, with one of the four entity types and a tech level of at
 // least 1. No population
-// may be negative. Units need a type, a quantity of at least 1, and a tech
-// level that is not negative. Groups of each kind must be numbered from 1 in
+// may be negative. Units need a type from the unit catalogue (not population
+// or research points), a quantity of at least 1, and a tech level that is
+// valid for the unit; operational units must be of a kind that is assembled. Groups of each kind must be numbered from 1 in
 // order and hold at least one entry of units, each with a quantity and tech
 // level of at least 1. The errors match errInvalidTemplate.
 func (t EmpireTemplate) Validate() error {
@@ -211,7 +213,7 @@ func (t EmpireTemplate) Validate() error {
 		if p := c.Population; p.UEM < 0 || p.USK < 0 || p.PRO < 0 || p.SLD < 0 {
 			bad("colony %d: negative population", i+1)
 		}
-		units := func(kind string, us []game.Unit) {
+		list := func(kind string, operational bool, us []game.Unit) {
 			for j, u := range us {
 				if u.Type == "" {
 					bad("colony %d: %s %d: missing type", i+1, kind, j+1)
@@ -222,10 +224,27 @@ func (t EmpireTemplate) Validate() error {
 				if u.TechLevel < 0 {
 					bad("colony %d: %s %d: tech_level %d: want at least 0", i+1, kind, j+1, u.TechLevel)
 				}
+				if u.Type == "" {
+					continue
+				}
+				switch d, ok := units.Lookup(u.Type); {
+				case !ok:
+					bad("colony %d: %s %d: unknown unit %q", i+1, kind, j+1, u.Type)
+				case d.Population() || d.Code == units.RP:
+					bad("colony %d: %s %d: %s can't be listed as a unit", i+1, kind, j+1, u.Type)
+				case !d.ValidTechLevel(u.TechLevel) && u.TechLevel >= 0:
+					if d.HasTechLevel {
+						bad("colony %d: %s %d: %s tech_level %d: want %d to %d", i+1, kind, j+1, u.Type, u.TechLevel, units.MinTechLevel, units.MaxTechLevel)
+					} else {
+						bad("colony %d: %s %d: %s tech_level %d: it has no tech level", i+1, kind, j+1, u.Type, u.TechLevel)
+					}
+				case operational && !d.RequiresAssembly:
+					bad("colony %d: %s %d: %s is never assembled, so it belongs in cargo", i+1, kind, j+1, u.Type)
+				}
 			}
 		}
-		units("operational", c.Operational)
-		units("cargo", c.Cargo)
+		list("operational", true, c.Operational)
+		list("cargo", false, c.Cargo)
 		groups := func(kind string, gs []game.Group) {
 			for j, g := range gs {
 				if g.No != j+1 {
