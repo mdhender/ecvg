@@ -141,7 +141,11 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		}{{"UEM", pop.UEM}, {"USK", pop.USK}, {"PRO", pop.PRO}, {"SLD", pop.SLD}, {"Total", pop.Units()}} {
 			p("  %-8s %14s %15s", row.name, commas(row.units), commas(row.units*game.PeoplePerPopulationUnit))
 		}
-		p("  Food needed each turn: %s FOOD", commas(pop.Food()))
+		p("  Food eaten each turn at %d%% rations: %s FOOD", c.Rations, commas(pop.FoodWanted(c.Rations)))
+		if s := c.Starved; s.Units() > 0 {
+			p("  STARVED LAST TURN: %s units (UEM %s, USK %s, PRO %s, SLD %s)",
+				commas(s.Units()), commas(s.UEM), commas(s.USK), commas(s.PRO), commas(s.SLD))
+		}
 		if c.Type.Enclosed() {
 			p("  Space taken: %s VU   Life support needed: %s LU", commas(pop.Volume(c.Type)), commas(pop.LifeSupport(c.Type)))
 		}

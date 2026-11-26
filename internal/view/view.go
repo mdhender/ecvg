@@ -119,7 +119,7 @@ type ColonyRow struct {
 	Mass        int `json:"mass"`
 	Volume      int `json:"volume"`
 	LifeSupport int `json:"life_support"`
-	// Food is the FOOD the population eats in a turn.
+	// Food is the FOOD the population eats in a turn at the colony's rations.
 	Food int `json:"food"`
 }
 
@@ -187,7 +187,7 @@ func EmpireRows(d game.Data) ([]EmpireRow, error) {
 			Mass:        p.Mass(),
 			Volume:      p.Volume(c.Type),
 			LifeSupport: p.LifeSupport(c.Type),
-			Food:        p.Food(),
+			Food:        p.FoodWanted(c.Rations),
 		})
 	}
 	return rows, nil

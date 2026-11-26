@@ -52,7 +52,7 @@ Things that follow from this, which are easy to get backwards:
 - **A report numbered N shows the result of turn N-1.** The turn 1 report is what players see after turn 0 has been run. There is no separate "end of turn 0 report": it *is* the turn 1 report.
 - **Orders numbered N are written while looking at report N**, and are consumed by running turn N.
 - **The game's current turn** (`turn` in `game.json`) is the turn that has not been run yet. Its folder holds the newest state; its orders are the ones being collected.
-- **Turn 0 is the setup turn.** `turns/0` holds the state the generator made. Players get the turn 0 report, send setup orders, and running turn 0 produces turn 1. Demographic changes don't happen in turn 0.
+- **Turn 0 is the setup turn.** `turns/0` holds the state the generator made. Players get the turn 0 report, send setup orders, and running turn 0 produces turn 1. Only orders are carried out in turn 0: nobody eats, starves, or changes job.
 - **Running a turn never changes `turns/N`.** It only reads it and creates `turns/N+1`.
 
 ## Running a game
@@ -138,6 +138,8 @@ SET   RATIONS   FOR 1 TO 75%  # the same order: case and spacing don't matter
 | Order | Effect |
 | ----- | ------ |
 | `set rations for EntityID to PercentageAmount` | Sets the rations of an entity (a ship or colony) the empire controls. EntityID is the "Entity ID" in the empire's report. PercentageAmount is a whole number from `1%` to `500%`; the `%` is required and must be joined to the number (`50%`, not `50 %`). A new entity is at 100%. If an entity gets more than one, the last wins. |
+
+Each turn after turn 0, an entity's population eats 0.25 FOOD per population unit, times its rations, out of the entity's cargo. If there isn't enough FOOD, it eats what there is. When the ration the population actually gets is below 25%, part of it starves to death that turn: 20% of it on a 20% ration, 80% on a 5% ration, all of it with no food. The next report says how many starved.
 
 ## Where the files are
 

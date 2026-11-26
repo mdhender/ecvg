@@ -109,7 +109,10 @@ func TestDemographics(t *testing.T) {
 }
 
 func TestRunTurn(t *testing.T) {
-	d := game.Data{Colonies: []game.Colony{{ID: 1, Population: game.Population{UEM: 100, SLD: 100}}}}
+	d := game.Data{Colonies: []game.Colony{{
+		ID: 1, Rations: game.DefaultRations, Population: game.Population{UEM: 100, SLD: 100},
+		Cargo: []game.Unit{{Type: "FOOD", Qty: 1000}},
+	}}}
 	for _, want := range []struct {
 		turn int
 		p    game.Population
@@ -123,6 +126,10 @@ func TestRunTurn(t *testing.T) {
 	} {
 		if _, err := engine.RunTurn(&d, nil); err != nil {
 			t.Fatal(err)
+		}
+		// 200 units eat 50 FOOD a turn, but not in turn 0.
+		if food, wantFood := d.Colonies[0].Cargo[0].Qty, 1000-50*(want.turn-1); food != wantFood {
+			t.Fatalf("turn %d: %d FOOD left, want %d", want.turn, food, wantFood)
 		}
 		if d.Game.Turn != want.turn || d.Colonies[0].Population != want.p {
 			t.Fatalf("got turn %d, %+v; want turn %d, %+v", d.Game.Turn, d.Colonies[0].Population, want.turn, want.p)

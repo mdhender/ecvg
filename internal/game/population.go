@@ -101,8 +101,15 @@ func (p Population) LifeSupport(t EntityType) int {
 	return p.Units() * PopulationUnitLifeSupport
 }
 
-// Food returns the FOOD the population eats in a turn at the initial ration of
-// 0.25 FOOD per unit, rounded up to a whole FOOD.
+// Food returns the FOOD the population eats in a turn on full rations.
 func (p Population) Food() int {
-	return (p.Units() + PopulationUnitsPerFood - 1) / PopulationUnitsPerFood
+	return p.FoodWanted(100)
+}
+
+// FoodWanted returns the FOOD the population eats in a turn on rations
+// percent rations: 0.25 FOOD per unit (1 FOOD per PopulationUnitsPerFood
+// units) times the rations, rounded up to a whole FOOD.
+func (p Population) FoodWanted(rations int) int {
+	const full = PopulationUnitsPerFood * 100
+	return (p.Units()*rations + full - 1) / full
 }

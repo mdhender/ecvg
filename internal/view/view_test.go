@@ -104,7 +104,7 @@ func empireData() game.Data {
 			{ID: 1, Handle: "abcdefgh", Name: "</script><b>", RaceID: 40, HomeWorldID: 40},
 			{ID: 2, Name: "Empire #2", RaceID: 40, HomeWorldID: 40},
 		},
-		Colonies: []game.Colony{{ID: 7, EmpireID: 1, PlanetID: 40, No: 1, Type: "COPN", TechLevel: 1,
+		Colonies: []game.Colony{{ID: 7, EmpireID: 1, PlanetID: 40, No: 1, Type: "COPN", TechLevel: 1, Rations: game.DefaultRations,
 			Population: game.Population{UEM: 6, USK: 3, PRO: 2, SLD: 1},
 			Cargo:      []game.Unit{{Type: "FOOD", Qty: 20}}}},
 	}

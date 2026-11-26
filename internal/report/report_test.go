@@ -65,7 +65,7 @@ func TestEmpire(t *testing.T) {
 				"Rations 100%   Standard of living 1.00   Birth rate 0.625%   Death rate 0.625%",
 				"  UEM             600,000      60,000,000",
 				"  Total         1,200,000     120,000,000",
-				"Food needed each turn: 300,000 FOOD",
+				"Food eaten each turn at 100% rations: 300,000 FOOD",
 				"  FARM       10        100,000",
 				"  FOOD               4,269,990",
 				"  Group 1          100,000 units at TL 10",
@@ -74,7 +74,7 @@ func TestEmpire(t *testing.T) {
 				"    1  GOLD      12,000,000     1%",
 				"    2  FUEL      20,000,000    13%",
 			},
-			lack: []string{"77,000,000", "Life support", "ORDERS RECEIVED"},
+			lack: []string{"77,000,000", "Life support", "ORDERS RECEIVED", "STARVED"},
 		},
 		{
 			name:     "enclosed colony needs space and life support",
@@ -87,6 +87,18 @@ func TestEmpire(t *testing.T) {
 			empireID: 2,
 			want:     []string{"Player: (none)", "No colonies."},
 			lack:     []string{"COLONY 1"},
+		},
+		{
+			name:     "short rations and starvation",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Colonies[0].Rations = 20
+				d.Colonies[0].Starved = game.Population{UEM: 1500, SLD: 20}
+			},
+			want: []string{
+				"Food eaten each turn at 20% rations: 60,000 FOOD",
+				"STARVED LAST TURN: 1,520 units (UEM 1,500, USK 0, PRO 0, SLD 20)",
+			},
 		},
 		{
 			name:     "later turn with no orders",
