@@ -7,6 +7,8 @@ Each turn is processed as separate stages, as shown below.
   * Mining production
   * Manufacturing production
 * Combat
+* Resources are allocated
+  * FOOD, FUEL, MTL, NMTL, labor
 * Set up orders are processed
 * Dis-assembly orders are processed
 * Build change orders are entered
@@ -23,6 +25,6 @@ Each turn is processed as separate stages, as shown below.
 * Rebellion occurs
 * Rebel increases take place
 * Naming and control orders are processed
-* Population increases are calculated
+* Population changes are calculated
 * Demographic changes are calculated
 * News service reports are compiled
