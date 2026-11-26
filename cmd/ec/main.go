@@ -115,30 +115,6 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		},
 	})
 
-	templateFlags := ff.NewFlagSet("homeworld-template").SetParent(gameFlags)
-	gameCmd.Subcommands = append(gameCmd.Subcommands, &ff.Command{
-		Name:      "homeworld-template",
-		Usage:     "ec game homeworld-template <PATH>",
-		ShortHelp: "write the default home world template for a game",
-		LongHelp: "Homeworld-template writes homeworld-template.json into PATH, the folder of an\n" +
-			"existing game. It describes every home world: the orbit of its home star, its\n" +
-			"viability, and its deposits. Edit it before creating the home worlds. It is\n" +
-			"never overwritten: delete it first to start again from the default.",
-		Flags: templateFlags,
-		Exec: func(ctx context.Context, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("game homeworld-template: want exactly one PATH, got %d arguments", len(args))
-			}
-			t, err := game.CreateHomeWorldTemplate(args[0])
-			if err != nil {
-				return fmt.Errorf("game homeworld-template: %w", err)
-			}
-			fmt.Fprintf(stdout, "wrote %s: orbit %d, viability %d, %d deposits\n",
-				filepath.Join(args[0], game.HomeWorldTemplateFileName), t.OrbitNo, t.Viability, len(t.Deposits))
-			return nil
-		},
-	})
-
 	homeStarFlags := ff.NewFlagSet("homestar-template").SetParent(gameFlags)
 	gameCmd.Subcommands = append(gameCmd.Subcommands, &ff.Command{
 		Name:      "homestar-template",
@@ -147,7 +123,8 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		LongHelp: "Homestar-template writes homestar-template.json into PATH, the folder of an\n" +
 			"existing game. It describes every home star: the planet, if any, in each of\n" +
 			"its 10 orbits, with each planet's habitability, viability, and deposits. The\n" +
-			"home world is always the planet in orbit 3, habitable with viability 25.\n" +
+			"home world is always the planet in orbit 3, marked homeworld, habitable with\n" +
+			"viability 25.\n" +
 			"Edit it before creating the home stars. It is never overwritten: delete it\n" +
 			"first to start again from the default.",
 		Flags: homeStarFlags,

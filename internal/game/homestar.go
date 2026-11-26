@@ -10,11 +10,26 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/mdhender/ecvg/internal/cerrs"
 )
 
 // HomeStarTemplateFileName is the name of the file in a game's folder that
 // holds the template for the game's home stars.
 const HomeStarTemplateFileName = "homestar-template.json"
+
+// HomeStarsPerStellium is the number of stars in a home Stellium. A game has
+// one home Stellium, home star, and home world for each Stellium with this
+// many stars, so at most 15 species.
+const HomeStarsPerStellium = 2
+
+// MaxDepositsPerPlanet is the most deposits a planet can have.
+const MaxDepositsPerPlanet = 31
+
+const (
+	ErrInvalidTemplate = cerrs.Error("invalid home star template")
+	ErrTemplateExists  = cerrs.Error("home star template already exists")
+)
 
 const (
 	// HomeWorldOrbitNo is the orbit of a home star that holds its home world.
@@ -24,8 +39,8 @@ const (
 )
 
 // defaultHomeStarTemplate is the template CreateHomeStarTemplate writes: an
-// Earth-like system of 9 planets in 10 orbits, with orbit 5 empty where the
-// asteroid belt would be.
+// Earth-like system with a planet in every orbit, the one in orbit 5 an
+// asteroid belt.
 //
 //go:embed homestar-template.json
 var defaultHomeStarTemplate []byte
@@ -48,12 +63,22 @@ type TemplateOrbit struct {
 
 // TemplatePlanet is a planet in a HomeStarTemplate.
 type TemplatePlanet struct {
-	Habitable bool `json:"habitable"`
+	// HomeWorld marks the home world. It must be set on the planet in orbit
+	// HomeWorldOrbitNo and on no other.
+	HomeWorld bool `json:"homeworld,omitzero"`
+	Habitable bool `json:"habitable,omitzero"`
 	// Viability is 0 if the planet is not habitable, otherwise
 	// MinViability..MaxViability.
-	Viability int `json:"viability"`
+	Viability int `json:"viability,omitzero"`
 	// Deposits are the planet's deposits, numbered from 1 in this order.
 	Deposits []TemplateDeposit `json:"deposits"`
+}
+
+// TemplateDeposit is a deposit in a HomeStarTemplate.
+type TemplateDeposit struct {
+	Type  DepositType `json:"type"`
+	Size  int         `json:"size"`
+	Yield int         `json:"yield"`
 }
 
 // DefaultHomeStarTemplate returns the template that CreateHomeStarTemplate
@@ -68,8 +93,9 @@ func DefaultHomeStarTemplate() HomeStarTemplate {
 
 // Validate reports every way t breaks the rules for a home star. It must have
 // exactly OrbitsPerStar orbits, numbered from 1 in order, and the orbit
-// HomeWorldOrbitNo must hold the home world: a habitable planet with viability
-// HomeWorldViability. Every planet must have a viability of 0 if it is not
+// HomeWorldOrbitNo must hold the home world: a planet marked homeworld,
+// habitable, with viability HomeWorldViability. No other planet may be marked
+// homeworld. A missing habitable or viability means false or 0. Every planet must have a viability of 0 if it is not
 // habitable or MinViability..MaxViability if it is, and 1..MaxDepositsPerPlanet
 // deposits whose sizes and yields are within the ranges for their types. The
 // errors match ErrInvalidTemplate.
@@ -91,6 +117,13 @@ func (t HomeStarTemplate) Validate() error {
 				bad("orbit %d: empty: want the home world", o.OrbitNo)
 			}
 			continue
+		}
+		if p.HomeWorld != (o.OrbitNo == HomeWorldOrbitNo) {
+			if p.HomeWorld {
+				bad("orbit %d: homeworld: only orbit %d holds the home world", o.OrbitNo, HomeWorldOrbitNo)
+			} else {
+				bad("orbit %d: home world must be marked homeworld", o.OrbitNo)
+			}
 		}
 		switch {
 		case o.OrbitNo == HomeWorldOrbitNo && (!p.Habitable || p.Viability != HomeWorldViability):

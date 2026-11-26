@@ -20,12 +20,12 @@ func TestDefaultHomeStarTemplate(t *testing.T) {
 	if err := tmpl.Validate(); err != nil {
 		t.Fatalf("default template is invalid: %v", err)
 	}
-	if got := tmpl.Planets(); got != 9 {
-		t.Errorf("got %d planets, want 9", got)
+	if got := tmpl.Planets(); got != 10 {
+		t.Errorf("got %d planets, want 10", got)
 	}
 	home := tmpl.Orbits[game.HomeWorldOrbitNo-1].Planet
-	if home == nil || !home.Habitable || home.Viability != game.HomeWorldViability {
-		t.Errorf("home world is %+v, want habitable with viability %d", home, game.HomeWorldViability)
+	if home == nil || !home.HomeWorld || !home.Habitable || home.Viability != game.HomeWorldViability {
+		t.Errorf("home world is %+v, want marked homeworld, habitable with viability %d", home, game.HomeWorldViability)
 	}
 }
 
@@ -62,16 +62,24 @@ func TestHomeStarTemplateValidate(t *testing.T) {
 			want:   []string{"orbit 3: home world must be habitable"},
 		},
 		{
-			name: "habitable with viability 0",
-			change: func(t *game.HomeStarTemplate) {
-				t.Orbits[3].Planet.Habitable = true
-			},
-			want: []string{"orbit 4: habitable with viability 0"},
+			name:   "home world not marked",
+			change: func(t *game.HomeStarTemplate) { t.Orbits[2].Planet.HomeWorld = false },
+			want:   []string{"orbit 3: home world must be marked homeworld"},
+		},
+		{
+			name:   "second home world",
+			change: func(t *game.HomeStarTemplate) { t.Orbits[3].Planet.HomeWorld = true },
+			want:   []string{"orbit 4: homeworld: only orbit 3"},
+		},
+		{
+			name:   "habitable with viability 0",
+			change: func(t *game.HomeStarTemplate) { t.Orbits[3].Planet.Viability = 0 },
+			want:   []string{"orbit 4: habitable with viability 0"},
 		},
 		{
 			name: "another habitable planet is fine",
 			change: func(t *game.HomeStarTemplate) {
-				t.Orbits[3].Planet.Habitable, t.Orbits[3].Planet.Viability = true, 5
+				t.Orbits[0].Planet.Habitable, t.Orbits[0].Planet.Viability = true, 5
 			},
 		},
 		{
@@ -90,8 +98,8 @@ func TestHomeStarTemplateValidate(t *testing.T) {
 			want:   []string{"orbit 6: deposit 2: FUEL yield 23"},
 		},
 		{
-			name:   "planet in the empty orbit",
-			change: func(t *game.HomeStarTemplate) { t.Orbits[4].Planet = t.Orbits[5].Planet },
+			name:   "empty orbit is fine",
+			change: func(t *game.HomeStarTemplate) { t.Orbits[4].Planet = nil },
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -180,5 +188,13 @@ func TestLoadHomeStarTemplateRejectsUnknownMembers(t *testing.T) {
 	}
 	if _, err := game.LoadHomeStarTemplate(dir); err == nil || !strings.Contains(err.Error(), "star_type") {
 		t.Errorf("got error %v, want one naming star_type", err)
+	}
+}
+
+// createGame creates a game in dir, which must exist.
+func createGame(t *testing.T, dir string) {
+	t.Helper()
+	if _, err := game.Create(dir, goldenSeed); err != nil {
+		t.Fatal(err)
 	}
 }
