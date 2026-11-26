@@ -175,8 +175,19 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				p("  None assembled")
 			}
 			for _, g := range gs {
+				if g.IdlePercent > 0 {
+					p("  Group %-3d ORDERED IDLE: %d%% of its units", g.No, g.IdlePercent)
+				}
 				for _, u := range g.Units {
 					p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
+					for _, row := range []struct {
+						n   int
+						why string
+					}{{u.Idle.Ordered, "BY ORDER"}, {u.Idle.Unstaffed, "NO STAFF"}, {u.Idle.Unfuelled, "NO FUEL"}} {
+						if row.n > 0 {
+							p("            %14s of them were IDLE last turn: %s", commas(row.n), row.why)
+						}
+					}
 					for done, n := range u.Pipeline {
 						if left := game.FarmCropTurns - 1 - done; n > 0 && left > 0 {
 							p("            %14s of them deliver their crop after %d more %s of work", commas(n), left, plural(left, "turn", "turns"))
@@ -198,6 +209,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		if h := c.Harvest; h.Units > 0 {
 			p("  LAST TURN: %s of %s units worked, burned %s FUEL, and made %s FOOD",
 				commas(h.Worked), commas(h.Units), commas(h.Fuel), commas(h.Food))
+			if h.Ordered > 0 {
+				p("  %s units idle: by order", commas(h.Ordered))
+			}
 			if h.Unstaffed > 0 {
 				p("  %s units idle: no staff (each needs %d PRO and %d USK)", commas(h.Unstaffed), game.FarmPRO, game.FarmUSK)
 			}

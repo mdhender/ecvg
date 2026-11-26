@@ -72,6 +72,7 @@ func TestFarming(t *testing.T) {
 		want       game.Harvest
 		fuel, food int          // left in cargo
 		workers    game.Workers // checked if not zero
+		idle       []game.Idle  // of each group's first units; checked if not nil
 	}{
 		{
 			name: "1978 sample",
@@ -138,6 +139,35 @@ func TestFarming(t *testing.T) {
 			workers: game.Workers{PRO: 5, USK: 12, AutoUSK: 9, IdlePRO: 1, IdleUSK: 0},
 		},
 		{
+			name: "idle by order: the idled units ask for nothing",
+			colony: game.Colony{
+				Type: game.COPN, Population: game.Population{UEM: 600000, USK: 300000, PRO: 200000, SLD: 100000},
+				Cargo:         []game.Unit{{Type: "FUEL", Qty: 1360000}},
+				FarmingGroups: []game.Group{{No: 1, IdlePercent: 94, Units: []game.GroupUnits{{Qty: 100000, TechLevel: 10}}}},
+			},
+			want: game.Harvest{Units: 100000, Worked: 6000, Ordered: 94000, Fuel: 60000, Food: 300000},
+			fuel: 1300000, food: 300000,
+			workers: game.Workers{PRO: 200000, USK: 300000, IdlePRO: 194000, IdleUSK: 282000},
+			idle:    []game.Idle{{Ordered: 94000}},
+		},
+		{
+			name: "both levels of idle, and a group idled by order doesn't end the fuel pass",
+			colony: game.Colony{
+				Type: game.COPN, Population: game.Population{USK: 30, PRO: 10},
+				Cargo: []game.Unit{{Type: "FUEL", Qty: 35}},
+				FarmingGroups: []game.Group{
+					{No: 1, IdlePercent: 100, Units: []game.GroupUnits{{Qty: 50, TechLevel: 10}}},
+					// 33% of 10 is 3.3, so 4 idle by order; 6 staffed, fuel for 3.
+					{No: 2, IdlePercent: 33, Units: []game.GroupUnits{{Qty: 10, TechLevel: 10}}},
+					// 4 of the 9 staffed, and the last 5 FUEL runs 2 of them.
+					{No: 3, Units: []game.GroupUnits{{Qty: 9, TechLevel: 5}}},
+				},
+			},
+			want: game.Harvest{Units: 69, Worked: 5, Ordered: 54, Unstaffed: 5, Unfuelled: 5, Fuel: 35, Food: 200},
+			fuel: 0, food: 200,
+			idle: []game.Idle{{Ordered: 50}, {Ordered: 4, Unfuelled: 3}, {Unstaffed: 5, Unfuelled: 2}},
+		},
+		{
 			name: "solar power in an inner orbit",
 			colony: game.Colony{
 				Type: game.CORB, Population: game.Population{USK: 30, PRO: 10},
@@ -187,6 +217,11 @@ func TestFarming(t *testing.T) {
 			if tc.workers != (game.Workers{}) && c.Workers != tc.workers {
 				t.Errorf("workers = %+v, want %+v", c.Workers, tc.workers)
 			}
+			for j, want := range tc.idle {
+				if got := c.FarmingGroups[j].Units[0].Idle; got != want {
+					t.Errorf("group %d: idle %+v, want %+v", j+1, got, want)
+				}
+			}
 			if c.Population != before {
 				t.Errorf("population changed: %+v", c.Population)
 			}
@@ -196,10 +231,10 @@ func TestFarming(t *testing.T) {
 		d := world(game.Colony{
 			Type: game.COPN, Population: game.Population{USK: 30, PRO: 10}, Harvest: game.Harvest{Units: 9},
 			Cargo:         []game.Unit{{Type: "FUEL", Qty: 100}},
-			FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 4, TechLevel: 10})},
+			FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 4, TechLevel: 10, Idle: game.Idle{Unfuelled: 2}})},
 		})
 		engine.Farming(&d, 0, engine.AllocateResources(&d, 0))
-		if c := d.Colonies[0]; c.Harvest != (game.Harvest{}) || c.Workers != (game.Workers{}) || c.Cargo[0].Qty != 100 || len(c.Cargo) != 1 {
+		if c := d.Colonies[0]; c.Harvest != (game.Harvest{}) || c.Workers != (game.Workers{}) || c.FarmingGroups[0].Units[0].Idle != (game.Idle{}) || c.Cargo[0].Qty != 100 || len(c.Cargo) != 1 {
 			t.Errorf("harvest %+v, cargo %+v; want nothing farmed", c.Harvest, c.Cargo)
 		}
 	})

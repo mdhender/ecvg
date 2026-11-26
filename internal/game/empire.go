@@ -107,16 +107,45 @@ type Unit struct {
 	Qty       int `json:"qty"`
 }
 
+// GroupKind is a kind of group.
+type GroupKind string
+
+const (
+	KindFarming GroupKind = "farming"
+	KindMining  GroupKind = "mining"
+	KindFactory GroupKind = "factory"
+)
+
+// The percentage of a group's units that an empire may order to idle.
+const (
+	MinIdlePercent = 0
+	MaxIdlePercent = 100
+)
+
+// IdleUnits returns the number of qty units that sit idle when their group is
+// ordered percent percent idle, rounded up to a whole unit.
+func IdleUnits(qty, percent int) int {
+	percent = max(MinIdlePercent, min(MaxIdlePercent, percent))
+	return (max(0, qty)*percent + 99) / 100
+}
+
 // Group is a farming or factory group.
 type Group struct {
-	// No numbers the colony's groups of one kind from 1.
-	No    int          `json:"no"`
-	Units []GroupUnits `json:"units"`
+	// No numbers the colony's groups of one kind from 1. A lower number is
+	// more senior, and gets resources first.
+	No int `json:"no"`
+	// IdlePercent is the percentage of the group's units that the empire has
+	// ordered to idle, MinIdlePercent..MaxIdlePercent. Idled units ask for no
+	// staff or fuel. It stands until the empire changes it.
+	IdlePercent int          `json:"idle_percent,omitzero"`
+	Units       []GroupUnits `json:"units"`
 }
 
 // MiningGroup is a group of mines working one deposit.
 type MiningGroup struct {
 	No int `json:"no"`
+	// IdlePercent is as for Group.
+	IdlePercent int `json:"idle_percent,omitzero"`
 	// DepositID is the ID of the deposit the group works.
 	DepositID int          `json:"deposit_id"`
 	Units     []GroupUnits `json:"units"`
@@ -130,6 +159,26 @@ type GroupUnits struct {
 	// them with 1, 2, and 3 consecutive turns of work behind them. See
 	// AdvanceCrop.
 	Pipeline []int `json:"pipeline,omitempty"`
+	// Idle counts the units that didn't work in the prior turn, by why.
+	Idle Idle `json:"idle,omitzero"`
+}
+
+// Idle counts the units of a group that didn't work in a turn. There are two
+// levels of idle: the empire ordered it, or resource allocation couldn't
+// supply the unit.
+type Idle struct {
+	// Ordered units were idled by the empire's order (the group's
+	// IdlePercent), and asked for nothing.
+	Ordered int `json:"ordered,omitzero"`
+	// Unstaffed units got no staff, and Unfuelled units got staff but no
+	// FUEL.
+	Unstaffed int `json:"unstaffed,omitzero"`
+	Unfuelled int `json:"unfuelled,omitzero"`
+}
+
+// Units returns the number of idle units.
+func (i Idle) Units() int {
+	return i.Ordered + i.Unstaffed + i.Unfuelled
 }
 
 // ValidateHandle checks that handle is MinHandleLength..MaxHandleLength

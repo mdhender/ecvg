@@ -41,7 +41,8 @@ func harvest(c *game.Colony, a Allocation) game.Harvest {
 				w = a.Farms[j][k]
 			}
 			h.Units += u.Qty
-			h.Unstaffed += u.Qty - w.Staffed
+			h.Ordered += w.Ordered
+			h.Unstaffed += u.Qty - w.Ordered - w.Staffed
 			h.Unfuelled += w.Staffed - w.Worked
 			h.Worked += w.Worked
 			h.Fuel += w.Fuel

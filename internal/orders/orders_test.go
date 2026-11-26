@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mdhender/ecvg/internal/game"
 	"github.com/mdhender/ecvg/internal/orders"
 )
 
@@ -224,6 +225,52 @@ func TestLoadTurn(t *testing.T) {
 			write(t, dir, tc.files)
 			if _, err := orders.LoadTurn(dir, 3); !errors.Is(err, tc.err) {
 				t.Errorf("LoadTurn error = %v, want %v", err, tc.err)
+			}
+		})
+	}
+}
+
+func TestParseSetIdle(t *testing.T) {
+	for _, tc := range []struct {
+		line string
+		want orders.Order
+		err  error
+	}{
+		{line: "set idle for farming group 1 of 7 to 94%", want: orders.SetIdle{EntityID: 7, Kind: game.KindFarming, GroupNo: 1, Percent: 94}},
+		{line: "SET IDLE FOR Mining GROUP 02 OF 007 TO 100% # all of it", want: orders.SetIdle{EntityID: 7, Kind: game.KindMining, GroupNo: 2, Percent: 100}},
+		{line: "set idle for factory group 3 of 7 to 0%", want: orders.SetIdle{EntityID: 7, Kind: game.KindFactory, GroupNo: 3, Percent: 0}},
+		{line: "set idle for farming group 1 of 7 to 101%", err: orders.ErrInvalidPercentage},
+		{line: "set idle for farming group 1 of 7 to 50", err: orders.ErrInvalidPercentage},
+		{line: "set idle for farming group 1 of 7 to -1%", err: orders.ErrInvalidPercentage},
+		{line: "set idle for farm group 1 of 7 to 50%", err: orders.ErrInvalidGroupKind},
+		{line: `set idle for "farming" group 1 of 7 to 50%`, err: orders.ErrInvalidGroupKind},
+		{line: "set idle for farming group 0 of 7 to 50%", err: orders.ErrInvalidGroupNo},
+		{line: "set idle for farming group one of 7 to 50%", err: orders.ErrInvalidGroupNo},
+		{line: "set idle for farming group 1 of 0 to 50%", err: orders.ErrInvalidEntityID},
+		{line: "set idle for farming group 1 of x to 50%", err: orders.ErrInvalidEntityID},
+		{line: "set idle for farming group 1 in 7 to 50%", err: orders.ErrInvalidOrder},
+		{line: "set idle for farming 1 of 7 to 50%", err: orders.ErrInvalidOrder},
+		{line: "set idle for farming group 1 of 7 to 50% now", err: orders.ErrInvalidOrder},
+		{line: "set idle", err: orders.ErrInvalidOrder},
+	} {
+		t.Run(tc.line, func(t *testing.T) {
+			lines, err := orders.Parse(strings.NewReader(tc.line))
+			if err != nil || len(lines) != 1 {
+				t.Fatalf("Parse = %+v, %v; want one line", lines, err)
+			}
+			got := lines[0]
+			if !errors.Is(got.Err, tc.err) || (tc.err == nil && got.Err != nil) {
+				t.Fatalf("error = %v, want %v", got.Err, tc.err)
+			}
+			if got.Order != tc.want {
+				t.Errorf("order = %+v, want %+v", got.Order, tc.want)
+			}
+			if tc.want != nil {
+				// An order's String parses back to the order.
+				again, err := orders.Parse(strings.NewReader(tc.want.String()))
+				if err != nil || len(again) != 1 || again[0].Order != tc.want {
+					t.Errorf("String() = %q, which parses to %+v, %v", tc.want.String(), again, err)
+				}
 			}
 		})
 	}

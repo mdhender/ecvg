@@ -136,3 +136,67 @@ func TestRunTurnAppliesOrders(t *testing.T) {
 		t.Errorf("accepted %d, rations %d, turn %d; want 1, 25, 1", result.Accepted, d.Colonies[2].Rations, d.Game.Turn)
 	}
 }
+
+func TestSetIdle(t *testing.T) {
+	groups := func() game.Data {
+		d := twoEmpires()
+		d.Colonies[1].FarmingGroups = []game.Group{{No: 1}, {No: 2, IdlePercent: 10}}
+		d.Colonies[1].MiningGroups = []game.MiningGroup{{No: 1}}
+		d.Colonies[1].FactoryGroups = []game.Group{{No: 1}}
+		d.Colonies[2].FarmingGroups = []game.Group{{No: 1}}
+		return d
+	}
+	for _, tc := range []struct {
+		name               string
+		empireID, entityID int
+		kind               game.GroupKind
+		groupNo, percent   int
+		err                error
+	}{
+		{"farming", 1, 2, game.KindFarming, 2, 94, nil},
+		{"all of it", 1, 2, game.KindFarming, 1, 100, nil},
+		{"back to work", 1, 2, game.KindFarming, 2, 0, nil},
+		{"mining", 1, 2, game.KindMining, 1, 50, nil},
+		{"factory", 1, 2, game.KindFactory, 1, 50, nil},
+		{"no such group", 1, 2, game.KindFarming, 3, 50, engine.ErrNoSuchGroup},
+		{"no groups of that kind", 1, 1, game.KindMining, 1, 50, engine.ErrNoSuchGroup},
+		{"unknown kind", 1, 2, game.GroupKind("fishing"), 1, 50, engine.ErrNoSuchGroup},
+		{"another empire's colony", 1, 3, game.KindFarming, 1, 50, engine.ErrNotControlled},
+		{"no such entity", 1, 9, game.KindFarming, 1, 50, engine.ErrNotControlled},
+		{"too little", 1, 2, game.KindFarming, 1, -1, orders.ErrInvalidPercentage},
+		{"too much", 1, 2, game.KindFarming, 1, 101, orders.ErrInvalidPercentage},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := groups()
+			err := engine.SetIdle(&d, tc.empireID, tc.entityID, tc.kind, tc.groupNo, tc.percent)
+			if !errors.Is(err, tc.err) || (tc.err == nil && err != nil) {
+				t.Fatalf("error = %v, want %v", err, tc.err)
+			}
+			want := groups()
+			if tc.err == nil {
+				c := &want.Colonies[tc.entityID-1]
+				switch tc.kind {
+				case game.KindFarming:
+					c.FarmingGroups[tc.groupNo-1].IdlePercent = tc.percent
+				case game.KindMining:
+					c.MiningGroups[tc.groupNo-1].IdlePercent = tc.percent
+				case game.KindFactory:
+					c.FactoryGroups[tc.groupNo-1].IdlePercent = tc.percent
+				}
+			}
+			if !reflect.DeepEqual(d, want) {
+				t.Errorf("colonies = %+v, want %+v", d.Colonies, want.Colonies)
+			}
+		})
+	}
+	t.Run("as an order", func(t *testing.T) {
+		d := groups()
+		result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "set idle for farming group 1 of 2 to 94%\nset idle for mining group 4 of 2 to 5%")})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if d.Colonies[1].FarmingGroups[0].IdlePercent != 94 || len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, engine.ErrNoSuchGroup) {
+			t.Errorf("idle %d%%, rejected %+v; want 94%% and one order rejected for its group", d.Colonies[1].FarmingGroups[0].IdlePercent, result.Rejected)
+		}
+	})
+}

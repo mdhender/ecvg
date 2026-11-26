@@ -87,6 +87,8 @@ func applyOrder(d *game.Data, empireID int, order orders.Order) error {
 	switch o := order.(type) {
 	case orders.SetRations:
 		return SetRations(d, empireID, o.EntityID, o.Percent)
+	case orders.SetIdle:
+		return SetIdle(d, empireID, o.EntityID, o.Kind, o.GroupNo, o.Percent)
 	}
 	return fmt.Errorf("%w: %T", orders.ErrUnknownOrder, order)
 }
@@ -105,6 +107,57 @@ func SetRations(d *game.Data, empireID, entityID, percent int) error {
 			c.Rations = percent
 			return nil
 		}
+	}
+	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
+}
+
+// ErrNoSuchGroup is the error for an order that names a group its entity
+// doesn't have.
+const ErrNoSuchGroup = cerrs.Error("the entity has no such group")
+
+// SetIdle orders percent percent of the units of a group to idle, on the
+// orders of the empire with ID empireID: the group of the given kind numbered
+// groupNo in the entity with ID entityID. Idled units ask for no staff or
+// fuel when resources are allocated. The setting stands until it is changed;
+// 0 puts the whole group back to work. It fails with ErrNotControlled if the
+// empire has no such entity, ErrNoSuchGroup if the entity has no such group,
+// and orders.ErrInvalidPercentage if percent is not in
+// game.MinIdlePercent..game.MaxIdlePercent.
+func SetIdle(d *game.Data, empireID, entityID int, kind game.GroupKind, groupNo, percent int) error {
+	if percent < game.MinIdlePercent || percent > game.MaxIdlePercent {
+		return fmt.Errorf("%w: %d%%", orders.ErrInvalidPercentage, percent)
+	}
+	for i := range d.Colonies {
+		c := &d.Colonies[i]
+		if c.ID != entityID || c.EmpireID != empireID {
+			continue
+		}
+		var idle *int
+		switch kind {
+		case game.KindFarming:
+			for j := range c.FarmingGroups {
+				if c.FarmingGroups[j].No == groupNo {
+					idle = &c.FarmingGroups[j].IdlePercent
+				}
+			}
+		case game.KindMining:
+			for j := range c.MiningGroups {
+				if c.MiningGroups[j].No == groupNo {
+					idle = &c.MiningGroups[j].IdlePercent
+				}
+			}
+		case game.KindFactory:
+			for j := range c.FactoryGroups {
+				if c.FactoryGroups[j].No == groupNo {
+					idle = &c.FactoryGroups[j].IdlePercent
+				}
+			}
+		}
+		if idle == nil {
+			return fmt.Errorf("entity %d: %s group %d: %w", entityID, kind, groupNo, ErrNoSuchGroup)
+		}
+		*idle = percent
+		return nil
 	}
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }

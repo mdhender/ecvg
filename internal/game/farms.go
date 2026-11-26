@@ -170,12 +170,14 @@ type Harvest struct {
 	// how many of them made food.
 	Units  int `json:"units"`
 	Worked int `json:"worked"`
-	// Unstaffed units had no PRO and USK to work them, and Unfuelled units
-	// had the staff but no FUEL.
+	// Ordered units were idled by the empire's order. Unstaffed units had no
+	// PRO and USK to work them, and Unfuelled units had the staff but no
+	// FUEL.
+	Ordered   int `json:"ordered,omitzero"`
 	Unstaffed int `json:"unstaffed,omitzero"`
 	Unfuelled int `json:"unfuelled,omitzero"`
 	// Ruined is the number of FARM-1 units that didn't work and lost a crop
-	// they had begun. It is part of Unstaffed and Unfuelled.
+	// they had begun. It is part of Ordered, Unstaffed, and Unfuelled.
 	Ruined int `json:"ruined,omitzero"`
 	// Fuel is the FUEL the units burned, and Food is the FOOD they delivered.
 	Fuel int `json:"fuel"`

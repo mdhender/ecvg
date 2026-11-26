@@ -11,10 +11,13 @@
 // The orders:
 //
 //	set rations for EntityID to PercentageAmount
+//	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //
-// EntityID is the ID of an entity. PercentageAmount is a whole number from
-// game.MinRations to game.MaxRations with a "%" joined to it: "50%", not
-// "50 %".
+// EntityID is the ID of an entity. PercentageAmount is a whole number with a
+// "%" joined to it: "50%", not "50 %". For rations it is from game.MinRations
+// to game.MaxRations, and for idle from game.MinIdlePercent to
+// game.MaxIdlePercent. GroupKind is farming, mining, or factory, and GroupNo
+// is the number of a group of that kind.
 package orders
 
 import (
@@ -33,9 +36,11 @@ const (
 	ErrInvalidOrder      = cerrs.Error("invalid order")
 	ErrInvalidEntityID   = cerrs.Error("invalid entity ID")
 	ErrInvalidPercentage = cerrs.Error("invalid percentage")
+	ErrInvalidGroupKind  = cerrs.Error("invalid group kind")
+	ErrInvalidGroupNo    = cerrs.Error("invalid group number")
 )
 
-// Order is one order. Its type says which: SetRations.
+// Order is one order. Its type says which: SetRations or SetIdle.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -50,6 +55,20 @@ type SetRations struct {
 
 func (o SetRations) String() string {
 	return fmt.Sprintf("set rations for %d to %d%%", o.EntityID, o.Percent)
+}
+
+// SetIdle is the order "set idle for GroupKind group GroupNo of EntityID to
+// PercentageAmount". It orders Percent percent of the units of a group of the
+// entity with ID EntityID to idle; 0% puts them all back to work.
+type SetIdle struct {
+	EntityID int
+	Kind     game.GroupKind
+	GroupNo  int
+	Percent  int
+}
+
+func (o SetIdle) String() string {
+	return fmt.Sprintf("set idle for %s group %d of %d to %d%%", o.Kind, o.GroupNo, o.EntityID, o.Percent)
 }
 
 // Line is one line of an orders file that holds an order.
@@ -94,6 +113,8 @@ func parseOrder(tokens []Token) (Order, error) {
 	switch {
 	case len(tokens) >= 2 && tokens[0].Is("set") && tokens[1].Is("rations"):
 		return parseSetRations(tokens)
+	case len(tokens) >= 2 && tokens[0].Is("set") && tokens[1].Is("idle"):
+		return parseSetIdle(tokens)
 	}
 	return nil, ErrUnknownOrder
 }
@@ -108,13 +129,53 @@ func parseSetRations(tokens []Token) (Order, error) {
 	if !ok || id < 1 {
 		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidEntityID, tokens[3].Text)
 	}
-	digits, hasSign := strings.CutSuffix(tokens[5].Text, "%")
-	pct, ok := number(Token{Text: digits, Quoted: tokens[5].Quoted})
-	if !ok || !hasSign || pct < game.MinRations || pct > game.MaxRations {
-		return nil, fmt.Errorf("%w: %q: want a whole number from %d%% to %d%%, with the %% joined to it",
-			ErrInvalidPercentage, tokens[5].Text, game.MinRations, game.MaxRations)
+	pct, err := percentage(tokens[5], game.MinRations, game.MaxRations)
+	if err != nil {
+		return nil, err
 	}
 	return SetRations{EntityID: id, Percent: pct}, nil
+}
+
+const setIdleUsage = "want: set idle for GroupKind group GroupNo of EntityID to PercentageAmount"
+
+func parseSetIdle(tokens []Token) (Order, error) {
+	if len(tokens) != 10 || !tokens[2].Is("for") || !tokens[4].Is("group") || !tokens[6].Is("of") || !tokens[8].Is("to") {
+		return nil, fmt.Errorf("%w: %s", ErrInvalidOrder, setIdleUsage)
+	}
+	var kind game.GroupKind
+	for _, k := range []game.GroupKind{game.KindFarming, game.KindMining, game.KindFactory} {
+		if tokens[3].Is(string(k)) {
+			kind = k
+		}
+	}
+	if kind == "" {
+		return nil, fmt.Errorf("%w: %q: want farming, mining, or factory", ErrInvalidGroupKind, tokens[3].Text)
+	}
+	no, ok := number(tokens[5])
+	if !ok || no < 1 {
+		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, tokens[5].Text)
+	}
+	id, ok := number(tokens[7])
+	if !ok || id < 1 {
+		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidEntityID, tokens[7].Text)
+	}
+	pct, err := percentage(tokens[9], game.MinIdlePercent, game.MaxIdlePercent)
+	if err != nil {
+		return nil, err
+	}
+	return SetIdle{EntityID: id, Kind: kind, GroupNo: no, Percent: pct}, nil
+}
+
+// percentage returns the value of a token that is a whole number from least
+// to most with a "%" joined to it.
+func percentage(t Token, least, most int) (int, error) {
+	digits, hasSign := strings.CutSuffix(t.Text, "%")
+	pct, ok := number(Token{Text: digits, Quoted: t.Quoted})
+	if !ok || !hasSign || pct < least || pct > most {
+		return 0, fmt.Errorf("%w: %q: want a whole number from %d%% to %d%%, with the %% joined to it",
+			ErrInvalidPercentage, t.Text, least, most)
+	}
+	return pct, nil
 }
 
 // number returns the value of a token that is only ASCII digits.

@@ -10,6 +10,9 @@ import (
 
 // Work is what one entry of a group's units was allocated for a turn.
 type Work struct {
+	// Ordered is the number of the units the empire ordered to idle. They
+	// ask for nothing.
+	Ordered int
 	// Staffed is the number of the units that got staff, and Worked is the
 	// number of those that also got the fuel they need, so that they work.
 	Staffed int
@@ -31,6 +34,12 @@ type Allocation struct {
 // among its groups. It returns the allocations, one per colony in d.Colonies
 // order. Nothing is allocated in turn SetupTurn, and it returns nil.
 //
+// There are two levels of idle. The first is the empire's: the units a
+// group's IdlePercent idles (game.IdleUnits) ask for no staff or fuel. The
+// second is set here: units that asked and got no staff, or staff but no
+// fuel. Both are recorded in the Idle of the group's units, for the
+// production phases to respect and the report to show.
+//
 // The scheme is deliberately blunt, not efficient. It makes two passes over
 // the groups, each time the farming groups first (mining and factory groups
 // will follow them), and each kind in order of seniority: the group number,
@@ -48,7 +57,13 @@ type Allocation struct {
 func AllocateResources(d *game.Data, turn int) []Allocation {
 	if turn <= SetupTurn {
 		for i := range d.Colonies {
-			d.Colonies[i].Workers = game.Workers{}
+			c := &d.Colonies[i]
+			c.Workers = game.Workers{}
+			for _, g := range c.FarmingGroups {
+				for k := range g.Units {
+					g.Units[k].Idle = game.Idle{}
+				}
+			}
 		}
 		return nil
 	}
@@ -78,7 +93,9 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 	for j, g := range c.FarmingGroups {
 		a.Farms[j] = make([]Work, len(g.Units))
 		for k, u := range g.Units {
-			a.Farms[j][k].Staffed = c.Workers.Take(u.Qty, game.FarmPRO, game.FarmUSK)
+			w := &a.Farms[j][k]
+			w.Ordered = game.IdleUnits(u.Qty, g.IdlePercent)
+			w.Staffed = c.Workers.Take(u.Qty-w.Ordered, game.FarmPRO, game.FarmUSK)
 		}
 	}
 
@@ -102,9 +119,33 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 			w.Fuel = game.FarmFuel(u.TechLevel, w.Worked)
 			fuel -= w.Fuel
 		}
-		if staffed == 0 {
+		// A group that asked for staff and got none ends the pass. One that
+		// is idle by order asked for nothing, and is passed over.
+		if staffed == 0 && wanted(g, a.Farms[j]) {
 			break
 		}
 	}
+
+	// Record who is idle, and why.
+	for j, g := range c.FarmingGroups {
+		for k := range g.Units {
+			w := a.Farms[j][k]
+			g.Units[k].Idle = game.Idle{
+				Ordered:   w.Ordered,
+				Unstaffed: g.Units[k].Qty - w.Ordered - w.Staffed,
+				Unfuelled: w.Staffed - w.Worked,
+			}
+		}
+	}
 	return a
+}
+
+// wanted reports whether any of the units of g asked for staff.
+func wanted(g game.Group, work []Work) bool {
+	for k, u := range g.Units {
+		if u.Qty > work[k].Ordered {
+			return true
+		}
+	}
+	return false
 }
