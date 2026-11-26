@@ -72,6 +72,12 @@ func TestChangePopulation(t *testing.T) {
 			want: game.Population{UEM: 588000, USK: 312000, PRO: 205000, SLD: 95000},
 		},
 		{
+			name: "turn 0 is the setup turn: no change",
+			turn: 0,
+			p:    game.Population{UEM: 600000, USK: 300000, PRO: 200000, SLD: 100000},
+			want: game.Population{UEM: 600000, USK: 300000, PRO: 200000, SLD: 100000},
+		},
+		{
 			name: "no population",
 			turn: 5,
 		},

@@ -11,6 +11,9 @@ import "github.com/mdhender/ecvg/internal/game"
 // divides by it is an end-of-year turn.
 const TurnsPerYear = 4
 
+// SetupTurn is the number of a game's first turn, the players' setup turn.
+const SetupTurn = 0
+
 // Demographics is the demographic changes phase of the turn numbered turn. It
 // applies ChangePopulation to the population of every entity in d.
 func Demographics(d *game.Data, turn int) {
@@ -27,8 +30,11 @@ func Demographics(d *game.Data, turn int) {
 //  2. If the prior turn, turn-1, was an end-of-year turn (it is greater than 0
 //     and divides by TurnsPerYear), 5% of SLD (rounded up) become PRO.
 //
-// The total population does not change.
+// The total population does not change. Nothing changes in turn SetupTurn.
 func ChangePopulation(p game.Population, turn int) game.Population {
+	if turn <= SetupTurn {
+		return p
+	}
 	if p.UEM*10 > p.Units()*3 {
 		n := percentUp(p.UEM, 2)
 		p.UEM -= n
