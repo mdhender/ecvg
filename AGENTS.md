@@ -26,6 +26,9 @@ Stellia have a `homestellium` flag and stars a `homestar` flag, both false until
 It flags the star and its Stellium, deletes the star's orbits, their planets, and those planets' deposits, and creates new ones from the game's `homestar-template.json`; the home world is the new planet in orbit 3.
 New records get IDs past the largest ID of their kind, so IDs are never reused and every file stays in ID order with gaps; all five changed files are written to temporary files and then renamed into place.
 The counts above (orbits per star aside) describe a game as created; designating home stars changes them.
+`ec empire create --handle {handle} [--name {name}] games/{code}` adds an empire to the first available home world: the home world (planet in orbit 3 of a home star) with the lowest ID that has fewer than 15 empires; it is an error if there is none.
+The first empire on a home world also creates a race whose ID is the home world's ID; races are saved in `races.json` (`id`, `homeworld_id`) and empires in `empires.json` (`id`, `handle`, `name`, `race_id`, `homeworld_id`), neither of which exists until the first empire.
+A handle is 8 to 12 lowercase ASCII letters and has at most one empire; empire IDs count up from the largest so far, and the name defaults to `Empire #{id}`.
 `ec game create` places the 100 Stellia by shuffling every point with x²+y²+z² ≤ 225 except the origin and taking the first 100; they get 5, 4, then 8×3, 15×2, and 75×1 stars.
 JSON uses `encoding/json/v2`.
 `ecview --store games/{code} stellia` reads a game and writes a self-contained HTML page (from `internal/view`, no network assets) with a rotatable 3D map and a table of the Stellia (home Stellia glow and are always labelled on the map, and are starred in a sortable Home column), to a temporary file or `--output`, then opens it in the default browser unless `--no-open` is given; `--store` is also `EC_STORE`.
@@ -46,6 +49,7 @@ go vet ./...
 go run ./cmd/ec game create games/{code}       # the folder must already exist
 go run ./cmd/ec game homestar-template games/{code}    # then edit homestar-template.json
 go run ./cmd/ec game designate-home --star {id} games/{code}     # or --stellium {id}
+go run ./cmd/ec empire create --handle {handle} games/{code}
 go run ./cmd/ecview --store games/{code} stellia   # map of the Stellia in the browser
 ```
 

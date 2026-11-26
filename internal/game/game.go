@@ -64,7 +64,8 @@ func (s *Seed) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// Data is everything Create generates for a new game.
+// Data is a game's data. Create generates everything but the races and
+// empires.
 type Data struct {
 	Game     Game
 	Stellia  []Stellium
@@ -72,6 +73,9 @@ type Data struct {
 	Orbits   []Orbit
 	Planets  []Planet
 	Deposits []Deposit
+	// Races and Empires are empty until the first empire is added.
+	Races   []Race
+	Empires []Empire
 }
 
 // Create creates a new game in dir and returns its data. It writes game.json,

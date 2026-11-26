@@ -194,5 +194,49 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 		},
 	})
 
+	empireFlags := ff.NewFlagSet("empire").SetParent(rootFlags)
+	empireCmd := &ff.Command{
+		Name:      "empire",
+		Usage:     "ec empire <SUBCOMMAND> ...",
+		ShortHelp: "manage empires",
+		Flags:     empireFlags,
+	}
+	root.Subcommands = append(root.Subcommands, empireCmd)
+
+	empireCreateFlags := ff.NewFlagSet("create").SetParent(empireFlags)
+	handle := empireCreateFlags.StringLong("handle", "", "player handle: 8 to 12 lowercase ASCII letters (required)")
+	empireName := empireCreateFlags.StringLong("name", "", `empire name (default "Empire #ID")`)
+	empireCmd.Subcommands = append(empireCmd.Subcommands, &ff.Command{
+		Name:      "create",
+		Usage:     "ec empire create --handle <HANDLE> [--name <NAME>] <PATH>",
+		ShortHelp: "add an empire to the first available home world",
+		LongHelp: "Create adds an empire for the player with --handle to the game in PATH. The\n" +
+			"empire goes on the first available home world: the one with the lowest ID that\n" +
+			"has fewer than 15 empires. The first empire on a home world also creates a race,\n" +
+			"whose ID is the home world's ID. It fails if no home world is available or the\n" +
+			"handle already has an empire. Races are saved in races.json and empires in\n" +
+			"empires.json.",
+		Flags: empireCreateFlags,
+		Exec: func(ctx context.Context, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("empire create: want exactly one PATH, got %d arguments", len(args))
+			}
+			if *handle == "" {
+				return fmt.Errorf("empire create: --handle is required")
+			}
+			e, newRace, err := game.AddEmpire(args[0], *handle, *empireName)
+			if err != nil {
+				return fmt.Errorf("empire create: %w", err)
+			}
+			race := fmt.Sprintf("race %d", e.RaceID)
+			if newRace {
+				race = "new " + race
+			}
+			fmt.Fprintf(stdout, "created empire %d %q for %s on home world %d (%s)\n",
+				e.ID, e.Name, e.Handle, e.HomeWorldID, race)
+			return nil
+		},
+	})
+
 	return root
 }

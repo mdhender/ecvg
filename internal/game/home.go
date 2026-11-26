@@ -155,8 +155,8 @@ func maxID[T any](s []T, id func(T) int) int {
 	return m
 }
 
-// LoadData reads a game's master data, Stellia, stars, orbits, planets, and
-// deposits from dir.
+// LoadData reads a game's master data, Stellia, stars, orbits, planets,
+// deposits, races, and empires from dir.
 func LoadData(dir string) (Data, error) {
 	var d Data
 	var err error
@@ -176,6 +176,12 @@ func LoadData(dir string) (Data, error) {
 		return Data{}, err
 	}
 	if d.Deposits, err = LoadDeposits(dir); err != nil {
+		return Data{}, err
+	}
+	if d.Races, err = LoadRaces(dir); err != nil {
+		return Data{}, err
+	}
+	if d.Empires, err = LoadEmpires(dir); err != nil {
 		return Data{}, err
 	}
 	return d, nil
