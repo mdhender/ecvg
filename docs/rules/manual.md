@@ -698,7 +698,7 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.12"></a>
 ### B3.12 Draft Stage
 
-1. <a id="rule-B3.12.1"></a>DRF orders processed (see [S12.1](#rule-S12.1)<!-- was 17.4.40 -->)
+1. <a id="rule-B3.12.1"></a>Draft orders processed (see [S12.1](#rule-S12.1)<!-- was 17.4.40 -->)
 2. <a id="rule-B3.12.2"></a>DSB orders processed (see [S12.2](#rule-S12.2)<!-- was 17.4.41 -->)
 
 <a id="rule-B3.13"></a>
@@ -4116,10 +4116,16 @@ NOTE: ALL SPM ORDERS CAN BE USED IN THE PLAYER'S OWN S/C, OR IN FOREIGN S/C's.
 <a id="rule-S12.1"></a>
 ### S12.1 Draft Orders (DRF)
 
-- Format: S/C ID#, "DRF", quantity, units to be drafted.
-- Example: 13, DRF, 3,000, SLD-0.
-- Notes: Only SLD or TRNE can be drafted.
-  (SPY and CWRK cadres must be assembled).
+- Format: draft Quantity UnitOrCadre from EntityID
+- Example: draft 3,000 SLD from 13
+- Example: draft 16,880 TRNE-2 from 78
+- Example: draft 5,000 CWRK from 99
+- Notes: The first draft order has S/C 13 draft 3,000 SLD from its USK.
+  UnitOrCadre is SLD, TRNE, CWRK, or SPY; nothing else can be drafted.
+  The race number is optional ([S2.4](#rule-S2.4)).
+  Cadres are drafted, not assembled: an assemble order for CWRK or SPY is rejected.
+  If the S/C does not have the people for the whole quantity, it drafts as many as it can, and the printout shows the quantity asked for and the quantity drafted.
+  Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), after production, so the people drafted still do their old work on the turn they are drafted.
 
 <a id="rule-S12.2"></a>
 ### S12.2 Disband Orders (DSB)
