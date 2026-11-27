@@ -87,10 +87,8 @@ type Assembly struct {
 	// sets how many of the next are lost.
 	Done int `json:"done,omitzero"`
 	// MaxCWRK is the most CWRK the order lets work on it in a turn, or 0 for
-	// as many as it can use. SharesCap says that the work is of the same
-	// order as the work before it, and the cap is on them together.
-	MaxCWRK   int  `json:"max_cwrk,omitzero"`
-	SharesCap bool `json:"shares_cap,omitzero"`
+	// as many as it can use.
+	MaxCWRK int `json:"max_cwrk,omitzero"`
 	// Assembled is the number of units done in the prior turn, and Waiting
 	// says why units that had the work done weren't: "room" or "units".
 	Assembled int    `json:"assembled,omitzero"`
@@ -183,18 +181,10 @@ func (c *Colony) working(w Work, code string, tl int) int {
 //     NMTL that built them is stored; what there is no room for is lost.
 func (c *Colony) Disassemble() {
 	jobs := c.Assembly[:0]
-	// When the first work of an order is dropped, the next of the order
-	// stands in for it.
-	promote := false
 	for _, a := range c.Assembly {
 		if a.Unit.Qty <= 0 {
-			promote = promote || !a.SharesCap
 			continue
 		}
-		if promote {
-			a.SharesCap = false
-		}
-		promote = false
 		a.Assembled, a.Waiting, a.Destroyed, a.MTL, a.NMTL, a.Lost = 0, "", 0, 0, 0, 0
 		jobs = append(jobs, a)
 	}
@@ -218,14 +208,12 @@ func (c *Colony) Assemble() {
 // of the turn's pool.
 func (c *Colony) construct(phase func(Work) bool) {
 	left := c.Construction.Pool - c.Construction.Used
-	budget := 0 // what the order's cap leaves of the pool
 	for i := range c.Assembly {
 		a := &c.Assembly[i]
-		if !a.SharesCap {
-			budget = math.MaxInt
-			if a.MaxCWRK > 0 {
-				budget = a.MaxCWRK * EMUPerCWRK
-			}
+		// What the order's cap leaves of the pool.
+		budget := math.MaxInt
+		if a.MaxCWRK > 0 {
+			budget = a.MaxCWRK * EMUPerCWRK
 		}
 		d, ok := units.Lookup(a.Unit.Type)
 		if !ok || !phase(a.Action) {
@@ -235,7 +223,6 @@ func (c *Colony) construct(phase func(Work) bool) {
 		take := max(0, min(left, budget, workEMU(a.Action, d, tl, a.Unit.Qty)-a.EMU))
 		a.EMU += take
 		left -= take
-		budget -= take
 		// The most units that the work done is enough for.
 		n := sort.Search(a.Unit.Qty, func(k int) bool { return workEMU(a.Action, d, tl, k+1) > a.EMU })
 		have := c.Stored(a.Unit.Type, tl)

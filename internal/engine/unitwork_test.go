@@ -78,12 +78,9 @@ func TestUnitWorkOrders(t *testing.T) {
 		{name: "resources can't be scrapped", text: "scrap 10 FUEL on 1", err: engine.ErrNotScrappable},
 		{name: "someone else's entity", text: "scrap 1 SDRV-1 on 3", err: engine.ErrNotControlled},
 		{
-			name: "a group order's cap is on all its work",
-			text: "assemble factory-group on 1 with 10 FACT-1, 5 FACT-2 using 3 CWRK",
-			work1: []game.Assembly{
-				{Kind: game.KindFactory, GroupNo: 5, Unit: unit{Type: "FACT", TechLevel: 1, Qty: 10}, MaxCWRK: 3},
-				{Kind: game.KindFactory, GroupNo: 5, Unit: unit{Type: "FACT", TechLevel: 2, Qty: 5}, MaxCWRK: 3, SharesCap: true},
-			},
+			name:  "a group order's cap",
+			text:  "assemble factory-group on 1 with 10 FACT-1 using 3 CWRK",
+			work1: []game.Assembly{{Kind: game.KindFactory, GroupNo: 5, Unit: unit{Type: "FACT", TechLevel: 1, Qty: 10}, MaxCWRK: 3}},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

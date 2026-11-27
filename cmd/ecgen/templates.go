@@ -196,7 +196,7 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 // surface colony may list units in a depot (depot for stored units and
 // depot_operational for assembled ones), and not units of a class that must
 // be kept in the colony. A colony may start with more than it has capacity
-// for; that isn't checked here. A farming group's units are all
+// for; that isn't checked here. A group's units are all
 // of one tech level, so it has one entry of units. Groups of each kind must be numbered from 1 in
 // order and hold at least one entry of units, each with a quantity and tech
 // level of at least 1. The errors match errInvalidTemplate.
@@ -287,8 +287,11 @@ func (t EmpireTemplate) Validate() error {
 					bad("colony %d: %s group %d: no %d: want the groups in order of their numbers", i+1, kind, j+1, g.No)
 				}
 				groupNos[g.No] = true
-				if len(g.Units) == 0 {
+				switch {
+				case len(g.Units) == 0:
 					bad("colony %d: %s group %d: no units", i+1, kind, j+1)
+				case len(g.Units) > 1:
+					bad("colony %d: %s group %d: %d entries of units: every unit of a group is of the same tech level", i+1, kind, j+1, len(g.Units))
 				}
 				for _, u := range g.Units {
 					if u.Qty < 1 || u.TechLevel < 1 {
@@ -298,11 +301,6 @@ func (t EmpireTemplate) Validate() error {
 			}
 		}
 		groups("farming", c.FarmingGroups)
-		for j, g := range c.FarmingGroups {
-			if len(g.Units) > 1 {
-				bad("colony %d: farming group %d: %d entries of units: every unit of a farming group is of the same tech level", i+1, j+1, len(g.Units))
-			}
-		}
 		groups("factory", c.FactoryGroups)
 	}
 	return errors.Join(errs...)

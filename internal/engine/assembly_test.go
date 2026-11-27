@@ -114,16 +114,21 @@ func TestAssembleGroupOrders(t *testing.T) {
 			},
 		},
 		{
-			name: "a factory group mixes tech levels and has a goal",
-			text: "assemble factory-group on 1 with 10 FACT-1, 5 FACT-2 producing CNGD",
+			name: "a factory group has a goal",
+			text: "assemble factory-group on 1 with 10 FACT-1 producing CNGD",
 			check: func(t *testing.T, c []game.Colony) {
-				want := []game.Group{{No: 5, Producing: unit{Type: "CNGD"}, Units: []game.GroupUnits{{TechLevel: 1}, {TechLevel: 2}}}}
-				if !reflect.DeepEqual(c[0].FactoryGroups, want) || len(c[0].Assembly) != 2 {
+				want := []game.Group{{No: 5, Producing: unit{Type: "CNGD"}, Units: []game.GroupUnits{{TechLevel: 1}}}}
+				if !reflect.DeepEqual(c[0].FactoryGroups, want) || len(c[0].Assembly) != 1 {
 					t.Errorf("groups %+v, work %+v", c[0].FactoryGroups, c[0].Assembly)
 				}
 			},
 		},
-		{name: "a factory order is all or nothing", text: "assemble factory-group on 1 with 10 FACT-1, 6 FACT-2", err: engine.ErrNotEnoughUnits},
+		{name: "a factory order needs the units", text: "assemble factory-group on 1 with 11 FACT-1", err: engine.ErrNotEnoughUnits},
+		{
+			name: "a factory group is of one tech level",
+			text: "assemble factory-group on 1 with 10 FACT-1\nassemble factory-group 5 on 1 add 5 FACT-2",
+			err:  engine.ErrTechLevel,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			d := builders()

@@ -43,31 +43,31 @@ func TestAssembleCap(t *testing.T) {
 		}
 	})
 
-	t.Run("the work of one order shares its cap", func(t *testing.T) {
-		// FACT-1 is 14 MU, FACT-2 16 MU, MINE-10 30 MU. The order's 1 CWRK
-		// does 500 EMU: 420 for the 30 FACT-1, and 80 for 5 FACT-2.
-		fact := func(tl, qty int) unit { return unit{Type: "FACT", TechLevel: tl, Qty: qty} }
+	t.Run("an order's cap is on its own work", func(t *testing.T) {
+		// FACT-1 is 14 MU and MINE-10 30 MU. The factory order's 1 CWRK does
+		// 500 EMU: 35 of the 40 FACT-1, with 10 EMU over.
+		fact := unit{Type: "FACT", TechLevel: 1, Qty: 40}
 		mine := unit{Type: "MINE", TechLevel: 10, Qty: 5}
 		c := game.Colony{
 			Type:          game.COPN,
 			Cadres:        game.Cadres{CWRK: 10},
-			Depot:         []unit{fact(1, 30), fact(2, 10), mine},
+			Depot:         []unit{fact, mine},
 			FactoryGroups: []game.Group{{No: 1}},
 			MiningGroups:  []game.MiningGroup{{No: 2}},
 			Assembly: []game.Assembly{
-				{Kind: game.KindFactory, GroupNo: 1, Unit: fact(1, 30), MaxCWRK: 1},
-				{Kind: game.KindFactory, GroupNo: 1, Unit: fact(2, 10), MaxCWRK: 1, SharesCap: true},
+				{Kind: game.KindFactory, GroupNo: 1, Unit: fact, MaxCWRK: 1},
 				{Kind: game.KindMining, GroupNo: 2, Unit: mine},
 			},
 		}
 		work(&c)
-		if a := c.Assembly; a[0].Assembled != 30 || a[1].Assembled != 5 || a[2].Assembled != 5 ||
+		if a := c.Assembly; a[0].Assembled != 35 || a[0].EMU != 10 || a[1].Assembled != 5 ||
 			c.Construction != (game.Construction{Pool: 5000, Used: 650}) {
 			t.Fatalf("turn 1: work %+v, construction %+v", a, c.Construction)
 		}
-		// The first work is dropped, and the second has the cap to itself.
+		// The mining work is done and dropped; the rest of the FACT-1 take
+		// 60 EMU more.
 		work(&c)
-		if a := c.Assembly; len(a) != 1 || a[0].SharesCap || a[0].Assembled != 5 || c.Construction.Used != 80 {
+		if a := c.Assembly; len(a) != 1 || a[0].Assembled != 5 || c.Construction.Used != 60 {
 			t.Errorf("turn 2: work %+v, construction %+v", a, c.Construction)
 		}
 	})
@@ -161,7 +161,7 @@ func TestScrap(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := game.Colony{
-				Type:        tc.colony,
+				Type: tc.colony,
 				// 100 HDRV-1 are 4,500 MU, which 15 CWRK scrap at 300 MU each.
 				Cadres:      game.Cadres{CWRK: 15},
 				Operational: []unit{{Type: "STRC", TechLevel: 1, Qty: tc.structure}, {Type: tc.scrap.Type, TechLevel: tc.scrap.TechLevel, Qty: 7}},

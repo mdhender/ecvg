@@ -47,13 +47,12 @@ func Assembly(d *game.Data) {
 
 // AssembleGroup carries out an assemble order for a group, given by the
 // empire with ID empireID. It makes the new group, or finds the one the order
-// adds to, and starts the assembly work for each of the order's units; the
+// adds to, and starts the assembly work for the order's units; the
 // Assembly phase does the work. Nothing changes if it fails:
 //
 //   - ErrNotControlled: the empire has no such entity.
 //   - ErrNoSuchGroup: the entity has no group to add to with that number.
-//   - ErrTechLevel: the units aren't of the tech level of a farming or mining
-//     group's units.
+//   - ErrTechLevel: the units aren't of the tech level of the group's units.
 //   - ErrNotEnoughUnits: the entity doesn't have the units in storage, or
 //     other assembly work has claimed them.
 //   - game.ErrFarmSite, game.ErrMineSite: the entity can't have such a group.
@@ -98,23 +97,17 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		if us == nil {
 			return fmt.Errorf("entity %d: %s group %d: %w", o.EntityID, o.Kind, o.GroupNo, ErrNoSuchGroup)
 		}
-		if o.Kind != game.KindFactory {
-			for _, u := range *us {
-				if len(o.Units) > 0 && u.TechLevel != o.Units[0].TechLevel {
-					return fmt.Errorf("%s group %d is of tech level %d: %w", o.Kind, o.GroupNo, u.TechLevel, ErrTechLevel)
-				}
+		for _, gu := range *us {
+			if gu.TechLevel != o.Unit.TechLevel {
+				return fmt.Errorf("%s group %d is of tech level %d: %w", o.Kind, o.GroupNo, gu.TechLevel, ErrTechLevel)
 			}
 		}
 	}
 
 	// The entity must have the units, and not have promised them elsewhere.
-	want := map[game.Unit]int{}
-	for _, u := range o.Units {
-		k := game.Unit{Type: u.Type, TechLevel: u.TechLevel}
-		want[k] += u.Qty
-		if have := c.Stored(u.Type, u.TechLevel) - c.Claimed(u.Type, u.TechLevel); want[k] > have {
-			return fmt.Errorf("%s-%d: %d free in storage: %w", u.Type, u.TechLevel, max(0, have), ErrNotEnoughUnits)
-		}
+	u := o.Unit
+	if have := c.Stored(u.Type, u.TechLevel) - c.Claimed(u.Type, u.TechLevel); u.Qty > have {
+		return fmt.Errorf("%s-%d: %d free in storage: %w", u.Type, u.TechLevel, max(0, have), ErrNotEnoughUnits)
 	}
 
 	switch o.Kind {
@@ -131,32 +124,30 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 				}
 			}
 		}
-		for _, u := range o.Units {
-			if err := game.CanInstallFarm(u.TechLevel, c.Type, orbitNo, planet); err != nil {
-				return err
-			}
-			if u.TechLevel != 1 {
+		if err := game.CanInstallFarm(u.TechLevel, c.Type, orbitNo, planet); err != nil {
+			return err
+		}
+		if u.TechLevel != 1 {
+			break
+		}
+		// The cap is on every empire's FARM-1 units together, counting
+		// the ones still being assembled: first come, first served.
+		have := 0
+		for _, other := range d.Colonies {
+			if other.PlanetID != c.PlanetID {
 				continue
 			}
-			// The cap is on every empire's FARM-1 units together, counting
-			// the ones still being assembled: first come, first served.
-			have := 0
-			for _, other := range d.Colonies {
-				if other.PlanetID != c.PlanetID {
-					continue
-				}
-				have += other.BeingAssembled(units.FARM, 1)
-				for _, g := range other.FarmingGroups {
-					for _, gu := range g.Units {
-						if gu.TechLevel == 1 {
-							have += gu.Qty
-						}
+			have += other.BeingAssembled(units.FARM, 1)
+			for _, g := range other.FarmingGroups {
+				for _, gu := range g.Units {
+					if gu.TechLevel == 1 {
+						have += gu.Qty
 					}
 				}
 			}
-			if have+u.Qty > planet.FarmCap() {
-				return fmt.Errorf("%d of %d are taken: %w", have, planet.FarmCap(), ErrFarmCap)
-			}
+		}
+		if have+u.Qty > planet.FarmCap() {
+			return fmt.Errorf("%d of %d are taken: %w", have, planet.FarmCap(), ErrFarmCap)
 		}
 	case game.KindMining:
 		if err := game.CanAssembleMines(c.Type); err != nil {
@@ -200,15 +191,10 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 			us = &c.MiningGroups[len(c.MiningGroups)-1].Units
 		}
 	}
-	// The group has an entry for each tech level from the start, so that the
-	// tech level of a group with nothing assembled yet is known.
-	// A cap on the CWRK is on the order's work as a whole.
-	for i, u := range o.Units {
-		_, *us = game.GroupUnitsAt(*us, u.TechLevel)
-		c.Assembly = append(c.Assembly, game.Assembly{
-			Kind: o.Kind, GroupNo: no, Unit: u, MaxCWRK: o.MaxCWRK, SharesCap: o.MaxCWRK > 0 && i > 0,
-		})
-	}
+	// The group has its entry of units from the start, so that the tech level
+	// of a group with nothing assembled yet is known.
+	_, *us = game.GroupUnitsAt(*us, u.TechLevel)
+	c.Assembly = append(c.Assembly, game.Assembly{Kind: o.Kind, GroupNo: no, Unit: u, MaxCWRK: o.MaxCWRK})
 	return nil
 }
 

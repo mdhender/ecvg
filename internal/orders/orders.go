@@ -14,10 +14,10 @@
 //	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //	draft Quantity UnitOrCadre from EntityID
 //	disband Quantity UnitOrCadre from EntityID
-//	assemble factory-group on EntityID with Quantity FactoryUnit (, Quantity FactoryUnit)* [producing Unit]
+//	assemble factory-group on EntityID with Quantity FactoryUnit [producing Unit]
 //	assemble farming-group on EntityID with Quantity FarmUnit
 //	assemble mining-group on EntityID with Quantity MiningUnit working DepositNo
-//	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit (, Quantity FactoryUnit)*
+//	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
 //	assemble farming-group GroupNo on EntityID add Quantity FarmUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
 //	assemble Quantity Unit on EntityID
@@ -37,8 +37,7 @@
 // A unit that has a tech level is written with it, joined by a hyphen:
 // FactoryUnit is FACT-1 to FACT-10, FarmUnit FARM-1 to FARM-10, and
 // MiningUnit MINE-1 to MINE-10. A unit that has none is its code alone, such
-// as CNGD. The comma between the units of a factory group may be joined to
-// the unit before it or stand alone.
+// as CNGD. Every unit of a group is of one tech level.
 package orders
 
 import (
@@ -130,9 +129,9 @@ type AssembleGroup struct {
 	EntityID int
 	Kind     game.GroupKind
 	GroupNo  int
-	// Units is the units to assemble: one entry for a farming or mining
-	// group, one or more for a factory group.
-	Units []game.Unit
+	// Unit is the units to assemble. Every unit of a group is of one tech
+	// level.
+	Unit game.Unit
 	// DepositNo is the deposit a new mining group works: its number on the
 	// entity's planet.
 	DepositNo int
@@ -152,12 +151,7 @@ func (o AssembleGroup) String() string {
 	} else {
 		fmt.Fprintf(&sb, "on %d with ", o.EntityID)
 	}
-	for i, u := range o.Units {
-		if i > 0 {
-			sb.WriteString(", ")
-		}
-		fmt.Fprintf(&sb, "%d %s", u.Qty, unitName(u))
-	}
+	fmt.Fprintf(&sb, "%d %s", o.Unit.Qty, unitName(o.Unit))
 	if o.Producing.Type != "" {
 		fmt.Fprintf(&sb, " producing %s", unitName(o.Producing))
 	}
@@ -337,10 +331,10 @@ var groupUnit = map[game.GroupKind]string{
 
 const assembleUsage = `want one of:
   assemble Quantity Unit on EntityID
-  assemble factory-group on EntityID with Quantity FACT-n, Quantity FACT-n ... [producing Unit]
+  assemble factory-group on EntityID with Quantity FACT-n [producing Unit]
   assemble farming-group on EntityID with Quantity FARM-n
   assemble mining-group on EntityID with Quantity MINE-n working DepositNo
-  assemble factory-group GroupNo on EntityID add Quantity FACT-n, Quantity FACT-n ...
+  assemble factory-group GroupNo on EntityID add Quantity FACT-n
   assemble farming-group GroupNo on EntityID add Quantity FARM-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
 any of them may end with: using Quantity CWRK`
@@ -444,31 +438,13 @@ func parseAssemble(tokens []Token) (Order, error) {
 	if t, ok = next(); !ok || !t.Is(link) {
 		return nil, usage
 	}
-	for {
-		q, ok1 := next()
-		u, ok2 := next()
-		if !ok1 || !ok2 {
-			return nil, usage
-		}
-		// The comma that says another unit follows may end this one.
-		more := !u.Quoted && len(u.Text) > 1 && strings.HasSuffix(u.Text, ",")
-		if more {
-			u.Text = strings.TrimSuffix(u.Text, ",")
-		}
-		unit, err := quantityOf(q, u, groupUnit[kind])
-		if err != nil {
-			return nil, err
-		}
-		o.Units = append(o.Units, unit)
-		if !more && len(rest) > 0 && rest[0].Is(",") {
-			rest, more = rest[1:], true
-		}
-		if !more {
-			break
-		}
+	q, ok1 := next()
+	u, ok2 := next()
+	if !ok1 || !ok2 {
+		return nil, usage
 	}
-	if len(o.Units) > 1 && kind != game.KindFactory {
-		return nil, fmt.Errorf("%w: a %s group takes units of one tech level", ErrInvalidOrder, kind)
+	if o.Unit, err = quantityOf(q, u, groupUnit[kind]); err != nil {
+		return nil, err
 	}
 	switch {
 	case o.GroupNo != 0:
