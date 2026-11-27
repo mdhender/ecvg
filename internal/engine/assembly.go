@@ -59,7 +59,8 @@ func Assembly(d *game.Data) {
 //   - ErrNotEnoughUnits: the entity has none of the units in storage that
 //     other work hasn't claimed. If it has some, but fewer than the order
 //     asks for, the order assembles the ones it has.
-//   - game.ErrFarmSite, game.ErrMineSite: the entity can't have such a group.
+//   - game.ErrFarmSite, game.ErrMineSite, game.ErrLabSite: the entity can't
+//     have such a group.
 //   - ErrFarmCap: the planet's FARM-1 units, everyone's together, would pass
 //     its cap.
 //   - ErrTooManyGroups: the entity has game.MaxFactoryGroups factory groups
@@ -192,6 +193,10 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		}
 	case game.KindMining:
 		if err := game.CanAssembleMines(c.Type); err != nil {
+			return err
+		}
+	case game.KindLaboratory:
+		if err := game.CanAssembleLabs(c.Type); err != nil {
 			return err
 		}
 	}

@@ -2519,7 +2519,8 @@ All the laboratory units at each technological level (TL) form a LAB group.
 There can be only one group *per TL* in a S/C.
 In order for the laboratory units to be taken from storage and put to work, the player assembles them into a LAB group.
 This is done with an assemble laboratory group order ([S6.8](#rule-S6.8)), and is explained in [F10.0](#rule-F10.0), Assembly.
-Any S/C may have assembled laboratories, ships included.
+Ships can NOT have assembled laboratories (operating laboratories), but may carry them in storage.
+Any colony may have them.
 LAB units are manufactured by factory groups, like any other item ([H3.0](#rule-H3.0)).
 
 <a id="rule-H4.1"></a>
@@ -4093,12 +4094,14 @@ assemble laboratory-group on 16 with 200 LAB-2 using 50 CWRK   # a second group,
 - A S/C has one laboratory group for each TL, so the order takes no group number.
   The units join the S/C's group of their TL; if it has none, the group is formed, and given the next group number of the S/C ([H3.9](#rule-H3.9)), as soon as the order is accepted.
 - A laboratory group is not told what to build: laboratories build only RSCH.
-- Any S/C may have laboratory groups.
+- Any colony may have laboratory groups.
+  A ship may not, though it may carry LAB units in storage.
 - The rules for assembling units ([S6.1](#rule-S6.1)) apply to the LAB units.
 
 **Rejected when**
 
 - The S/C has none of the LAB units in storage that are not already being assembled or scrapped.
+- The S/C is a ship.
 - The order names a group number.
 - The S/C does not belong to the player.
 

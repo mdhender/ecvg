@@ -3,7 +3,25 @@
 
 package game
 
-import "github.com/mdhender/ecvg/internal/units"
+import (
+	"fmt"
+
+	"github.com/mdhender/ecvg/internal/cerrs"
+	"github.com/mdhender/ecvg/internal/units"
+)
+
+// ErrLabSite is matched by the errors of CanAssembleLabs.
+const ErrLabSite = cerrs.Error("laboratories can't be assembled here")
+
+// CanAssembleLabs reports whether an entity of type t may assemble a
+// laboratory group: any colony can, and a ship can't, though it may carry LAB
+// units in storage. The error, if any, matches ErrLabSite.
+func CanAssembleLabs(t EntityType) error {
+	if t == CSHP {
+		return fmt.Errorf("%w: a laboratory group needs a colony, not a %s", ErrLabSite, t)
+	}
+	return nil
+}
 
 // What a LAB unit needs to work for a turn, whatever its tech level.
 const (

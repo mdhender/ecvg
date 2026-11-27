@@ -71,11 +71,11 @@ func TestResearch(t *testing.T) {
 			name: "the colony's total is rounded down, not each group's, and adds to what it has",
 			turn: 1,
 			colony: game.Colony{
-				Type: game.CSHP, Population: game.Population{USK: 100, PRO: 300},
+				Type: game.CORB, Population: game.Population{USK: 100, PRO: 300},
 				Cargo:            []game.Unit{{Type: "FUEL", Qty: 1000}, {Type: "RSCH", Qty: 40}},
 				LaboratoryGroups: []game.LaboratoryGroup{labs(1, 3, 1), labs(2, 1, 3), labs(3, 1, 5)},
 			},
-			// 0.75 + 0.75 + 1.25 = 2.75 RSCH; FUEL is 2 + 2 + 3. The ship has
+			// 0.75 + 0.75 + 1.25 = 2.75 RSCH; FUEL is 2 + 2 + 3. The colony has
 			// no structure, so it is over its capacity, and RSCH takes no room.
 			research: game.Research{Units: 5, Worked: 5, Fuel: 7, RSCH: 2},
 			idle:     []game.Idle{{}, {}, {}},
@@ -202,5 +202,28 @@ assemble laboratory-group on 3 with 1 LAB-1`
 	}
 	if c.Stock("RSCH") != 11 {
 		t.Errorf("RSCH = %d, want 11", c.Stock("RSCH"))
+	}
+}
+
+// Any colony may assemble laboratories. A ship can only carry them.
+func TestLaboratorySites(t *testing.T) {
+	for typ, ok := range map[game.EntityType]bool{game.COPN: true, game.CENC: true, game.CORB: true, game.CSHP: false} {
+		if err := game.CanAssembleLabs(typ); ok != (err == nil) || (err != nil && !errors.Is(err, game.ErrLabSite)) {
+			t.Errorf("CanAssembleLabs(%s) = %v, want ok %v", typ, err, ok)
+		}
+	}
+	d := builders()
+	c := &d.Colonies[0]
+	c.Type = game.CSHP
+	c.Cargo = append(c.Cargo, game.Unit{Type: "LAB", TechLevel: 1, Qty: 30})
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble laboratory-group on 1 with 20 LAB-1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, game.ErrLabSite) {
+		t.Errorf("rejected %+v, want ErrLabSite", result.Rejected)
+	}
+	if c := d.Colonies[0]; len(c.LaboratoryGroups) != 0 || len(c.Assembly) != 0 || c.LastGroupNo != 0 {
+		t.Errorf("groups %+v, work %+v, last %d; want nothing changed", c.LaboratoryGroups, c.Assembly, c.LastGroupNo)
 	}
 }
