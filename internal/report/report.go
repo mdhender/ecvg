@@ -259,7 +259,11 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		if free := c.SpaceFree(); free >= 0 {
 			p("  %-8s %14s", "Free", commas(free))
 		} else {
-			p("  %-8s %14s   OVER CAPACITY: nothing more can be stored in cargo", "Over by", commas(-free))
+			why := "OVER CAPACITY: nothing more can be stored in cargo"
+			if !c.Type.Enclosed() {
+				why = "an open-air colony may hold more than it encloses"
+			}
+			p("  %-8s %14s   %s", "Over by", commas(-free), why)
 		}
 		units("OPERATIONAL", c.Operational)
 		units("CARGO", c.Cargo)
@@ -268,7 +272,7 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			units("DEPOT, OPERATIONAL", c.DepotOperational)
 			units("DEPOT, STORED", c.Depot)
 		case len(c.Depot) > 0:
-			units("STORED OUTSIDE THE WALLS", c.Depot)
+			units("EXTERNAL DEPOT, STORED", c.Depot)
 		}
 
 		idleRows := func(idle game.Idle) {

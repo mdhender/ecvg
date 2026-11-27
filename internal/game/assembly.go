@@ -267,10 +267,11 @@ func (c *Colony) construct(phase func(Work) bool) {
 // disassemble. They fit if the colony is within its capacity afterwards, or
 // no further over it than it was. Both ways the space can go either way:
 // most units are bigger assembled, and structure takes space only when it is
-// stowed and makes space only when it is assembled. Done is how many units
+// stowed and makes space only when it is assembled. An open-air surface
+// colony always has room (manual F3.2). Done is how many units
 // the work has disassembled already: the units it loses take no room.
 func (c *Colony) fit(w Work, d units.Def, tl, n, done int) int {
-	if w == WorkScrap || (w == WorkAssemble && c.HasDepot() && d.DepotAllowed()) {
+	if w == WorkScrap || !c.Type.Enclosed() {
 		return n
 	}
 	before := c.SpaceFree()

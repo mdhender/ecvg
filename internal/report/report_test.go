@@ -142,7 +142,7 @@ func TestEmpire(t *testing.T) {
 				"DEPOT, OPERATIONAL\n  Unit       TL            Qty\n  MINE       10        100,000\n",
 				"            1,000 FUEL RETURNED TO THE DEPOSIT: no room to store it",
 				// The sample colony has no structure.
-				"SPACE                  VU\n  Capacity              0\n  Used         15,409,970\n  Over by      15,409,970   OVER CAPACITY: nothing more can be stored in cargo\n",
+				"SPACE                  VU\n  Capacity              0\n  Used         15,409,970\n  Over by      15,409,970   an open-air colony may hold more than it encloses\n",
 				"  Group 1   ORDERED IDLE: 25% of its units\n  Group 1          100,000 units at TL 10 working deposit 2 (FUEL)\n" +
 					"                    25,000 of them were IDLE last turn: BY ORDER\n" +
 					"                    50,000 of them were IDLE last turn: NO STAFF\n" +

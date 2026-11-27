@@ -78,7 +78,7 @@ func TestMining(t *testing.T) {
 			workers: game.Workers{PRO: 100, USK: 300},
 		},
 		{
-			name: "an enclosed colony keeps MTL outside its walls, and a deposit gives no more than it has",
+			name: "an enclosed colony keeps MTL in its external depot, and a deposit gives no more than it has",
 			colony: game.Colony{
 				Type: game.CENC, Population: game.Population{USK: 300, PRO: 100},
 				Operational:  []game.Unit{roomy},

@@ -57,11 +57,12 @@ func TestCapacity(t *testing.T) {
 }
 
 func TestRoomAndStoreCargo(t *testing.T) {
-	// 10 VU of space, with 1 FUEL (0.5 VU, which takes a whole VU) in cargo.
+	// An enclosed colony with 10 VU of space, and 1 FUEL (0.5 VU, which takes
+	// a whole VU) in cargo.
 	colony := func() game.Colony {
 		return game.Colony{
-			Type:        game.COPN,
-			Operational: []game.Unit{{Type: "STRC", TechLevel: 1, Qty: 10}},
+			Type:        game.CENC,
+			Operational: []game.Unit{{Type: "STRC", TechLevel: 1, Qty: 50}},
 			Cargo:       []game.Unit{{Type: "FUEL", Qty: 1}},
 		}
 	}
@@ -102,9 +103,17 @@ func TestRoomAndStoreCargo(t *testing.T) {
 			t.Errorf("stored %d with %d free; want nothing stored and -291 free", got, c.SpaceFree())
 		}
 	})
+	t.Run("an open-air colony may hold more than it encloses", func(t *testing.T) {
+		c := colony()
+		c.Type = game.COPN // 50 STRC-1 enclose 50 VU
+		if got := c.StoreCargo("FOOD", 1000); got != 1000 || c.SpaceFree() != -2951 {
+			t.Errorf("stored %d with %d free; want 1000 stored and -2951 free", got, c.SpaceFree())
+		}
+	})
 	t.Run("resources", func(t *testing.T) {
 		open, enclosed := colony(), colony()
-		enclosed.Type = game.CENC // 10 STRC-1 enclose 2 VU, 1 of them free
+		open.Type = game.COPN
+		enclosed.Operational[0].Qty = 10 // 10 STRC-1 enclose 2 VU, 1 of them free
 		if got := open.StoreResource("GOLD", 1000); got != 1000 || len(open.Depot) != 1 || open.Depot[0].Qty != 1000 || open.SpaceUsed() != 1 {
 			t.Errorf("open-air: stored %d, depot %+v", got, open.Depot)
 		}

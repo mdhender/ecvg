@@ -175,7 +175,7 @@ func TestScrap(t *testing.T) {
 		{name: "the totals are rounded down", colony: game.CENC, structure: 20000, scrap: unit{Type: "STRC", TechLevel: 1, Qty: 3}, mtl: 1, nmtl: 0},
 		{name: "what there is no room for is lost", colony: game.CORB, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400, lost: 3150},
 		{name: "a depot has room", colony: game.COPN, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
-		{name: "an enclosed colony keeps them outside its walls", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
+		{name: "an enclosed colony keeps them in its external depot", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := game.Colony{

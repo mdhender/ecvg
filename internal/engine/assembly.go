@@ -21,7 +21,6 @@ const (
 	ErrNoSuchDeposit      = cerrs.Error("the entity's planet has no deposit with that number")
 	ErrDepositClaimed     = cerrs.Error("another mining group is working that deposit")
 	ErrFarmCap            = cerrs.Error("the planet has no room for that many more FARM-1 units")
-	ErrFarmGroupExists    = cerrs.Error("the entity has a farming group of that tech level: add the units to it")
 	ErrTooManyGroups      = cerrs.Error("the entity has all the factory groups it may have")
 )
 
@@ -49,7 +48,8 @@ func Assembly(d *game.Data) {
 
 // AssembleGroup carries out an assemble order for a group, given by the
 // empire with ID empireID. It makes the new group, or finds the one the order
-// adds to, and starts the assembly work for the order's units; the
+// adds to (for farming units, the entity's farming group of their tech level,
+// if it has one: it may have one for each tech level, manual H1.0), and starts the assembly work for the order's units; the
 // Assembly phase does the work. Nothing changes if it fails:
 //
 //   - ErrNotControlled: the empire has no such entity.
@@ -60,8 +60,6 @@ func Assembly(d *game.Data) {
 //   - game.ErrFarmSite, game.ErrMineSite: the entity can't have such a group.
 //   - ErrFarmCap: the planet's FARM-1 units, everyone's together, would pass
 //     its cap.
-//   - ErrFarmGroupExists: the entity has a farming group of the units' tech
-//     level already; it may have one for each tech level (manual H1.0).
 //   - ErrTooManyGroups: the entity has game.MaxFactoryGroups factory groups
 //     already (manual H3.0).
 //   - ErrNoSuchDeposit, ErrDepositClaimed: a new mining group's deposit isn't
@@ -75,6 +73,18 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 	}
 	if c == nil {
 		return fmt.Errorf("entity %d: %w", o.EntityID, ErrNotControlled)
+	}
+
+	// An entity has one farming group of each tech level, so farming units
+	// join the group of theirs, if there is one.
+	if o.Kind == game.KindFarming && o.GroupNo == 0 {
+		for _, g := range c.FarmingGroups {
+			for _, gu := range g.Units {
+				if gu.TechLevel == o.Unit.TechLevel {
+					o.GroupNo = g.No
+				}
+			}
+		}
 	}
 
 	// The group to add to, if the order names one.
@@ -112,19 +122,8 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 
 	u := o.Unit
 	if o.GroupNo == 0 {
-		switch o.Kind {
-		case game.KindFarming:
-			for _, g := range c.FarmingGroups {
-				for _, gu := range g.Units {
-					if gu.TechLevel == u.TechLevel {
-						return fmt.Errorf("farming group %d is of tech level %d: %w", g.No, gu.TechLevel, ErrFarmGroupExists)
-					}
-				}
-			}
-		case game.KindFactory:
-			if len(c.FactoryGroups) >= game.MaxFactoryGroups {
-				return fmt.Errorf("%d factory groups: %w", len(c.FactoryGroups), ErrTooManyGroups)
-			}
+		if o.Kind == game.KindFactory && len(c.FactoryGroups) >= game.MaxFactoryGroups {
+			return fmt.Errorf("%d factory groups: %w", len(c.FactoryGroups), ErrTooManyGroups)
 		}
 	}
 

@@ -18,7 +18,6 @@
 //	assemble farming-group on EntityID with Quantity FarmUnit
 //	assemble mining-group on EntityID with Quantity MiningUnit working DepositNo
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
-//	assemble farming-group GroupNo on EntityID add Quantity FarmUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
 //	assemble Quantity Unit on EntityID
 //	disassemble Quantity Unit on EntityID
@@ -335,7 +334,6 @@ const assembleUsage = `want one of:
   assemble farming-group on EntityID with Quantity FARM-n
   assemble mining-group on EntityID with Quantity MINE-n working DepositNo
   assemble factory-group GroupNo on EntityID add Quantity FACT-n
-  assemble farming-group GroupNo on EntityID add Quantity FARM-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
 any of them may end with: using Quantity CWRK`
 
@@ -416,7 +414,11 @@ func parseAssemble(tokens []Token) (Order, error) {
 	}
 	t, ok := next()
 	if ok && !t.Is("on") {
-		// A group number: the order adds to a group.
+		// A group number: the order adds to a group. An entity has one
+		// farming group of each tech level, so the units say which it is.
+		if kind == game.KindFarming {
+			return nil, fmt.Errorf("%w: a farming group takes no group number, its units' tech level says which group they join: assemble farming-group on EntityID with Quantity FARM-n", ErrInvalidOrder)
+		}
 		if o.GroupNo, ok = number(t); !ok || o.GroupNo < 1 {
 			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, t.Text)
 		}

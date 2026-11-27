@@ -85,7 +85,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 		{name: "units already being assembled can't be promised again", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 41 MINE-10", err: engine.ErrNotEnoughUnits},
 		{name: "not enough units", text: "assemble mining-group on 1 with 101 MINE-10 working 1", err: engine.ErrNotEnoughUnits},
 		{name: "a mining group is of one tech level", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 5 MINE-9", err: engine.ErrTechLevel},
-		{name: "a farming group is of one tech level", text: "assemble farming-group 4 on 1 add 5 FARM-1", err: engine.ErrTechLevel},
+		{name: "a farming group is of one tech level", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 5 MINE-9", err: engine.ErrTechLevel},
 		{name: "a deposit another empire works", text: "assemble mining-group on 1 with 60 MINE-10 working 2", err: engine.ErrDepositClaimed},
 		{name: "a deposit the empire works", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group on 1 with 10 MINE-9 working 1", err: engine.ErrDepositClaimed},
 		{name: "no such deposit on the planet", text: "assemble mining-group on 1 with 60 MINE-10 working 4", err: engine.ErrNoSuchDeposit},
@@ -95,7 +95,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 		{name: "FARM-1 needs an open-air colony", text: "assemble farming-group on 2 with 10 FARM-1", err: game.ErrFarmSite},
 		{
 			name: "the planet's FARM-1 cap is shared",
-			text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group 5 on 1 add 20 FARM-1",
+			text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group on 1 with 20 FARM-1",
 			check: func(t *testing.T, c []game.Colony) {
 				// The new group is junior to group 4.
 				if g := c[0].FarmingGroups; len(g) != 2 || g[1].No != 5 || len(c[0].Assembly) != 2 || c[0].LastGroupNo != 5 {
@@ -103,8 +103,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 				}
 			},
 		},
-		{name: "the FARM-1 cap counts units being assembled", text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group 5 on 1 add 21 FARM-1", err: engine.ErrFarmCap},
-		{name: "one farming group for each tech level", text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group on 1 with 5 FARM-1", err: engine.ErrFarmGroupExists},
+		{name: "the FARM-1 cap counts units being assembled", text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group on 1 with 21 FARM-1", err: engine.ErrFarmCap},
 		{
 			name: "an orbital colony farms with FARM-2",
 			text: "assemble farming-group on 2 with 10 FARM-2",
@@ -191,7 +190,7 @@ func TestAssembledGroupWorksNextTurn(t *testing.T) {
 // The setup turn is for setting up: assembly work is done in it.
 func TestAssemblyInTheSetupTurn(t *testing.T) {
 	d := builders()
-	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "assemble farming-group 4 on 1 add 50 FARM-10")}); err != nil {
+	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "assemble farming-group on 1 with 50 FARM-10")}); err != nil {
 		t.Fatal(err)
 	}
 	// A FARM-10 is 26 MU: 1,000 EMU assemble 38 of them.

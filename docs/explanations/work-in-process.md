@@ -10,7 +10,7 @@ It is not a requirement for how the engine works inside, or for how the report s
 This page explains the proposed manufacturing pipeline.
 None of it is built yet, and it is not authoritative: where it and the [manual](../rules/manual.md) differ, the manual is right.
 Rule numbers such as [H3.4](../rules/manual.md#rule-H3.4) link to the manual.
-The manual calls an entity a s/c (ship or colony); its ID number is the entity ID.
+The manual calls an entity an S/C (ship or colony); its ID number is the entity ID.
 
 ## A year in four turns
 

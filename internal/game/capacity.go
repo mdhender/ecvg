@@ -63,11 +63,15 @@ func (c *Colony) SpaceFree() int {
 
 // Room returns the most of qty units with the given code and tech level that
 // the colony's cargo has space for. Capacity is checked every time something
-// is stored: an entity can't accept the excess.
+// is stored: an entity can't accept the excess, unless it is an open-air
+// surface colony, which may hold more than it encloses (manual F3.2).
 func (c *Colony) Room(code string, tl, qty int) int {
 	d, ok := units.Lookup(code)
 	if !ok || qty <= 0 {
 		return 0
+	}
+	if !c.Type.Enclosed() {
+		return qty
 	}
 	// The units join the first cargo entry of their kind, and the volume of
 	// an entry is rounded up as a whole.
@@ -99,7 +103,7 @@ func (c *Colony) StoreCargo(code string, qty int) int {
 // StoreResource puts qty of a mined resource into the colony's inventory and
 // returns the quantity stored: all of it into the depot, which is unlimited,
 // if the colony has one, and otherwise as much as the cargo has room for. An
-// enclosed surface colony keeps its MTL and NMTL outside its walls, where
+// enclosed surface colony keeps its MTL and NMTL in an external depot, where
 // they never run short of room (manual H2.2): they go into its depot list,
 // which holds nothing else.
 func (c *Colony) StoreResource(code string, qty int) int {

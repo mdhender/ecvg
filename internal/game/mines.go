@@ -105,7 +105,7 @@ const MaxFactoryGroups = 25
 
 // HasDepot reports whether the colony has a depot: storage outside the
 // entity, which only an open-air surface colony has. (An enclosed surface
-// colony keeps MTL and NMTL outside its walls, but nothing else: see
+// colony keeps MTL and NMTL in an external depot, but nothing else: see
 // StoreResource.)
 func (c *Colony) HasDepot() bool {
 	return c.Type == COPN
