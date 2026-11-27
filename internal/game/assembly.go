@@ -120,8 +120,9 @@ type Construction struct {
 	// that went into assembly. The rest is lost.
 	Pool int `json:"pool"`
 	Used int `json:"used"`
-	// Setup is the part of Used that the CWRK did in the orders phase, on
-	// the turn's setup orders, before the rest of the turn's work.
+	// Setup is the part of Used that went to the colony's set ups, before
+	// the rest of the turn's work: EMUPerCWRK for each CWRK that a set up
+	// has reserved or that was shuttled to one.
 	Setup int `json:"setup,omitzero"`
 }
 
@@ -150,9 +151,10 @@ func count(code string, tl int, lists ...[]Unit) int {
 }
 
 // Claimed returns the quantity of the unit with the given code and tech level
-// in storage that the colony's work is still to assemble or scrap.
+// in storage that the colony's work is still to assemble or scrap, or that
+// its set ups have reserved.
 func (c *Colony) Claimed(code string, tl int) int {
-	return c.BeingAssembled(code, tl) + c.working(WorkScrap, code, tl)
+	return c.BeingAssembled(code, tl) + c.working(WorkScrap, code, tl) + c.Reserved(code, tl)
 }
 
 // BeingAssembled returns the quantity of the unit that the colony's work is
@@ -182,7 +184,7 @@ func (c *Colony) working(w Work, code string, tl int) int {
 // the phases between them, and no unit is taken down and put up in one turn.
 // It starts the turn's construction: work that finished in the prior turn is
 // dropped, and the colony's CWRK make a pool of EMUPerCWRK EMU each, less
-// what they did on the turn's setup orders (Construction.Setup), which
+// what the colony's set ups took (Construction.Setup), which
 // this work has first call on. Each piece of work, oldest first, takes as
 // much of the pool as it can use, or as much as its order's cap on CWRK
 // allows. What happens to the units whose mass the work has reached depends

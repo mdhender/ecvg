@@ -83,13 +83,13 @@ func (c *Colony) Disband(code string, qty int) int {
 		c.Population.SLD -= n
 		c.Population.USK += n
 	case units.CWRK:
-		n = min(n, max(0, k.CWRK))
+		n = min(n, c.FreeCWRK())
 		k.CWRK -= n
 	case units.TRNE:
 		n = min(n, max(0, k.TRNE))
 		k.TRNE -= n
 	case units.SPY:
-		n = min(n, max(0, k.SPY))
+		n = min(n, c.FreeSPY())
 		k.SPY -= n
 	default:
 		return 0
@@ -112,10 +112,16 @@ func (k Cadres) Fit(p Population) Cadres {
 }
 
 // FreePRO, FreeUSK, and FreeSLD return the colony's population units of each
-// type that no cadre holds.
-func (c *Colony) FreePRO() int { return max(0, c.Population.PRO-c.Cadres.PRO()) }
-func (c *Colony) FreeUSK() int { return max(0, c.Population.USK-c.Cadres.USK()) }
-func (c *Colony) FreeSLD() int { return max(0, c.Population.SLD-c.Cadres.SLD()) }
+// type that no cadre holds and no set up has reserved.
+func (c *Colony) FreePRO() int {
+	return max(0, c.Population.PRO-c.Cadres.PRO()-c.Reserved(units.PRO, 0))
+}
+func (c *Colony) FreeUSK() int {
+	return max(0, c.Population.USK-c.Cadres.USK()-c.Reserved(units.USK, 0))
+}
+func (c *Colony) FreeSLD() int {
+	return max(0, c.Population.SLD-c.Cadres.SLD()-c.Reserved(units.SLD, 0))
+}
 
 // Draftable reports whether the unit with the given code can be drafted:
 // SLD, CWRK, TRNE, and SPY so far.

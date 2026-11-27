@@ -287,6 +287,20 @@ func TestEmpire(t *testing.T) {
 			lack: []string{"LABORATORY GROUPS\n  None assembled"},
 		},
 		{
+			name:     "set ups",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Colonies[0].Setups = []game.Setup{{
+					Entity: game.Colony{ID: 9, Type: game.CORB},
+					BOM:    []game.Unit{{Type: "STRN", Qty: 8000}, {Type: "SDRV", TechLevel: 1, Qty: 30}, {Type: "PRO", Qty: 100}},
+					Need:   725, EMU: 500, Crew: 1, Waiting: "work",
+				}}
+			},
+			want: []string{
+				"SET UPS\n  Entity 9 (CORB): 500 of 725 EMU of assembly work done; 1 CWRK shuttled to it last turn\n    RESERVED: 8,000 STRN, 30 SDRV-1, 100 PRO\n",
+			},
+		},
+		{
 			name:     "transfers",
 			empireID: 1,
 			edit: func(d *game.Data) {

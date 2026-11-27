@@ -1617,7 +1617,8 @@ A player who has a colony on a planet does not need permission to set up more co
 
 All set-up orders, whether for ships or colonies, will abort if no population are included in the set up order.
 A ship set up will also abort if no SDRV are included.
-Portions of a STP, or all of it, may fail due to a shortage of construction workers, transports, fuel (for the transports), or due to a shortage of STRN, STRL, or STRS (there must be enough enclosure capacity to hold the units being STP, [F3.2.1](#rule-F3.2.1)).
+Portions of a set up may be left out due to a shortage of the units listed, or of STRN, STRL, or STRS (there must be enough enclosure capacity to hold the units being set up, [F3.2.1](#rule-F3.2.1)).
+A shortage of construction workers, transports, or fuel (for the transports) makes the set up take longer ([F4.6](#rule-F4.6)).
 The S/C's otherwise have no size limitations, and players may build them as they choose.
 
 <a id="rule-F4.3.5"></a>
@@ -1633,56 +1634,55 @@ Personnel requirements will vary with the equipment being set up.
 The section entitled Personnel Requirements/Unit on the Unit Characteristics Summary, shown in [R3.0](#rule-R3.0)<!-- was on the back cover -->, gives this information.
 
 <a id="rule-F4.5"></a>
-### F4.5 How STP Orders Work
+### F4.5 How Set Up Orders Work
 
-When a player wishes to set up a new S/C, he writes a set-up (STP) order for an existing S/C, specifying the type of S/C it is to set up, and which units will be used in constructing it.
-The computer will cause construction worker units and transports to do the transferring and assembling of the items in the set-up order.
+When a player wishes to set up a new S/C, he writes a set up order ([S5.3](#rule-S5.3)) for an existing S/C, specifying the type of S/C it is to set up, and which units will be used in constructing it.
+The units listed are the bill of material for the new S/C.
+When the order is processed, the establishing S/C reserves the whole bill of material from its storage and its population.
+What is reserved can not be used, transferred, drafted, or assembled by the establishing S/C, but it still belongs to it: it takes up space there, and the population reserved still lives there, and is fed, paid, and given life support by the establishing S/C, until the new S/C is complete.
+The reserved population does no work.
+When the new S/C is complete, the whole bill of material is moved to it at once, and it is a S/C like any other.
+A set up may take more than one turn ([F4.6](#rule-F4.6)).
 No other order is necessary for the initial establishment, but ADN and TFR orders, on later turns, may increase the size of the S/C.
-All the materials needed to create the new S/C come from the establishing S/C's POP, non-assembly items, and unassembled items.
 
 <a id="rule-F4.6"></a>
 ### F4.6 Construction Workers and Set-Ups
 
-The automatic assembling by construction worker units (CWRK) in the new S/C, applies only to unassembled items (UNA).
-1 CWRK assembles 500 mass units of UNA.
-All CWRK listed in the STP order do as many assemblies as they are able to perform, and remain in the new S/C when done.
-All the assembling in a STP order only lasts one turn.
-All CWRK listed in the STP order will stay in the new S/C regardless of whether their numbers are greater or less than the number necessary to perform the assemblies in one turn.
-If there are not enough CWRK listed in the STP order for the required assemblies, they are helped out by the CWRK in the establishing S/C.
-The helping CWRK return to the establishing S/C when they are done.
-If there are no CWRK listed in the STP order at all, all the work is done by CWRK of the establishing S/C, and they all return to it.
-If there are not enough CWRK in the establishing S/C either, as many items in the STP order are assembled as possible, **IN THE ORDER IN WHICH THEY ARE LISTED IN THE STP ORDER**.
-(A player should therefore list the STRN (or STRL or STRS) first, followed by the other units in the order of their importance).
-UNA that can not be assembled by the CWRK are simply left in the establishing S/C.
+Unassembled items (UNA) in a set up order are assembled in the new S/C, unless the order says they are to be stowed.
+The initial construction assembles all the structure (STRN, STRL, STRS), all the LFSU, and one SDRV; these take no work.
+Everything else is assembled by construction worker units (CWRK): 1 CWRK assembles 500 mass units of UNA in a turn.
+All CWRK listed in the set up order work on it, and on nothing else, and remain in the new S/C when it is complete.
+They are helped by a crew of CWRK from the establishing S/C: as many as the work can use, or no more than the number the order allows.
+The crew is shuttled to the job site and back each turn, which takes TRNS ([F4.7](#rule-F4.7)), and a CWRK in the crew does no other work that turn.
+The crew returns to the establishing S/C when the work is done.
+The work goes on, turn after turn, until all of it is done; then the new S/C is complete.
+If the order is for more than one ship, the crew builds the ships one after another, unless the order gives a crew to each ship, in which case they are built at the same time.
 
 <a id="rule-F4.7"></a>
 ### F4.7 Transports and Set-Ups
 
-If there are no transports (TRNS's) listed in the STP order, then TRNS's from the establishing S/C are used, which return to the establishing S/C when done.
-All the work in a STP is accomplished in one turn.
-If there are more TRNS listed in the STP than necessary to do the required transfers, then those unnecessary TRNS are used by the establishing S/C for other work.
-All the TRNS in the STP return to the new S/C.
-If there are some TRNS listed in the STP, but not enough to do the required transfers, they are helped by TRNS's from the establishing S/C.
-The helping TRNS's do their transfers and return to the establishing S/C when done.
-If there are not enough TRNS in the establishing S/C, as many items in the STP are done as possible, **IN THE SEQUENCE IN WHICH THEY ARE LISTED IN THE STP**.
-Items that can not be transferred are left in the establishing S/C.
+The crew of CWRK from the establishing S/C needs TRNS of the establishing S/C on every turn that it works.
+Each CWRK in the crew takes twice its mass in transport capacity, for the trips to the job site and back: 4 mass units.
+CWRK that the TRNS can not carry do not work on the set up that turn.
+TRNS listed in the set up order are reserved like everything else, but being TRNS, they still carry for the establishing S/C until the new S/C is complete.
+CWRK listed in the set up order need no TRNS.
+The bill of material itself needs none.
 
 <a id="rule-F4.8"></a>
 ### F4.8 Assemblies and Set-Ups
 
-Items listed in the STP, excluding population units (POP), are taken from the establishing S/C's storage.
+Items listed in a set up order, excluding population units (POP), are taken from the establishing S/C's storage.
 Storage consists of non-assembly items (NON) and unassembled items (UNA).
-NON are considered to be whole or complete, and do not require assembling (or dis-assembling).
-UNA are items that have been disassembled to save space in storage.
-POP listed in a STP are taken from the establishing S/C's population groups.
-Items listed in a STP are never taken from the establishing S/C's assembled items.
-NON listed in a STP go to storage at the new S/C immediately.
-(This is done automatically - no order from the player is necessary).
-UNA in a STP are assembled by CWRK and used in the new S/C; they do not go into storage, unless their line of the order says they are to be stowed ([S5.3](#rule-S5.3)).
-(This is also done automatically and needs no special order from the player).
-POP go into the new S/C's population groups automatically.
-Mines listed in a STP are put into storage in the new S/C, unless in the STP order they were ordered to work a deposit, in which case they are assembled as a mining group.
-Factory units will be put into storage in the new S/C, unless in the STP order they were ordered to manufacture something, in which case they are assembled as a factory group.
+POP listed are taken from the establishing S/C's population groups.
+Items are never taken from the establishing S/C's assembled items.
+The items are reserved in the order they are listed, except that POP are always taken last.
+Each line of the order is cut down to what the establishing S/C has, and to what the new S/C will have room for ([F3.2.1](#rule-F3.2.1)): so the structure should be listed first, and the rest in the order of its importance.
+Since POP come last, they get the room that the other items leave.
+In the new S/C, everything is either in use or in its storage; nothing goes to an external depot, not even in an open colony.
+NON go to storage.
+UNA are assembled and used in the new S/C, unless their line of the order says they are to be stowed.
+Mines are put into storage, unless the order says which deposit they are to work, in which case they are assembled as a mining group.
+Factory units are put into storage, unless the order says what they are to manufacture, in which case they are assembled as a factory group.
 
 <a id="rule-F4.9"></a>
 ### F4.9 Set-Up Locations
@@ -3817,22 +3817,22 @@ end
 **Examples**
 
 ```text
-setup 6 CSHP from 29               # colony 29 sets up 6 identical ships
+setup 6 CSHP from 29 using 50 CWRK each   # colony 29 sets up 6 identical ships at the same time
 50,000 STRN
 5 PRO
 1 SDRV-1
 20 FOOD
-5 LFSU-1
+5 LFSU-1                           # supports 5 population units
 1 SENS-1
 1,000 FUEL
 end
 
-setup CENC from 29 using 200 CWRK  # no more than 200 of colony 29's CWRK help
+setup CENC from 29 using 200 CWRK  # a crew of up to 200 of colony 29's CWRK
 400,000 STRN
-50 CWRK                            # these do the work first, and stay in the new colony
+50 CWRK                            # these work on it too, and stay in the new colony
 2,000 PRO
 6,000 USK
-500 LFSU-2
+500 LFSU-2                         # supports 2,000 population units
 6,000 FACT-1 producing TRNS-1      # assembled as a factory group
 5,000 FACT-1 stowed                # these go into storage
 1,000 MINE-1 working 3             # assembled as a mining group on deposit 3
@@ -3847,28 +3847,37 @@ setup CORB from 29; 8,000 STRN; 100 PRO; 20 LFSU-1; end
 - This order takes more than one line ([S2.0](#rule-S2.0)): the first line, then one line for each kind of unit, then a line with the word `end`.
   It has at least one unit line, and only one quantity and one unit on each.
   A `;` may be written in place of the end of a line.
-- The order is carried out at once, in the order the player's orders are written, so later orders can be addressed to what is left in the establishing S/C.
-  The new S/C's ID number is on the next printout ([F4.2](#rule-F4.2)); orders can not be addressed to it on the turn it is set up.
-- The units are taken in the order listed, so list the structure first, and the rest in the order of its importance ([F4.6](#rule-F4.6)).
+- When the order is processed, the establishing S/C reserves the units, in the order listed, but population last ([F4.8](#rule-F4.8)).
+  So list the structure first, and the rest in the order of its importance.
 - The order takes what there is.
-  Each line is cut down to what the establishing S/C has in storage, what its TRNS can still carry this turn ([F4.7](#rule-F4.7)), what the new S/C has room for ([F3.2](#rule-F3.2)), and what the CWRK can assemble ([F4.6](#rule-F4.6)).
-  Units that can not be moved or assembled stay in the establishing S/C.
+  Each line is cut down to what the establishing S/C has in storage that is not already claimed or reserved, and to what the new S/C will have room for ([F3.2](#rule-F3.2)).
+  Population gets the room that the other lines leave.
+- What is reserved stays in the establishing S/C, which keeps and supports it, until the new S/C is complete ([F4.5](#rule-F4.5)).
+  It can not be used for anything else.
 - A unit that requires assembly is assembled in the new S/C, unless its line ends with `stowed`, which puts it in storage.
   Units that do not require assembly always go to storage.
+  Nothing goes to an external depot.
+- All the structure, all the LFSU, and one SDRV are assembled without work.
+  The rest is assembled by CWRK, 500 mass units each a turn, for as many turns as it takes ([F4.6](#rule-F4.6)).
+  The new S/C is complete when all of it is done; if there is none to do, that is the turn of the order.
+- CWRK listed in the order work on it, and stay in the new S/C.
+  A crew of the establishing S/C's other CWRK helps, and returns when the work is done.
+  `using` limits the size of the crew; without it the crew is as large as the work can use.
+- The crew is shuttled to the job each turn by the establishing S/C's TRNS, 4 mass units for each CWRK ([F4.7](#rule-F4.7)).
+  CWRK the TRNS can not carry do not work that turn.
+- A quantity of ships is built one after another by the one crew.
+  If the `using` clause ends with `each`, every ship has a crew of that size, and they are built at the same time.
+  `each` may be written for any type of S/C, but makes a difference only for ships.
 - A line of FACT units must say what they are `producing`, or that they are `stowed`; a line of MINE units must say which deposit they are `working`, or that they are `stowed`.
   Each such line makes a new group.
   FARM units and LAB units of one TL make one group.
-- People are taken from the establishing S/C's population.
-  A CWRK or SPY line moves the cadre with its people.
+- A CWRK or SPY line moves the cadre with its people.
   People are never stowed.
-- CWRK listed in the order work first, and stay in the new S/C.
-  The other CWRK of the establishing S/C help, and return; `using` limits how many of them help, for the whole order, or for each ship if the line ends with `each`.
-  The work the CWRK do is taken from what they can assemble in the Dis-Assembly and Assembly stages of the same turn.
-- A quantity of ships sets them up one after another.
-  A ship that fails to set up ([F4.3.4](#rule-F4.3.4)) ends the order; the ships before it stay set up.
+- The new S/C's ID number is on the next printout ([F4.2](#rule-F4.2)), with the work done on it and what is reserved for it; orders can not be addressed to it until it is complete.
+- A ship that would fail to set up ([F4.3.4](#rule-F4.3.4)) is not started, and neither are the ships after it.
 - The new S/C has the TL of the establishing S/C.
 - **Warning:** installing more population than the new S/C has life support for will result in the deaths of population units ([G6.2](#rule-G6.2)).
-  Only assembled LFSU support anybody, and they need FUEL.
+  LFSU need FUEL, unless they are solar powered ([G6.1](#rule-G6.1)).
 
 **Rejected when**
 

@@ -214,13 +214,29 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				}
 			}
 		}
+		if len(c.Setups) > 0 {
+			p("")
+			p("SET UPS")
+			for _, s := range c.Setups {
+				p("  Entity %d (%s): %s of %s EMU of assembly work done; %s CWRK shuttled to it last turn",
+					s.Entity.ID, s.Entity.Type, commas(s.EMU), commas(s.Need), commas(s.Crew))
+				if s.Waiting == "population" {
+					p("    WAITING: none of the people reserved for it are left")
+				}
+				var bom []string
+				for _, u := range s.BOM {
+					bom = append(bom, commas(u.Qty)+" "+unitName(u.Type, u.TechLevel))
+				}
+				p("    RESERVED: %s", strings.Join(bom, ", "))
+			}
+		}
 		if len(c.Assembly) > 0 || c.Construction.Used > 0 {
 			p("")
 			p("ASSEMBLY")
 			if k := c.Construction; k.Pool > 0 || k.Used > 0 {
 				p("  LAST TURN: the CWRK did %s EMU of assembly work of the %s EMU they could", commas(k.Used), commas(k.Pool))
 				if k.Setup > 0 {
-					p("  SET UPS: %s EMU of that work was done for setup orders", commas(k.Setup))
+					p("  SET UPS: %s EMU of that was the CWRK reserved for set ups or shuttled to them", commas(k.Setup))
 				}
 			} else {
 				p("  LAST TURN: no CWRK, so no assembly work was done")

@@ -31,6 +31,7 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	if err != nil {
 		return OrdersResult{}, err
 	}
+	Setups(d)
 	Disassembly(d)
 	Assembly(d)
 	Draft(d, result.Drafts)

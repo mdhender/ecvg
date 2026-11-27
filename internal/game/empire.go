@@ -93,6 +93,9 @@ type Colony struct {
 	Construction Construction `json:"construction,omitzero"`
 	// Transport is what the colony's TRNS did in the prior turn.
 	Transport Transport `json:"transport,omitzero"`
+	// Setups are the new entities that the colony is setting up, oldest
+	// first.
+	Setups []Setup `json:"setups,omitempty"`
 	// Rations is the percentage of the food its population needs that the
 	// colony hands out, MinRations..MaxRations, by default DefaultRations.
 	Rations int `json:"rations"`

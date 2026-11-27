@@ -211,12 +211,8 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		if depositID == 0 {
 			return fmt.Errorf("deposit %d: %w", o.DepositNo, ErrNoSuchDeposit)
 		}
-		for _, other := range d.Colonies {
-			for _, g := range other.MiningGroups {
-				if g.DepositID == depositID {
-					return fmt.Errorf("deposit %d: %w", o.DepositNo, ErrDepositClaimed)
-				}
-			}
+		if depositClaimed(d, depositID) {
+			return fmt.Errorf("deposit %d: %w", o.DepositNo, ErrDepositClaimed)
 		}
 	}
 

@@ -5,7 +5,6 @@ package engine
 
 import (
 	"fmt"
-	"math"
 	"slices"
 
 	"github.com/mdhender/ecvg/internal/cerrs"
@@ -36,19 +35,18 @@ const (
 )
 
 // Setup carries out a setup order, given by the empire with ID empireID: the
-// entity From sets up new entities of the order's type at its own location
-// (manual F4.0, S5.3). It is done at once, like a transfer. Each new entity
-// gets the next entity ID, the tech level of the entity that set it up, and
-// the units of the order's lines, taken in the order listed (see
-// game.Colony.SetUp): the TRNS of From carry them, and its CWRK assemble
-// them, in this turn only. The CWRK the order lists do that work first and
-// stay in the new entity; the other CWRK of From help, as many as the order's
-// using clause allows, and what they do comes out of From's assembly work
-// for the turn (game.Construction.Setup).
+// entity From starts to set up new entities of the order's type at its own
+// location (manual F4.0, S5.3). Each is a game.Setup of From, which gets the
+// next entity ID, the tech level of From, and the units of the order's lines:
+// they are reserved in From, in the order listed but people last, each line
+// cut down to what From has and the new entity has room for (see
+// game.Colony.PlanSetup). The work is done in the Setups phase, starting this
+// turn.
 //
-// An order for several ships sets them up one after another. One that gets
-// no population, or no SDRV, is not set up, and neither are the ones after
-// it; the order fails only if that is the first.
+// An order for several ships plans them one after another. One that gets no
+// population, or no SDRV, is not started, and neither are the ones after it;
+// the order fails only if that is the first. The ships share the order's cap
+// on CWRK, and so are built in turn, unless the cap is for each of them.
 //
 // Nothing changes if it fails:
 //
@@ -80,10 +78,17 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 		}
 	}
 
-	// Where the entity may be set up, and how many.
+	// Where the entity may be set up, and how many. The entities that are
+	// being set up count as if they were there.
+	entities := allEntities(d)
 	qty := max(1, o.Qty)
 	ships, mine, others := 0, false, false
-	for _, c := range d.Colonies {
+	nextID, nextNo := 0, 0
+	for _, c := range entities {
+		nextID = max(nextID, c.ID)
+		if c.EmpireID == empireID {
+			nextNo = max(nextNo, c.No)
+		}
 		if c.PlanetID != planetID {
 			continue
 		}
@@ -149,15 +154,8 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 			if id == 0 {
 				return fmt.Errorf("deposit %d: %w", it.DepositNo, ErrNoSuchDeposit)
 			}
-			if _, twice := deposits[it.DepositNo]; twice {
+			if _, twice := deposits[it.DepositNo]; twice || depositClaimed(d, id) {
 				return fmt.Errorf("deposit %d: %w", it.DepositNo, ErrDepositClaimed)
-			}
-			for _, other := range d.Colonies {
-				for _, g := range other.MiningGroups {
-					if g.DepositID == id {
-						return fmt.Errorf("deposit %d: %w", it.DepositNo, ErrDepositClaimed)
-					}
-				}
 			}
 			deposits[it.DepositNo] = id
 		case units.LAB:
@@ -171,7 +169,7 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 	}
 	if farms > 0 {
 		have := 0
-		for _, other := range d.Colonies {
+		for _, other := range entities {
 			if other.PlanetID != planetID {
 				continue
 			}
@@ -189,61 +187,55 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 		}
 	}
 
-	// The helpers' work for the whole order, if the order caps it and the
-	// cap is not for each entity.
-	budget := math.MaxInt
-	if o.MaxCWRK > 0 {
-		budget = o.MaxCWRK * game.EMUPerCWRK
-	}
-	nextID, nextNo := 0, 0
-	for _, c := range d.Colonies {
-		nextID = max(nextID, c.ID)
-		if c.EmpireID == empireID {
-			nextNo = max(nextNo, c.No)
+	// People are handed over last, so they get the room that is left.
+	items := slices.Clone(o.Items)
+	slices.SortStableFunc(items, func(a, b orders.SetupItem) int {
+		da, _ := units.Lookup(a.Unit.Type)
+		db, _ := units.Lookup(b.Unit.Type)
+		switch {
+		case da.Population() == db.Population():
+			return 0
+		case db.Population():
+			return -1
 		}
+		return 1
+	})
+	// Entities that share the order's crew are one batch.
+	batch := 0
+	if o.MaxCWRK > 0 && !o.Each {
+		for _, s := range d.Colonies[fromAt].Setups {
+			batch = max(batch, s.Batch)
+		}
+		batch++
 	}
 	for k := 0; k < qty; k++ {
-		// Work on copies, so that an entity that fails changes nothing.
+		// Work on a copy, so that an entity that fails changes nothing.
 		from := d.Colonies[fromAt]
-		from.Cargo, from.Depot = slices.Clone(from.Cargo), slices.Clone(from.Depot)
-		from.Transport.Transfers = slices.Clone(from.Transport.Transfers)
 		nextID++
 		nextNo++
-		to := game.Colony{
-			ID: nextID, EmpireID: empireID, PlanetID: planetID, No: nextNo,
-			Type: o.Type, TechLevel: from.TechLevel, Rations: game.DefaultRations,
-			SOL: game.DefaultSOL, DeathRate: game.DefaultDeathRate, BirthRate: game.DefaultBirthRate,
-		}
-
-		// The CWRK the order lists work first, and then the helpers.
-		listed := 0
-		for _, it := range o.Items {
-			if it.Unit.Type == units.CWRK {
-				listed += it.Unit.Qty
-			}
-		}
-		avail := from.SetupWorkAvailable()
-		own := min(listed*game.EMUPerCWRK, avail)
-		help := min(avail-own, budget)
-		if o.Each && o.MaxCWRK > 0 {
-			help = min(avail-own, o.MaxCWRK*game.EMUPerCWRK)
-		}
-		emu := own + help
-
-		for _, it := range o.Items {
+		from.Setups = append(slices.Clone(from.Setups), game.Setup{
+			Entity: game.Colony{
+				ID: nextID, EmpireID: empireID, PlanetID: planetID, No: nextNo,
+				Type: o.Type, TechLevel: from.TechLevel, Rations: game.DefaultRations,
+				SOL: game.DefaultSOL, DeathRate: game.DefaultDeathRate, BirthRate: game.DefaultBirthRate,
+			},
+			MaxCWRK: o.MaxCWRK, Batch: batch,
+		})
+		s := &from.Setups[len(from.Setups)-1]
+		for _, it := range items {
 			item := game.SetupItem{Unit: it.Unit, Stowed: it.Stowed}
 			if def, _ := units.Lookup(it.Unit.Type); !it.Stowed && def.RequiresAssembly {
-				item.Kind, item.GroupNo = setupGroup(&to, it, deposits)
+				item.Kind, item.GroupNo = setupGroup(&s.Entity, it, deposits)
 			}
-			from.SetUp(&to, item, &emu)
+			from.PlanSetup(s, item)
 		}
-		dropEmptyGroups(&to)
+		dropEmptyGroups(&s.Entity)
 
 		var err error
 		switch {
-		case to.Population.Units() < 1:
+		case s.Entity.Population.Units() < 1:
 			err = ErrNoPopulation
-		case o.Type == game.CSHP && !hasUnit(to, units.SDRV):
+		case o.Type == game.CSHP && !hasUnit(s.Entity, units.SDRV):
 			err = ErrNoSpaceDrive
 		}
 		if err != nil {
@@ -252,19 +244,44 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 			}
 			break
 		}
-		// The work is charged to the CWRK that went along first, and the
-		// rest to the helpers, who stay.
-		used := own + help - emu
-		to.Construction.Setup = min(used, to.Cadres.CWRK*game.EMUPerCWRK)
-		helped := used - to.Construction.Setup
-		from.Construction.Setup += helped
-		if !o.Each && o.MaxCWRK > 0 {
-			budget = max(0, budget-helped)
-		}
 		d.Colonies[fromAt] = from
-		d.Colonies = append(d.Colonies, to)
 	}
 	return nil
+}
+
+// Setups is the set up phase of a turn: every entity does a turn of work on
+// the entities it is setting up (game.Colony.RunSetups), and the ones that
+// are done join the game.
+func Setups(d *game.Data) {
+	var done []game.Colony
+	for i := range d.Colonies {
+		done = append(done, d.Colonies[i].RunSetups()...)
+	}
+	d.Colonies = append(d.Colonies, done...)
+}
+
+// allEntities returns the entities of d and the ones that are being set up.
+func allEntities(d *game.Data) []game.Colony {
+	all := slices.Clone(d.Colonies)
+	for _, c := range d.Colonies {
+		for _, s := range c.Setups {
+			all = append(all, s.Entity)
+		}
+	}
+	return all
+}
+
+// depositClaimed reports whether a mining group of any entity, or of one
+// that is being set up, works the deposit with the given ID.
+func depositClaimed(d *game.Data, id int) bool {
+	for _, c := range allEntities(d) {
+		for _, g := range c.MiningGroups {
+			if g.DepositID == id {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // countItems returns the number of lines that assemble the unit with the

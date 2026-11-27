@@ -69,8 +69,12 @@ type Mined struct {
 
 // Stock returns the quantity the colony holds of the unit with the given
 // code that has no tech level (a resource, FOOD, ...), in its cargo and its
-// depot together.
+// depot together, less what its set ups have reserved.
 func (c *Colony) Stock(code string) int {
+	return max(0, c.stock(code)-c.Reserved(code, 0))
+}
+
+func (c *Colony) stock(code string) int {
 	n := 0
 	for _, list := range [][]Unit{c.Cargo, c.Depot} {
 		for _, u := range list {
@@ -84,8 +88,10 @@ func (c *Colony) Stock(code string) int {
 
 // Spend takes up to qty of the unit with the given code and no tech level
 // out of the colony's inventory, the cargo first and then the depot, and
-// returns the quantity it took.
+// returns the quantity it took. It leaves what the colony's set ups have
+// reserved.
 func (c *Colony) Spend(code string, qty int) int {
+	qty = min(qty, c.Stock(code))
 	left := max(0, qty)
 	for _, list := range [][]Unit{c.Cargo, c.Depot} {
 		for i := range list {

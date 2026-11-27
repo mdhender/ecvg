@@ -67,8 +67,6 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 	d.OrderResults = nil
 	for i := range d.Colonies {
 		d.Colonies[i].StartTransport()
-		// The CWRK have done no work on setup orders yet this turn.
-		d.Colonies[i].Construction.Setup = 0
 	}
 	for _, f := range files {
 		for _, line := range f.Lines {
