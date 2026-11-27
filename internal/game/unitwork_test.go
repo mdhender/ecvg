@@ -22,7 +22,7 @@ func TestAssembleCap(t *testing.T) {
 			Depot:    []unit{hdrv(5000)},
 			Assembly: []game.Assembly{{Unit: hdrv(5000), MaxCWRK: 20}},
 		}
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly[0]; a.Assembled != 222 || a.Unit.Qty != 4778 || a.EMU != 10 ||
 			c.Construction != (game.Construction{Pool: 50000, Used: 10000}) ||
 			!reflect.DeepEqual(c.DepotOperational, []unit{hdrv(222)}) {
@@ -37,7 +37,7 @@ func TestAssembleCap(t *testing.T) {
 			Depot:    []unit{hdrv(1)},
 			Assembly: []game.Assembly{{Unit: hdrv(1), MaxCWRK: 20000}},
 		}
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly[0]; a.Assembled != 1 || a.Unit.Qty != 0 || c.Construction != (game.Construction{Pool: 50000, Used: 45}) {
 			t.Errorf("work %+v, construction %+v", a, c.Construction)
 		}
@@ -60,13 +60,13 @@ func TestAssembleCap(t *testing.T) {
 				{Kind: game.KindMining, GroupNo: 2, Unit: mine},
 			},
 		}
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly; a[0].Assembled != 30 || a[1].Assembled != 5 || a[2].Assembled != 5 ||
 			c.Construction != (game.Construction{Pool: 5000, Used: 650}) {
 			t.Fatalf("turn 1: work %+v, construction %+v", a, c.Construction)
 		}
 		// The first work is dropped, and the second has the cap to itself.
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly; len(a) != 1 || a[0].SharesCap || a[0].Assembled != 5 || c.Construction.Used != 80 {
 			t.Errorf("turn 2: work %+v, construction %+v", a, c.Construction)
 		}
@@ -87,7 +87,7 @@ func TestDisassemble(t *testing.T) {
 			{Action: game.WorkDisassemble, Unit: unit{Type: "STRC", TechLevel: 1, Qty: 1000}},
 		},
 	}
-	c.Assemble()
+	work(&c)
 	// The LFSU take 80 EMU and go back to cargo. The other 420 EMU are for
 	// 420 STRC-1, but each one stowed takes space and makes none: only 133
 	// fit, leaving 867 that make 173 VU for 40 + 133 VU of cargo.
@@ -108,11 +108,37 @@ func TestDisassemble(t *testing.T) {
 			DepotOperational: []unit{auto(10)},
 			Assembly:         []game.Assembly{{Action: game.WorkDisassemble, Unit: auto(20)}},
 		}
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly[0]; a.Assembled != 10 || a.Waiting != "units" || !reflect.DeepEqual(c.Depot, []unit{auto(10)}) || len(c.Cargo) != 0 {
 			t.Errorf("work %+v, depot %+v, cargo %+v", a, c.Depot, c.Cargo)
 		}
 	})
+}
+
+// Disassembly and scrap come before assembly, whatever the age of the work,
+// and have first call on the CWRK.
+func TestDisassemblyComesFirst(t *testing.T) {
+	type unit = game.Unit
+	auto := func(qty int) unit { return unit{Type: "AUTO", TechLevel: 10, Qty: qty} }
+	// An AUTO-10 is 40 MU: 1 CWRK does 12 of them, with 20 EMU over.
+	c := game.Colony{
+		Type:             game.COPN,
+		Cadres:           game.Cadres{CWRK: 1},
+		Depot:            []unit{auto(10)},
+		DepotOperational: []unit{auto(10)},
+		Assembly: []game.Assembly{
+			{Unit: auto(10)},
+			{Action: game.WorkDisassemble, Unit: auto(10)},
+		},
+	}
+	c.Disassemble()
+	if a := c.Assembly; a[0].EMU != 0 || a[1].Assembled != 10 || c.Stored("AUTO", 10) != 20 || c.Construction != (game.Construction{Pool: 500, Used: 400}) {
+		t.Fatalf("after disassembly: work %+v, depot %+v, construction %+v", a, c.Depot, c.Construction)
+	}
+	c.Assemble()
+	if a := c.Assembly; a[0].Assembled != 2 || a[0].EMU != 20 || c.InUse("AUTO", 10) != 2 || c.Construction != (game.Construction{Pool: 500, Used: 500}) {
+		t.Errorf("after assembly: work %+v, in use %d, construction %+v", a, c.InUse("AUTO", 10), c.Construction)
+	}
 }
 
 func TestScrap(t *testing.T) {
@@ -140,7 +166,7 @@ func TestScrap(t *testing.T) {
 				Cargo:       []unit{tc.scrap},
 				Assembly:    []game.Assembly{{Action: game.WorkScrap, Unit: tc.scrap}},
 			}
-			c.Assemble()
+			work(&c)
 			a := c.Assembly[0]
 			if a.Assembled != tc.scrap.Qty || a.Unit.Qty != 0 || a.MTL != tc.mtl || a.NMTL != tc.nmtl || a.Lost != tc.lost {
 				t.Errorf("work %+v", a)
@@ -155,4 +181,11 @@ func TestScrap(t *testing.T) {
 			}
 		})
 	}
+}
+
+// work does a turn of the colony's work: the dis-assembly phase, then the
+// assembly phase.
+func work(c *game.Colony) {
+	c.Disassemble()
+	c.Assemble()
 }

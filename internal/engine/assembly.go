@@ -23,10 +23,22 @@ const (
 	ErrFarmCap            = cerrs.Error("the planet has no room for that many more FARM-1 units")
 )
 
+// Disassembly is the dis-assembly phase: every colony's CWRK do a turn of
+// its disassembly and scrap work (see game.Colony.Disassemble). It comes
+// after production and before the Assembly phase, so what it returns to
+// storage is there for the phases between, and it has first call on the
+// CWRK. Like the draft, it runs in the setup turn too.
+func Disassembly(d *game.Data) {
+	for i := range d.Colonies {
+		d.Colonies[i].Disassemble()
+	}
+}
+
 // Assembly is the assembly phase: every colony's CWRK do a turn of its
-// assembly work (see game.Colony.Assemble). It comes after production, so a
-// unit assembled in a turn first works in the next. Like the draft, it runs
-// in the setup turn too.
+// assembly work with what the Disassembly phase, which must come first, left
+// them (see game.Colony.Assemble). It comes after production, so a unit
+// assembled in a turn first works in the next. Like the draft, it runs in
+// the setup turn too.
 func Assembly(d *game.Data) {
 	for i := range d.Colonies {
 		d.Colonies[i].Assemble()

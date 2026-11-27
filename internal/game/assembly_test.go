@@ -32,7 +32,7 @@ func TestAssemble(t *testing.T) {
 			{left: 7, emu: 10, assembled: 17, group: 33, cargo: 0, depot: 12, used: 500},
 			{left: 0, emu: 0, assembled: 7, group: 40, cargo: 0, depot: 5, used: 200},
 		} {
-			c.Assemble()
+			work(&c)
 			a := c.Assembly[0]
 			if a.Unit.Qty != want.left || a.EMU != want.emu || a.Assembled != want.assembled || a.Waiting != "" ||
 				c.MiningGroups[0].Units[0].Qty != want.group || c.Cargo[0].Qty != want.cargo || c.Depot[0].Qty != want.depot ||
@@ -45,7 +45,7 @@ func TestAssemble(t *testing.T) {
 				t.Errorf("turn %d: depot operational %+v, operational %+v", turn+1, c.DepotOperational, c.Operational)
 			}
 		}
-		c.Assemble()
+		work(&c)
 		if len(c.Assembly) != 0 || c.Construction != (game.Construction{Pool: 500}) {
 			t.Errorf("after the work was done: %+v, %+v", c.Assembly, c.Construction)
 		}
@@ -64,23 +64,23 @@ func TestAssemble(t *testing.T) {
 				{Kind: game.KindMining, GroupNo: 1, Unit: unit{Type: "MINE", TechLevel: 1, Qty: 100}},
 			},
 		}
-		c.Assemble()
+		work(&c)
 		if a, b := c.Assembly[0], c.Assembly[1]; a.Assembled != 15 || a.EMU != 20 || b.Assembled != 0 || b.EMU != 0 {
 			t.Errorf("turn 1: %+v", c.Assembly)
 		}
 		// The factories need 140 more; the mines get the other 360.
 		c.Assembly = append(c.Assembly, game.Assembly{Kind: game.KindFactory, GroupNo: 2, Unit: unit{Type: "FACT", TechLevel: 2, Qty: 1}})
-		c.Assemble()
+		work(&c)
 		if a, b, x := c.Assembly[0], c.Assembly[1], c.Assembly[2]; a.Assembled != 5 || a.Unit.Qty != 0 || b.Assembled != 30 || b.EMU != 0 || x.EMU != 0 {
 			t.Errorf("turn 2: %+v", c.Assembly)
 		}
 		// The mines are older work than the FACT-2 and take the whole pool.
-		c.Assemble()
+		work(&c)
 		if b, x := c.Assembly[0], c.Assembly[1]; b.Assembled != 41 || b.EMU != 8 || x.Assembled != 0 || x.EMU != 0 {
 			t.Errorf("turn 3: %+v", c.Assembly)
 		}
 		// A factory group can mix tech levels.
-		c.Assemble()
+		work(&c)
 		want := []game.GroupUnits{{Qty: 20, TechLevel: 10}, {Qty: 1, TechLevel: 2}}
 		if !reflect.DeepEqual(c.FactoryGroups[0].Units, want) || len(c.Assembly) != 2 {
 			t.Errorf("turn 4: group %+v, work %+v", c.FactoryGroups[0].Units, c.Assembly)
@@ -100,7 +100,7 @@ func TestAssemble(t *testing.T) {
 		}
 		// Cadres hold people the colony doesn't have here, but the pool only
 		// counts the CWRK.
-		c.Assemble()
+		work(&c)
 		a := c.Assembly[0]
 		if a.Assembled != 11 || a.Unit.Qty != 9 || a.EMU != 162 || a.Waiting != "room" || c.SpaceFree() != 2 ||
 			c.FarmingGroups[0].Units[0].Qty != 11 || c.Operational[1] != (unit{Type: "FARM", TechLevel: 6, Qty: 11}) ||
@@ -117,7 +117,7 @@ func TestAssemble(t *testing.T) {
 			MiningGroups: []game.MiningGroup{{No: 1, Units: []game.GroupUnits{{TechLevel: 10}}}},
 			Assembly:     []game.Assembly{{Kind: game.KindMining, GroupNo: 1, Unit: mine10(10)}},
 		}
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly[0]; a.Assembled != 5 || a.Unit.Qty != 5 || a.EMU != 150 || a.Waiting != "units" {
 			t.Errorf("work %+v", a)
 		}
@@ -129,7 +129,7 @@ func TestAssemble(t *testing.T) {
 			Cargo:    []unit{mine10(5)},
 			Assembly: []game.Assembly{{Kind: game.KindMining, GroupNo: 1, Unit: mine10(5), Assembled: 3, Waiting: "room"}},
 		}
-		c.Assemble()
+		work(&c)
 		if a := c.Assembly[0]; a != (game.Assembly{Kind: game.KindMining, GroupNo: 1, Unit: mine10(5)}) || c.Construction != (game.Construction{}) {
 			t.Errorf("work %+v, construction %+v", a, c.Construction)
 		}

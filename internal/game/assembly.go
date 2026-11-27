@@ -129,24 +129,22 @@ func (c *Colony) working(w Work, code string, tl int) int {
 	return n
 }
 
-// Assemble does a turn of the colony's assembly work. The colony's CWRK make
-// a pool of EMUPerCWRK EMU each, and each piece of work, oldest first, takes
-// as much of it as it can use, or as much as its order's cap on CWRK allows.
-// EMU nothing took is lost. Work that finished in the prior turn is dropped
-// first. What happens to the units whose mass the work has reached depends on
-// the work:
+// Disassemble does a turn of the colony's disassembly and scrap work. It
+// comes before Assemble in a turn, so what it puts into storage is there for
+// the phases between them, and no unit is taken down and put up in one turn.
+// It starts the turn's construction: work that finished in the prior turn is
+// dropped, and the colony's CWRK make a pool of EMUPerCWRK EMU each, which
+// this work has first call on. Each piece of work, oldest first, takes as
+// much of the pool as it can use, or as much as its order's cap on CWRK
+// allows. What happens to the units whose mass the work has reached depends
+// on the work:
 //
-//   - Assembled units move from storage into use, in the depot if the colony
-//     has one and the unit can be there, and otherwise in the colony itself,
-//     and join their group if they have one.
 //   - Disassembled units move out of use and back into storage: from the
-//     depot into the depot, and from the colony into its cargo.
+//     depot into the depot, and from the colony into its cargo, if the colony
+//     has room for them there; the rest wait.
 //   - Scrapped units leave storage, and ScrapPercent percent of the MTL and
 //     NMTL that built them is stored; what there is no room for is lost.
-//
-// Units move only if the colony has room for them where they are going; the
-// rest wait.
-func (c *Colony) Assemble() {
+func (c *Colony) Disassemble() {
 	jobs := c.Assembly[:0]
 	// When the first work of an order is dropped, the next of the order
 	// stands in for it.
@@ -164,8 +162,25 @@ func (c *Colony) Assemble() {
 		jobs = append(jobs, a)
 	}
 	c.Assembly = jobs
-	pool := max(0, c.Cadres.CWRK) * EMUPerCWRK
-	left := pool
+	c.Construction = Construction{Pool: max(0, c.Cadres.CWRK) * EMUPerCWRK}
+	c.construct(func(w Work) bool { return w != WorkAssemble })
+}
+
+// Assemble does a turn of the colony's assembly work, with what Disassemble,
+// which must come first in the turn, left of the CWRK's pool. Each piece of
+// work, oldest first, takes as much of it as it can use, or as much as its
+// order's cap on CWRK allows; EMU nothing took is lost. The units whose mass
+// the work has reached move from storage into use, in the depot if the colony
+// has one and the unit can be there, and otherwise in the colony itself if it
+// has room for them assembled, and join their group if they have one.
+func (c *Colony) Assemble() {
+	c.construct(func(w Work) bool { return w == WorkAssemble })
+}
+
+// construct does the work of the kinds that phase picks, with what is left
+// of the turn's pool.
+func (c *Colony) construct(phase func(Work) bool) {
+	left := c.Construction.Pool - c.Construction.Used
 	budget := 0 // what the order's cap leaves of the pool
 	for i := range c.Assembly {
 		a := &c.Assembly[i]
@@ -176,7 +191,7 @@ func (c *Colony) Assemble() {
 			}
 		}
 		d, ok := units.Lookup(a.Unit.Type)
-		if !ok {
+		if !ok || !phase(a.Action) {
 			continue
 		}
 		tl := a.Unit.TechLevel
@@ -212,7 +227,7 @@ func (c *Colony) Assemble() {
 		a.Unit.Qty -= n
 		a.Assembled = n
 	}
-	c.Construction = Construction{Pool: pool, Used: pool - left}
+	c.Construction.Used = c.Construction.Pool - left
 }
 
 // fit returns the most of n units that the colony has room to assemble or
