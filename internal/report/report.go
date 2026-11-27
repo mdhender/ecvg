@@ -296,11 +296,14 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				p("  None assembled")
 			}
 			for _, g := range gs {
-				if g.IdlePercent > 0 {
-					p("  Group %-3d ORDERED IDLE: %d%% of its units", g.No, g.IdlePercent)
+				if g.ShutDown > 0 {
+					p("  Group %-3d SHUT DOWN BY ORDER: %s of its units", g.No, commas(g.ShutDown))
 				}
 				if u := g.Producing; u.Type != "" {
 					p("  Group %-3d producing %s", g.No, unitName(u.Type, u.TechLevel))
+				}
+				if g.Retooled {
+					p("  Group %-3d RETOOLED: waiting to be told what to produce", g.No)
 				}
 				for _, u := range g.Units {
 					p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
@@ -347,8 +350,8 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 					resource, depositNo = string(dep.Type), dep.DepositNo
 				}
 			}
-			if g.IdlePercent > 0 {
-				p("  Group %-3d ORDERED IDLE: %d%% of its units", g.No, g.IdlePercent)
+			if g.ShutDown > 0 {
+				p("  Group %-3d SHUT DOWN BY ORDER: %s of its units", g.No, commas(g.ShutDown))
 			}
 			for _, u := range g.Units {
 				p("  Group %-3d %14s units at TL %d working deposit %d (%s)", g.No, commas(u.Qty), u.TechLevel, depositNo, resource)

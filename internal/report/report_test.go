@@ -106,11 +106,11 @@ func TestEmpire(t *testing.T) {
 			edit: func(d *game.Data) {
 				d.Colonies[0].Harvest = game.Harvest{Units: 100000, Worked: 36000, Unstaffed: 4000, Unfuelled: 60000, Fuel: 360000, Food: 1800000}
 				d.Colonies[0].FarmingGroups = append(d.Colonies[0].FarmingGroups,
-					game.Group{No: 2, IdlePercent: 30, Units: []game.GroupUnits{{Qty: 5000, TechLevel: 1,
+					game.Group{No: 2, ShutDown: 1500, Units: []game.GroupUnits{{Qty: 5000, TechLevel: 1,
 						Idle: game.Idle{Ordered: 1500, Unstaffed: 400, Unfuelled: 100}}}})
 			},
 			want: []string{
-				"  Group 2   ORDERED IDLE: 30% of its units\n  Group 2            5,000 units at TL 1\n" +
+				"  Group 2   SHUT DOWN BY ORDER: 1,500 of its units\n  Group 2            5,000 units at TL 1\n" +
 					"                     1,500 of them were IDLE last turn: BY ORDER\n" +
 					"                       400 of them were IDLE last turn: NO STAFF\n" +
 					"                       100 of them were IDLE last turn: NO FUEL\n",
@@ -132,7 +132,7 @@ func TestEmpire(t *testing.T) {
 				c.Depot = []game.Unit{{Type: "FUEL", Qty: 3250000}}
 				c.DepotOperational = []game.Unit{{Type: "MINE", TechLevel: 10, Qty: 100000}}
 				c.MiningGroups = []game.MiningGroup{{
-					No: 1, DepositID: 2, IdlePercent: 25,
+					No: 1, DepositID: 2, ShutDown: 25000,
 					Units: []game.GroupUnits{{Qty: 100000, TechLevel: 10, Idle: game.Idle{Ordered: 25000, Unstaffed: 50000}}},
 					Mined: game.Mined{Worked: 25000, Fuel: 125000, Product: 812500, Returned: 1000},
 				}}
@@ -144,7 +144,7 @@ func TestEmpire(t *testing.T) {
 				// The sample colony has no structure.
 				"  Space wanted: 1,200,000 VU\n",
 				"SPACE                  VU\n  Capacity              0\n  Used         16,609,970\n  Over by      16,609,970   an open-air colony may hold more than it encloses\n",
-				"  Group 1   ORDERED IDLE: 25% of its units\n  Group 1          100,000 units at TL 10 working deposit 2 (FUEL)\n" +
+				"  Group 1   SHUT DOWN BY ORDER: 25,000 of its units\n  Group 1          100,000 units at TL 10 working deposit 2 (FUEL)\n" +
 					"                    25,000 of them were IDLE last turn: BY ORDER\n" +
 					"                    50,000 of them were IDLE last turn: NO STAFF\n" +
 					"            LAST TURN: 25,000 units worked, burned 125,000 FUEL, and mined 812,500 FUEL\n",
@@ -197,7 +197,10 @@ func TestEmpire(t *testing.T) {
 					{Kind: game.KindFarming, GroupNo: 2, Unit: game.Unit{Type: "FARM", TechLevel: 6, Qty: 9}, EMU: 162, Assembled: 11, Waiting: "room"},
 					{Kind: game.KindFactory, GroupNo: 3, Unit: game.Unit{Type: "FACT", TechLevel: 1}, Assembled: 40},
 				}
-				c.FactoryGroups = []game.Group{{No: 3, Producing: game.Unit{Type: "FARM", TechLevel: 1}, Units: []game.GroupUnits{{Qty: 40, TechLevel: 1}}}}
+				c.FactoryGroups = []game.Group{
+					{No: 3, Producing: game.Unit{Type: "FARM", TechLevel: 1}, Units: []game.GroupUnits{{Qty: 40, TechLevel: 1}}},
+					{No: 4, Retooled: true, Units: []game.GroupUnits{{Qty: 5, TechLevel: 1}}},
+				}
 			},
 			want: []string{
 				"\nASSEMBLY\n  LAST TURN: the CWRK did 499,990 EMU of assembly work of the 500,000 EMU they could\n",
@@ -205,6 +208,7 @@ func TestEmpire(t *testing.T) {
 				"  Farming group 2: 11 FARM-6 assembled last turn; 9 still to assemble, with 162 EMU done toward them\n      WAITING: no room in the entity for more of them assembled\n",
 				"  Factory group 3: 40 FACT-1 assembled last turn, and the work is done\n",
 				"  Group 3   producing FARM-1\n",
+				"  Group 4   RETOOLED: waiting to be told what to produce\n",
 			},
 		},
 		{

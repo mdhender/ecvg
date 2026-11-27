@@ -362,7 +362,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term         | Definition                                           |
 |------|--------------|------------------------------------------------------|
-| BCH  | Build change | This order changes standing orders for factories.    |
 | BUY  | Buy          | This order attempts to buy items through the market. |
 
 ### C
@@ -509,7 +508,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | REB\* | Rebels         | Percentage of people other than soldiers willing to rebel. |
 | REC   | Receive        | This order receives items transferred from another S/C.    |
 |       | Regent         | A player who manages a Ruler's S/C's, follows his orders.  |
-| RETL  | Retool         | This order changes the item being built by a FACT group.    |
 | RSCH  | Research point | A unit of research, built by a factory.                    |
 |       | Ruler          | Player, not a Regent, who controls a S/C.                  |
 | RUN   | Run            | This order has one ship run from another ship.             |
@@ -521,7 +519,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | S/C  | Ship or colony | Any ship or colony, interchangeably.                 |
 | SEL  | Sell           | This order sells items to or through the market.     |
 | SENS | Sensors        | Devices to do probes and improve EWPN and MLNC firing. |
-| SHT  | Shut-down      | This order shuts down all farms in a S/C.            |
 
 | Code     | Term                         | Definition                                                    |
 |----------|------------------------------|---------------------------------------------------------------|
@@ -530,7 +527,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | SPM      | Spy move                     | This order changes spies from one group or target to another. |
 | SPY      | Spy cadre                    | Cadre consisting of 1 PRO and 1 SLD.                          |
 | STP      | Set-up                       | This order establishes a ship or colony.                      |
-| STU      | Start-up                     | This order starts up all farms in a S/C, when shut down.      |
 | STRL     | Light structural units       | Enclose 5 times the volume of STRN per unit ([F3.1.1](#rule-F3.1.1)). |
 | STRN     | Structural units             | Standard walls, beams, etc. of a S/C.                         |
 | STRS     | Super-light structural units | Enclose 20 times the volume of STRN per unit ([F3.1.1](#rule-F3.1.1)). |
@@ -662,10 +658,10 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.7"></a>
 ### B3.7 Build Change Stage
 
-1. <a id="rule-B3.7.1"></a>BCH orders processed (see [S8.1](#rule-S8.1)<!-- was 17.4.28 -->)
+1. <a id="rule-B3.7.1"></a>Update factory group orders processed (see [S8.1](#rule-S8.1)<!-- was 17.4.28 -->)
 2. <a id="rule-B3.7.2"></a>MCH orders processed (see [S8.3](#rule-S8.3)<!-- was 17.4.29 -->)
-3. <a id="rule-B3.7.3"></a>SHT orders processed (see [S8.5](#rule-S8.5)<!-- was 17.4.30 -->)
-4. <a id="rule-B3.7.4"></a>STU orders processed (see [S8.6](#rule-S8.6)<!-- was 17.4.31 -->)
+3. <a id="rule-B3.7.3"></a>Shut down orders processed (see [S8.5](#rule-S8.5)<!-- was 17.4.30 -->)
+4. <a id="rule-B3.7.4"></a>Restart orders processed (see [S8.6](#rule-S8.6)<!-- was 17.4.31 -->)
 
 <a id="rule-B3.8"></a>
 ### B3.8 Assembly Stage
@@ -2281,10 +2277,11 @@ One FARM-1 uses 0.5 fuel units per turn; one FARM-2 through FARM-5 uses 0.5 time
 FARM's on CORB's in orbits 1-5 use no fuel, but use solar power.
 
 <a id="rule-H1.6"></a>
-### H1.6 Shut Downs and Start Ups
+### H1.6 Shut Downs and Restarts
 
-Shut down orders (SHT) are used to stop the farming done by *all* assembled farms in a S/C; one can not shut down only a portion of them.
-Start up orders (STU) are used ONLY to start up farms that have been shut down.
+A shut down order ([S8.5](#rule-S8.5)) stops the farming done by FARM's of a farming group: all of them, or only a portion.
+A restart order ([S8.6](#rule-S8.6)) is used ONLY to restart farms that have been shut down.
+FARM's that are shut down use no personnel or fuel.
 FARM's are assembled in running condition.
 
 <a id="rule-H1.7"></a>
@@ -2348,8 +2345,9 @@ MINE's may be held in storage, however.
 
 When a player no longer needs a mine group, he disassembles it with a DAS (disassembly) order, and the mine units go automatically into storage.
 This is explained fully in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
-Mine units may be moved from one deposit to another, turned off, or turned on with a mine change order (MCH).
+Mine units may be moved from one deposit to another with a mine change order (MCH).
 Examples of MCH orders are shown in [S8.3](#rule-S8.3)<!-- was Chapter 17, Order Writing -->.
+The MINE's of a mining group, all of them or a portion, are turned off with a shut down order ([S8.5](#rule-S8.5)) and turned on with a restart order ([S8.6](#rule-S8.6)).
 All MINE's at a deposit may be given to another S/C with a deposit gift (DEP) order.
 
 <a id="rule-H3.0"></a>
@@ -2438,10 +2436,11 @@ The printout will show:
 Starting on turn 7, 62,500 LFSU-2 are added to storage each turn.
 
 <a id="rule-H3.5"></a>
-### H3.5 BCH, COM, and DAS Orders
+### H3.5 Update Factory Group, COM, and DAS Orders
 
-Once ordered to manufacture an item, a factory group will continue to do so, unless ordered to build something else with a build change order (BCH - see [H3.6](#rule-H3.6)<!-- was 8.3.6 -->, Retooling), or to shut down (a BCH, SHT order).
-Once ordered to shut down, a FACT group (still assembled) remains shut down, unless ordered to start up (with a BCH, STU order).
+Once ordered to manufacture an item, a factory group will continue to do so, unless ordered to build something else with an update factory group order ([S8.1](#rule-S8.1) - see [H3.6](#rule-H3.6)<!-- was 8.3.6 -->, Retooling), or to shut down (a shut down order, [S8.5](#rule-S8.5)).
+Once ordered to shut down, the FACT of a group (still assembled) remain shut down, unless ordered to restart (with a restart order, [S8.6](#rule-S8.6)).
+A shut down order may shut down all of the FACT in a group, or only a portion of them.
 One final way to stop a factory from producing is to disassemble it with a DAS (dis-assembly) order.
 This is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 Dis-assembled factory units go into storage.
@@ -2450,12 +2449,12 @@ A combine (COM) order combines two factory groups into one; both groups must be 
 <a id="rule-H3.6"></a>
 ### H3.6 Retooling
 
-A FACT group may be changed from building one item to building another, but it must retool first with a BCH, RETL order, with the following exceptions.
+A FACT group may be changed from building one item to building another, but it must retool first with a retool order ([S8.1](#rule-S8.1)), with the following exceptions.
 
 * In the case of switching from making an item to making research points, no retool order is needed (switching from research to an item *does* require a retool order.)
 
 * Also, in the case of switching from one type of structural unit (STRN, STRL, STRS) to another, no retool order is needed.
-* If the FACT units in a group are occupied with WIP, they will not retool, even though the BCH, RETL order is accepted and acknowledged on the printout.
+* If the FACT units in a group are occupied with WIP, they will not retool, even though the retool order is accepted and acknowledged on the printout.
   As the FACT are freed from WIP, they retool themselves.
 
 In order to determine the number of FACT that will be retooled on a given turn, determine the total mass of all the items in WIP as if they were complete, and divide by 20 times the TL of the FACT.
@@ -2493,7 +2492,7 @@ The computer processes the manufacturing group by group in *group number order*,
 When the shortage occurs, the computer will cease to work on the portion it was processing, and not do any more processing.
 If the shortage has been taken care of on the next turn, the computer will process as normal, starting with the lowest-numbered FACT group, WIP 3/4.
 If the shortage still exists, processing will not be done.
-There is no way for a player to change a particular FACT group number of a FACT group to another number; if there is a shortage, the player should issue a BCH, SHT to his less necessary FACT groups.
+There is no way for a player to change a particular FACT group number of a FACT group to another number; if there is a shortage, the player should shut down his less necessary FACT groups ([S8.5](#rule-S8.5)).
 The computer assigns the group numbers; the player can not choose one.
 A S/C's FARM, MINE, and FACT groups share one run of group numbers.
 Each new group gets the next number, higher than any the S/C has given out, in the order the computer encounters the assemble factory group orders ([S6.4](#rule-S6.4)).
@@ -2571,7 +2570,7 @@ There are three ways to do so.
 ### J4.1 Research Points
 
 One way to improve a S/C's TL is to build the required amount of research points necessary to raise it.
-A build change - research - order (BCH, RSCH) will cause a FACT group to change from manufacturing an item to building RSCH.
+An update factory group order to produce RSCH ([S8.1](#rule-S8.1)) will cause a FACT group to change from manufacturing an item to building RSCH.
 A FACT producing RSCH will build .25 times its TL in RSCH per turn.
 The FACT group will complete its work-in-process before beginning the research.
 RSCH may be transferred or sold, decreasing the total number of RSCH accumulated.
@@ -3226,14 +3225,14 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n producing Unit`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
 | Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
 | Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
-| Set idle               | `set idle for GroupKind group GroupNo of EntityID to PercentageAmount` | [S8.1](#rule-S8.1)\*, [S8.3](#rule-S8.3)\*, [S8.5](#rule-S8.5)\*, [S8.6](#rule-S8.6)\* |
+| Update factory group   | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
+| Shut down              | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
+| Restart                | `update GroupKind-group GroupNo of EntityID restart Quantity`<br>`update GroupKind-group GroupNo of EntityID restart PercentageAmount` | [S8.6](#rule-S8.6) |
 | Draft                  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
 | Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2) |
 | Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4) |
 
 Any assemble, disassemble, or scrap order may end with `using Quantity CWRK` ([S6.0](#rule-S6.0)).
-
-\* The rule has not been rewritten yet, and still shows the order in its 1980 format.
 
 The orders below have not been rewritten, and are not accepted yet ([S2.0](#rule-S2.0)).
 They are listed by their 1980 codes.
@@ -3244,15 +3243,13 @@ They are listed by their 1980 codes.
 | [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [STP](#rule-S5.3), [ADN](#rule-S5.4), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
 | [S6.0](#rule-S6.0) Assembly and Scrap Orders | [ASM](#rule-S6.7), to raise a TL only |
 | [S7.0](#rule-S7.0) Transfer Orders | [TFR](#rule-S7.1), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
-| [S8.0](#rule-S8.0) Production Orders | [BCH](#rule-S8.1), [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
+| [S8.0](#rule-S8.0) Production Orders | [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
 | [S9.0](#rule-S9.0) Market Orders | [BUY](#rule-S9.1), [SEL](#rule-S9.2) |
 | [S10.0](#rule-S10.0) Exploration Orders | [PRB](#rule-S10.1), [SUR](#rule-S10.2) |
 | [S11.0](#rule-S11.0) Espionage Orders | [SPM](#rule-S11.1) |
 | [S12.0](#rule-S12.0) Population Orders | [PAY](#rule-S12.3) |
 | [S13.0](#rule-S13.0) Naming and News Orders | [NAM](#rule-S13.1), [NOM](#rule-S13.2), [NAP](#rule-S13.3), [NSR](#rule-S13.4) |
 | [S14.0](#rule-S14.0) Movement Orders | [MOV](#rule-S14.1), [JMP](#rule-S14.2) |
-
-In BCH and MCH, shutting a group down and starting it up are done with the set idle order.
 
 <a id="rule-S1.0"></a>
 ## S1.0 How the Turn Sheet Should Look
@@ -4175,27 +4172,51 @@ An APU order canceled this way is canceled for every S/C in its list.
 ## S8.0 Production Orders
 
 <a id="rule-S8.1"></a>
-### S8.1 Build Change Orders (BCH)
+### S8.1 Update Factory Group
 
-- Format: S/C ID#, "BCH", FACT group #, new function.
-- Example: 16, BCH, 8, EWPN-1.
-- Notes: This BCH order has FACT group 8 start building EWPN-1.
-  This order would not change the item being made by FACT group 8 unless a BCH, RETL order has been issued first.
+Has a factory group retool, or tells it what to build ([H3.5](#rule-H3.5), [H3.6](#rule-H3.6)).
 
-- Example: 16, BCH, 8, RETL.
-- Notes: This BCH order has FACT group 8 retool.
-  This must be done whenever the FACT group changes the item it is making, with the exception of RSCH.
+**Syntax**
 
-- Example: 16, BCH, 8, RSCH.
-- Notes: This BCH order has FACT group 8 begin making RSCH.
-  There is no RETL order necessary to change from making one item to making RSCH, but when changing from making RSCH to making an item, a RETL order *is* necessary.
+```text
+update factory-group GroupNo of EntityID retool
+update factory-group GroupNo of EntityID produce Unit
+```
 
-- Example: 16, BCH, 8, SHT.
-- Notes: This BCH order has FACT group 8 shut down.
-  The group remains assembled but does not produce.
+| Value    | Meaning                                                                 |
+|----------|-------------------------------------------------------------------------|
+| GroupNo  | The number of the factory group, as the printout shows it.              |
+| EntityID | The S/C the factory group is in.                                        |
+| Unit     | The item the group is to build, with its TL if it has one, or RSCH.     |
 
-- Example: 16, BCH, 8, STU.
-- Notes: This BCH order is used to make a shut-down FACT group begin producing.
+**Examples**
+
+```text
+update factory-group 8 of 16 retool           # group 8 retools
+update factory-group 8 of 16 produce EWPN-1   # and then builds EWPN-1
+update factory-group 3 of 16 produce RSCH     # research needs no retooling
+```
+
+**Rules**
+
+- The first form has the group retool, and the second tells it what to build.
+- A group must retool before it changes the item it builds ([H3.6](#rule-H3.6)).
+  A group that has retooled builds nothing until it is told what to produce.
+  Both orders may be given on the same turn, the retool order first.
+- No retooling is needed to change from building an item to building RSCH, or from one type of structural unit (STRN, STRL, STRS) to another.
+  Changing from RSCH to an item *does* need it.
+- A group must retool to build the same item at a higher TL.
+- An order to produce the item the group already builds changes nothing.
+- These are standing orders: the group keeps building the item until it is told otherwise.
+- A factory group is shut down and restarted with the orders of [S8.5](#rule-S8.5) and [S8.6](#rule-S8.6).
+- The orders are carried out in the build change stage ([B3.7](#rule-B3.7)).
+
+**Rejected when**
+
+- The group is told to produce a different item and has not retooled.
+- Unit is not one that factories build.
+- The S/C has no factory group with that number.
+- The S/C does not belong to the player.
 
 <a id="rule-S8.2"></a>
 ### S8.2 Combine Orders (COM)
@@ -4209,17 +4230,12 @@ An APU order canceled this way is canceled for every S/C in its list.
 <a id="rule-S8.3"></a>
 ### S8.3 Mine Change Orders (MCH)
 
+> Not yet rewritten: this order is shown in its 1980 format, and is not accepted.
+
 - Format: S/C ID#, "MCH", MINE group #, new deposit location, quantity of MINE's.
 - Example: 35, MCH, 1, 35, 50,000.
 - Notes: This MCH order has S/C 35 move 50,000 mine units from mine group 1 to deposit 35.
-
-- Format: S/C ID#, "MCH", MINE group #, "STU" or "SHT".
-- Example: 35, MCH, 1, SHT.
-- Notes: This MCH order has MINE group 1 shut down.
-  The group remains assembled but does not produce.
-
-- Example: 35, MCH, 2, STU.
-- Notes: This MCH order is used to make a shut-down MINE group begin producing.
+  A mining group is shut down and restarted with the orders of [S8.5](#rule-S8.5) and [S8.6](#rule-S8.6).
 
 <a id="rule-S8.4"></a>
 ### S8.4 Deposit Orders (DEP)
@@ -4229,19 +4245,92 @@ An APU order canceled this way is canceled for every S/C in its list.
 - Notes: The DEP order has S/C 84 give mine group 5, including the deposit it is on, to S/C 76.
 
 <a id="rule-S8.5"></a>
-### S8.5 Shut Down Orders (SHT)
+### S8.5 Shut Down
 
-- Format: S/C ID#, "SHT", farms.
-- Example: 100, SHT, FARM-2.
-- Notes: The SHT down order has *all* of S/C 100's FARM-2 shut down.
-  This order is used only for farms.
+Shuts down units of a factory, farming, or mining group.
+The units stay assembled, but do not produce, and use no personnel or fuel.
+
+**Syntax**
+
+```text
+update GroupKind-group GroupNo of EntityID shutdown Quantity
+update GroupKind-group GroupNo of EntityID shutdown PercentageAmount
+```
+
+| Value            | Meaning                                                                         |
+|------------------|---------------------------------------------------------------------------------|
+| GroupKind        | The kind of group: factory, farming, or mining.                                 |
+| GroupNo          | The number of the group, as the printout shows it.                              |
+| EntityID         | The S/C the group is in.                                                        |
+| Quantity         | How many more of the group's units to shut down ([S2.1](#rule-S2.1)).           |
+| PercentageAmount | The same, as a percentage of all the units of the group, from 1% to 100% ([S2.6](#rule-S2.6)). |
+
+**Examples**
+
+```text
+update factory-group 8 of 16 shutdown 100%    # all of FACT group 8 shuts down
+update mining-group 1 of 35 shutdown 20,000   # 20,000 more MINE of group 1 shut down
+update farming-group 2 of 100 shutdown 25%    # a quarter of the group's FARM shut down
+```
+
+**Rules**
+
+- The order shuts down units that are running, in addition to any the group already has shut down.
+- A percentage is of all the units of the group, running or not; a fraction of a unit is rounded up.
+- If the group has fewer units running than the order asks for, it shuts down the ones that are running.
+- This is a standing order: the units stay shut down until they are restarted ([S8.6](#rule-S8.6)).
+  Units assembled into the group later are running.
+- The order is carried out in the build change stage ([B3.7](#rule-B3.7)), before production ([B3.17](#rule-B3.17)), so the units do not work on the turn it is written.
+- The printout shows how many units of each group are shut down by order.
+
+**Rejected when**
+
+- The group has no units running.
+- The S/C has no group of that kind with that number.
+- The S/C does not belong to the player.
 
 <a id="rule-S8.6"></a>
-### S8.6 Start Up Orders (STU)
+### S8.6 Restart
 
-- Format: S/C ID#, "STU", farms.
-- Example: 100, STU, FARM-1.
-- Notes: The STU order starts up all of 100's FARM-1 after they were shut down.
+Restarts units of a factory, farming, or mining group that have been shut down ([S8.5](#rule-S8.5)).
+
+**Syntax**
+
+```text
+update GroupKind-group GroupNo of EntityID restart Quantity
+update GroupKind-group GroupNo of EntityID restart PercentageAmount
+```
+
+| Value            | Meaning                                                                         |
+|------------------|---------------------------------------------------------------------------------|
+| GroupKind        | The kind of group: factory, farming, or mining.                                 |
+| GroupNo          | The number of the group, as the printout shows it.                              |
+| EntityID         | The S/C the group is in.                                                        |
+| Quantity         | How many of the group's shut down units to restart ([S2.1](#rule-S2.1)).        |
+| PercentageAmount | The same, as a percentage of all the units of the group, from 1% to 100% ([S2.6](#rule-S2.6)). |
+
+**Examples**
+
+```text
+update factory-group 8 of 16 restart 100%    # all of FACT group 8 is running again
+update mining-group 1 of 35 restart 5,000    # 5,000 of the MINE that were shut down restart
+update farming-group 2 of 100 restart 25%
+```
+
+**Rules**
+
+- The order restarts only units that have been shut down by order.
+  It does nothing for units that are idle for lack of personnel or fuel.
+- A percentage is of all the units of the group, running or not; a fraction of a unit is rounded down.
+- If the group has fewer units shut down than the order asks for, it restarts the ones that are shut down.
+- The order is carried out in the build change stage ([B3.7](#rule-B3.7)), before production ([B3.17](#rule-B3.17)), so the units work on the turn it is written.
+- Shut down and restart orders for a group are carried out in the order the player wrote them.
+
+**Rejected when**
+
+- The group has no units shut down.
+- The S/C has no group of that kind with that number.
+- The S/C does not belong to the player.
 
 <a id="rule-S9.0"></a>
 ## S9.0 Market Orders

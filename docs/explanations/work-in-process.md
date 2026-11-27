@@ -265,4 +265,4 @@ A factory, by contrast, holds its finished work in its stockpile and stops takin
 Every allocation in production, of resources, staff, and fuel, serves the oldest group first.
 Seniority is group number: an entity's groups of every kind share one run of numbers, a new group always gets a higher number than any before it, and a number is never reused, so the lowest number is always the oldest group.
 In a shortage the newest groups go without, and an empire can not renumber or reorder the groups ([H3.9](../rules/manual.md#rule-H3.9)).
-Where the manual shuts a group down, the tool an empire has here is the `set idle` order, which idles a percentage of a group's units; idled units ask for no staff or fuel, which leaves more for the rest.
+An empire shuts down a group's units, all of them or a portion, with the shut down order ([S8.5](../rules/manual.md#rule-S8.5)); units that are shut down ask for no staff or fuel, which leaves more for the rest.

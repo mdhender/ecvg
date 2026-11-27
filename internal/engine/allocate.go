@@ -13,7 +13,7 @@ import (
 
 // Work is what one entry of a group's units was allocated for a turn.
 type Work struct {
-	// Ordered is the number of the units the empire ordered to idle. They
+	// Ordered is the number of the units the empire ordered shut down. They
 	// ask for nothing.
 	Ordered int
 	// Staffed is the number of the units that got staff, and Worked is the
@@ -40,8 +40,9 @@ type Allocation struct {
 // and depot) among its groups. It returns the allocations, one per colony in d.Colonies
 // order. Nothing is allocated in turn SetupTurn, and it returns nil.
 //
-// There are two levels of idle. The first is the empire's: the units a
-// group's IdlePercent idles (game.IdleUnits) ask for no staff or fuel. The
+// There are two levels of idle. The first is the empire's: the units of a
+// group that it ordered shut down (the group's ShutDown, shared among its
+// units by game.ShutDownUnits) ask for no staff or fuel. The
 // second is set here: units that asked and got no staff, or staff but no
 // fuel. Both are recorded in the Idle of the group's units, for the
 // production phases to respect and the report to show.
@@ -99,10 +100,10 @@ func AllocateResources(d *game.Data, turn int) []Allocation {
 
 // slot is one group in the order the passes take them.
 type slot struct {
-	mine        bool
-	idlePercent int
-	units       []game.GroupUnits
-	work        []Work
+	mine     bool
+	shutDown int
+	units    []game.GroupUnits
+	work     []Work
 }
 
 // allocate shares the worker cadre and FUEL of c, which is in orbit orbitNo,
@@ -118,12 +119,12 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 	for _, j := range bySeniority(len(c.FarmingGroups), func(j int) int { return c.FarmingGroups[j].No }) {
 		g := c.FarmingGroups[j]
 		a.Farms[j] = make([]Work, len(g.Units))
-		slots = append(slots, slot{idlePercent: g.IdlePercent, units: g.Units, work: a.Farms[j]})
+		slots = append(slots, slot{shutDown: g.ShutDown, units: g.Units, work: a.Farms[j]})
 	}
 	for _, j := range bySeniority(len(c.MiningGroups), func(j int) int { return c.MiningGroups[j].No }) {
 		g := c.MiningGroups[j]
 		a.Mines[j] = make([]Work, len(g.Units))
-		slots = append(slots, slot{mine: true, idlePercent: g.IdlePercent, units: g.Units, work: a.Mines[j]})
+		slots = append(slots, slot{mine: true, shutDown: g.ShutDown, units: g.Units, work: a.Mines[j]})
 	}
 
 	// Pass 1: staff.
@@ -132,9 +133,10 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 		if s.mine {
 			pro, usk = game.MinePRO, game.MineUSK
 		}
+		ordered := game.ShutDownUnits(s.units, s.shutDown)
 		for k, u := range s.units {
 			w := &s.work[k]
-			w.Ordered = game.IdleUnits(u.Qty, s.idlePercent)
+			w.Ordered = ordered[k]
 			w.Staffed = c.Workers.Take(u.Qty-w.Ordered, pro, usk)
 		}
 	}

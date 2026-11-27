@@ -141,18 +141,15 @@ const (
 	KindFactory GroupKind = "factory"
 )
 
-// The percentage of a group's units that an empire may order to idle.
-const (
-	MinIdlePercent = 0
-	MaxIdlePercent = 100
-)
+// GroupAction is what an update order has a group do.
+type GroupAction string
 
-// IdleUnits returns the number of qty units that sit idle when their group is
-// ordered percent percent idle, rounded up to a whole unit.
-func IdleUnits(qty, percent int) int {
-	percent = max(MinIdlePercent, min(MaxIdlePercent, percent))
-	return (max(0, qty)*percent + 99) / 100
-}
+const (
+	ActionRetool   GroupAction = "retool"
+	ActionProduce  GroupAction = "produce"
+	ActionShutDown GroupAction = "shutdown"
+	ActionRestart  GroupAction = "restart"
+)
 
 // Group is a farming or factory group. Every unit of a farming group is of
 // the same tech level, so its Units has one entry; a factory group can mix
@@ -161,20 +158,24 @@ type Group struct {
 	// No numbers the colony's groups of one kind from 1. A lower number is
 	// more senior, and gets resources first.
 	No int `json:"no"`
-	// IdlePercent is the percentage of the group's units that the empire has
-	// ordered to idle, MinIdlePercent..MaxIdlePercent. Idled units ask for no
-	// staff or fuel. It stands until the empire changes it.
-	IdlePercent int          `json:"idle_percent,omitzero"`
-	Units       []GroupUnits `json:"units"`
+	// ShutDown is the number of the group's units that the empire has
+	// ordered shut down. They ask for no staff or fuel. It stands until the
+	// empire restarts them, and is never more than the group has units (see
+	// ShutDownUnits).
+	ShutDown int          `json:"shut_down,omitzero"`
+	Units    []GroupUnits `json:"units"`
 	// Producing is what a factory group is to make, if its empire has said.
 	Producing Unit `json:"producing,omitzero"`
+	// Retooled is set when a factory group has been ordered to retool
+	// (manual H3.6) and has not yet been told what to make.
+	Retooled bool `json:"retooled,omitzero"`
 }
 
 // MiningGroup is a group of mines working one deposit.
 type MiningGroup struct {
 	No int `json:"no"`
-	// IdlePercent is as for Group.
-	IdlePercent int `json:"idle_percent,omitzero"`
+	// ShutDown is as for Group.
+	ShutDown int `json:"shut_down,omitzero"`
 	// DepositID is the ID of the deposit the group works. A deposit is
 	// worked by at most one mining group.
 	DepositID int `json:"deposit_id"`
@@ -183,6 +184,28 @@ type MiningGroup struct {
 	Units []GroupUnits `json:"units"`
 	// Mined is what the group did in the prior turn.
 	Mined Mined `json:"mined,omitzero"`
+}
+
+// GroupQty returns the number of units in the entries of a group's units.
+func GroupQty(us []GroupUnits) int {
+	n := 0
+	for _, u := range us {
+		n += max(0, u.Qty)
+	}
+	return n
+}
+
+// ShutDownUnits shares the shutDown units that a group's empire ordered shut
+// down among the entries of the group's units, in the order listed. It
+// returns the number shut down in each entry, which is never more than the
+// entry has.
+func ShutDownUnits(us []GroupUnits, shutDown int) []int {
+	out := make([]int, len(us))
+	for k, u := range us {
+		out[k] = max(0, min(shutDown, u.Qty))
+		shutDown -= out[k]
+	}
+	return out
 }
 
 // GroupUnits is a quantity of a group's units at one tech level.
@@ -197,8 +220,8 @@ type GroupUnits struct {
 // levels of idle: the empire ordered it, or resource allocation couldn't
 // supply the unit.
 type Idle struct {
-	// Ordered units were idled by the empire's order (the group's
-	// IdlePercent), and asked for nothing.
+	// Ordered units were shut down by the empire's order (the group's
+	// ShutDown), and asked for nothing.
 	Ordered int `json:"ordered,omitzero"`
 	// Unstaffed units got no staff, and Unfuelled units got staff but no
 	// FUEL.

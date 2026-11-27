@@ -149,7 +149,7 @@ func TestFarming(t *testing.T) {
 			colony: game.Colony{
 				Type: game.COPN, Population: game.Population{UEM: 600000, USK: 300000, PRO: 200000, SLD: 100000},
 				Cargo:         []game.Unit{{Type: "FUEL", Qty: 1360000}},
-				FarmingGroups: []game.Group{{No: 1, IdlePercent: 94, Units: []game.GroupUnits{{Qty: 100000, TechLevel: 10}}}},
+				FarmingGroups: []game.Group{{No: 1, ShutDown: 94000, Units: []game.GroupUnits{{Qty: 100000, TechLevel: 10}}}},
 			},
 			want: game.Harvest{Units: 100000, Worked: 6000, Ordered: 94000, Fuel: 60000, Food: 300000},
 			fuel: 1300000, food: 300000,
@@ -162,9 +162,9 @@ func TestFarming(t *testing.T) {
 				Type: game.COPN, Population: game.Population{USK: 30, PRO: 10},
 				Cargo: []game.Unit{{Type: "FUEL", Qty: 35}},
 				FarmingGroups: []game.Group{
-					{No: 1, IdlePercent: 100, Units: []game.GroupUnits{{Qty: 50, TechLevel: 10}}},
-					// 33% of 10 is 3.3, so 4 idle by order; 6 staffed, fuel for 3.
-					{No: 2, IdlePercent: 33, Units: []game.GroupUnits{{Qty: 10, TechLevel: 10}}},
+					{No: 1, ShutDown: 50, Units: []game.GroupUnits{{Qty: 50, TechLevel: 10}}},
+					// 4 idle by order; 6 staffed, fuel for 3.
+					{No: 2, ShutDown: 4, Units: []game.GroupUnits{{Qty: 10, TechLevel: 10}}},
 					// 4 of the 9 staffed, and the last 5 FUEL runs 2 of them.
 					{No: 3, Units: []game.GroupUnits{{Qty: 9, TechLevel: 5}}},
 				},

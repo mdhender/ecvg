@@ -232,28 +232,59 @@ func TestLoadTurn(t *testing.T) {
 	}
 }
 
-func TestParseSetIdle(t *testing.T) {
+func TestParseUpdateGroup(t *testing.T) {
+	update := func(kind game.GroupKind, groupNo, entityID int, action game.GroupAction) orders.UpdateGroup {
+		return orders.UpdateGroup{Kind: kind, GroupNo: groupNo, EntityID: entityID, Action: action}
+	}
+	qty := func(o orders.UpdateGroup, n int) orders.UpdateGroup { o.Qty = n; return o }
+	pct := func(o orders.UpdateGroup, n int) orders.UpdateGroup { o.Percent = n; return o }
+	producing := func(o orders.UpdateGroup, u game.Unit) orders.UpdateGroup { o.Producing = u; return o }
 	for _, tc := range []struct {
 		line string
 		want orders.Order
 		err  error
 	}{
-		{line: "set idle for farming group 1 of 7 to 94%", want: orders.SetIdle{EntityID: 7, Kind: game.KindFarming, GroupNo: 1, Percent: 94}},
-		{line: "SET IDLE FOR Mining GROUP 02 OF 007 TO 100% # all of it", want: orders.SetIdle{EntityID: 7, Kind: game.KindMining, GroupNo: 2, Percent: 100}},
-		{line: "set idle for factory group 3 of 7 to 0%", want: orders.SetIdle{EntityID: 7, Kind: game.KindFactory, GroupNo: 3, Percent: 0}},
-		{line: "set idle for farming group 1 of 7 to 101%", err: orders.ErrInvalidPercentage},
-		{line: "set idle for farming group 1 of 7 to 50", err: orders.ErrInvalidPercentage},
-		{line: "set idle for farming group 1 of 7 to -1%", err: orders.ErrInvalidPercentage},
-		{line: "set idle for farm group 1 of 7 to 50%", err: orders.ErrInvalidGroupKind},
-		{line: `set idle for "farming" group 1 of 7 to 50%`, err: orders.ErrInvalidGroupKind},
-		{line: "set idle for farming group 0 of 7 to 50%", err: orders.ErrInvalidGroupNo},
-		{line: "set idle for farming group one of 7 to 50%", err: orders.ErrInvalidGroupNo},
-		{line: "set idle for farming group 1 of 0 to 50%", err: orders.ErrInvalidEntityID},
-		{line: "set idle for farming group 1 of x to 50%", err: orders.ErrInvalidEntityID},
-		{line: "set idle for farming group 1 in 7 to 50%", err: orders.ErrInvalidOrder},
-		{line: "set idle for farming 1 of 7 to 50%", err: orders.ErrInvalidOrder},
-		{line: "set idle for farming group 1 of 7 to 50% now", err: orders.ErrInvalidOrder},
-		{line: "set idle", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 retool", want: update(game.KindFactory, 8, 16, game.ActionRetool)},
+		{line: "UPDATE Factory-Group 08 OF 016 RETOOL # all of it", want: update(game.KindFactory, 8, 16, game.ActionRetool)},
+		{line: "update factory-group 8 of 16 produce EWPN-1", want: producing(update(game.KindFactory, 8, 16, game.ActionProduce), game.Unit{Type: "EWPN", TechLevel: 1})},
+		{line: "update factory-group 8 of 16 produce rsch", want: producing(update(game.KindFactory, 8, 16, game.ActionProduce), game.Unit{Type: "RSCH"})},
+		{line: "update factory-group 8 of 16 shutdown 500", want: qty(update(game.KindFactory, 8, 16, game.ActionShutDown), 500)},
+		{line: "update factory-group 8 of 16 shutdown 2,500", want: qty(update(game.KindFactory, 8, 16, game.ActionShutDown), 2500)},
+		{line: "update factory-group 8 of 16 shutdown 25%", want: pct(update(game.KindFactory, 8, 16, game.ActionShutDown), 25)},
+		{line: "update factory-group 8 of 16 restart 200", want: qty(update(game.KindFactory, 8, 16, game.ActionRestart), 200)},
+		{line: "update factory-group 8 of 16 restart 100%", want: pct(update(game.KindFactory, 8, 16, game.ActionRestart), 100)},
+		{line: "update farming-group 1 of 7 shutdown 94%", want: pct(update(game.KindFarming, 1, 7, game.ActionShutDown), 94)},
+		{line: "update mining-group 2 of 7 restart 10", want: qty(update(game.KindMining, 2, 7, game.ActionRestart), 10)},
+		{line: "update factory-group 8 of 16 retool .", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 retool now", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 produce", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 produce EWPN-1 CNGD", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 produce EWPN", err: orders.ErrInvalidUnit},
+		{line: "update factory-group 8 of 16 produce FUEL", err: orders.ErrInvalidUnit},
+		{line: "update factory-group 8 of 16 produce SLD", err: orders.ErrInvalidUnit},
+		{line: "update factory-group 8 of 16 produce RETL", err: orders.ErrInvalidUnit},
+		{line: "update farming-group 1 of 7 retool", err: orders.ErrInvalidOrder},
+		{line: "update mining-group 1 of 7 produce CNGD", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 shutdown", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 shutdown 5 10%", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16 shutdown 0", err: orders.ErrInvalidQuantity},
+		{line: "update factory-group 8 of 16 shutdown all", err: orders.ErrInvalidQuantity},
+		{line: "update factory-group 8 of 16 shutdown 36,00", err: orders.ErrInvalidQuantity},
+		{line: "update factory-group 8 of 16 shutdown 0%", err: orders.ErrInvalidPercentage},
+		{line: "update factory-group 8 of 16 restart 101%", err: orders.ErrInvalidPercentage},
+		{line: "update factory-group 8 of 16 restart -1%", err: orders.ErrInvalidPercentage},
+		{line: "update factory-group 8 of 16 idle 50%", err: orders.ErrInvalidOrder},
+		{line: "update factory group 8 of 16 retool", err: orders.ErrInvalidGroupKind},
+		{line: "update fact-group 8 of 16 retool", err: orders.ErrInvalidGroupKind},
+		{line: `update "factory-group" 8 of 16 retool`, err: orders.ErrInvalidGroupKind},
+		{line: "update factory-group 0 of 16 retool", err: orders.ErrInvalidGroupNo},
+		{line: "update factory-group eight of 16 retool", err: orders.ErrInvalidGroupNo},
+		{line: "update factory-group 8 of 0 retool", err: orders.ErrInvalidEntityID},
+		{line: "update factory-group 8 of x retool", err: orders.ErrInvalidEntityID},
+		{line: "update factory-group 8 on 16 retool", err: orders.ErrInvalidOrder},
+		{line: "update factory-group 8 of 16", err: orders.ErrInvalidOrder},
+		{line: "update", err: orders.ErrInvalidOrder},
+		{line: "set idle for farming group 1 of 7 to 94%", err: orders.ErrUnknownOrder},
 	} {
 		t.Run(tc.line, func(t *testing.T) {
 			lines, err := orders.Parse(strings.NewReader(tc.line))

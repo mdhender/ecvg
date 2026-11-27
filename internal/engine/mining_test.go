@@ -103,7 +103,7 @@ func TestMining(t *testing.T) {
 				// Listed out of order.
 				MiningGroups: []game.MiningGroup{
 					mines(2, 1, 9, 2),
-					{No: 1, DepositID: 3, IdlePercent: 50, Units: []game.GroupUnits{{Qty: 8, TechLevel: 10}}},
+					{No: 1, DepositID: 3, ShutDown: 4, Units: []game.GroupUnits{{Qty: 8, TechLevel: 10}}},
 				},
 				FarmingGroups: []game.Group{{No: 1, Units: []game.GroupUnits{{Qty: 3, TechLevel: 6}}}},
 			},

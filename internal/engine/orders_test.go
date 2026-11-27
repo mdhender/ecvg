@@ -137,66 +137,121 @@ func TestRunTurnAppliesOrders(t *testing.T) {
 	}
 }
 
-func TestSetIdle(t *testing.T) {
+func TestUpdateGroup(t *testing.T) {
+	us := func(qty int) []game.GroupUnits { return []game.GroupUnits{{Qty: qty, TechLevel: 1}} }
+	cngd, strn, strl, rsch := game.Unit{Type: "CNGD"}, game.Unit{Type: "STRN"}, game.Unit{Type: "STRL"}, game.Unit{Type: "RSCH"}
 	groups := func() game.Data {
 		d := twoEmpires()
-		d.Colonies[1].FarmingGroups = []game.Group{{No: 1}, {No: 2, IdlePercent: 10}}
-		d.Colonies[1].MiningGroups = []game.MiningGroup{{No: 1}}
-		d.Colonies[1].FactoryGroups = []game.Group{{No: 1}}
-		d.Colonies[2].FarmingGroups = []game.Group{{No: 1}}
+		d.Colonies[1].FarmingGroups = []game.Group{{No: 1, Units: us(10)}, {No: 2, ShutDown: 4, Units: us(10)}}
+		d.Colonies[1].MiningGroups = []game.MiningGroup{{No: 3, ShutDown: 7, Units: us(7)}}
+		d.Colonies[1].FactoryGroups = []game.Group{
+			{No: 4, Producing: cngd, Units: us(1000)},
+			{No: 5, Producing: strn, Units: us(10)},
+			{No: 6, Producing: rsch, Units: us(10)},
+			{No: 7, Retooled: true},
+		}
+		d.Colonies[2].FarmingGroups = []game.Group{{No: 1, Units: us(10)}}
 		return d
 	}
+	// The groups of colony 2 that the tests change.
+	farm := func(d *game.Data, no int) *game.Group { return &d.Colonies[1].FarmingGroups[no-1] }
+	fact := func(d *game.Data, no int) *game.Group { return &d.Colonies[1].FactoryGroups[no-4] }
 	for _, tc := range []struct {
-		name               string
-		empireID, entityID int
-		kind               game.GroupKind
-		groupNo, percent   int
-		err                error
+		name string
+		text string
+		// want makes the changes the order should, if it has no err.
+		want func(d *game.Data)
+		err  error
 	}{
-		{"farming", 1, 2, game.KindFarming, 2, 94, nil},
-		{"all of it", 1, 2, game.KindFarming, 1, 100, nil},
-		{"back to work", 1, 2, game.KindFarming, 2, 0, nil},
-		{"mining", 1, 2, game.KindMining, 1, 50, nil},
-		{"factory", 1, 2, game.KindFactory, 1, 50, nil},
-		{"no such group", 1, 2, game.KindFarming, 3, 50, engine.ErrNoSuchGroup},
-		{"no groups of that kind", 1, 1, game.KindMining, 1, 50, engine.ErrNoSuchGroup},
-		{"unknown kind", 1, 2, game.GroupKind("fishing"), 1, 50, engine.ErrNoSuchGroup},
-		{"another empire's colony", 1, 3, game.KindFarming, 1, 50, engine.ErrNotControlled},
-		{"no such entity", 1, 9, game.KindFarming, 1, 50, engine.ErrNotControlled},
-		{"too little", 1, 2, game.KindFarming, 1, -1, orders.ErrInvalidPercentage},
-		{"too much", 1, 2, game.KindFarming, 1, 101, orders.ErrInvalidPercentage},
+		{name: "retool", text: "update factory-group 4 of 2 retool",
+			want: func(d *game.Data) { *fact(d, 4) = game.Group{No: 4, Retooled: true, Units: us(1000)} }},
+		{name: "retool again", text: "update factory-group 7 of 2 retool", want: func(d *game.Data) {}},
+		{name: "produce after retooling", text: "update factory-group 7 of 2 produce EWPN-1",
+			want: func(d *game.Data) { *fact(d, 7) = game.Group{No: 7, Producing: game.Unit{Type: "EWPN", TechLevel: 1}} }},
+		{name: "retool and produce in one turn", text: "update factory-group 4 of 2 retool\nupdate factory-group 4 of 2 produce STRN",
+			want: func(d *game.Data) { fact(d, 4).Producing = strn }},
+		{name: "produce without retooling", text: "update factory-group 4 of 2 produce EWPN-1", err: engine.ErrNotRetooled},
+		{name: "produce what it makes already", text: "update factory-group 4 of 2 produce CNGD", want: func(d *game.Data) {}},
+		{name: "research needs no retooling", text: "update factory-group 4 of 2 produce RSCH",
+			want: func(d *game.Data) { fact(d, 4).Producing = rsch }},
+		{name: "from research does", text: "update factory-group 6 of 2 produce CNGD", err: engine.ErrNotRetooled},
+		{name: "one structural unit to another", text: "update factory-group 5 of 2 produce STRL",
+			want: func(d *game.Data) { fact(d, 5).Producing = strl }},
+		{name: "to a structural unit from another unit", text: "update factory-group 4 of 2 produce STRL", err: engine.ErrNotRetooled},
+		{name: "only factories retool", text: "update farming-group 1 of 2 retool", err: orders.ErrInvalidOrder},
+
+		{name: "shutdown a quantity", text: "update factory-group 4 of 2 shutdown 500",
+			want: func(d *game.Data) { fact(d, 4).ShutDown = 500 }},
+		{name: "shutdown more", text: "update farming-group 2 of 2 shutdown 3",
+			want: func(d *game.Data) { farm(d, 2).ShutDown = 7 }},
+		{name: "shutdown takes what is running", text: "update farming-group 2 of 2 shutdown 3,000",
+			want: func(d *game.Data) { farm(d, 2).ShutDown = 10 }},
+		{name: "shutdown a percentage of the group, rounded up", text: "update farming-group 2 of 2 shutdown 25%",
+			want: func(d *game.Data) { farm(d, 2).ShutDown = 7 }},
+		{name: "shutdown all of it", text: "update farming-group 1 of 2 shutdown 100%",
+			want: func(d *game.Data) { farm(d, 1).ShutDown = 10 }},
+		{name: "shutdown with none running", text: "update mining-group 3 of 2 shutdown 1", err: engine.ErrNoneRunning},
+		{name: "shutdown a group with no units", text: "update factory-group 7 of 2 shutdown 50%", err: engine.ErrNoneRunning},
+		{name: "restart a quantity", text: "update mining-group 3 of 2 restart 2",
+			want: func(d *game.Data) { d.Colonies[1].MiningGroups[0].ShutDown = 5 }},
+		{name: "restart takes what is shut down", text: "update farming-group 2 of 2 restart 9",
+			want: func(d *game.Data) { farm(d, 2).ShutDown = 0 }},
+		{name: "restart a percentage of the group, rounded down", text: "update farming-group 2 of 2 restart 25%",
+			want: func(d *game.Data) { farm(d, 2).ShutDown = 2 }},
+		{name: "restart all of it", text: "update mining-group 3 of 2 restart 100%",
+			want: func(d *game.Data) { d.Colonies[1].MiningGroups[0].ShutDown = 0 }},
+		{name: "restart with none shut down", text: "update farming-group 1 of 2 restart 1", err: engine.ErrNoneShutDown},
+		{name: "shutdown and restart in one turn", text: "update factory-group 4 of 2 shutdown 25%\nupdate factory-group 4 of 2 restart 25%",
+			want: func(d *game.Data) {}},
+
+		{name: "no such group", text: "update farming-group 3 of 2 shutdown 1", err: engine.ErrNoSuchGroup},
+		{name: "a group of another kind", text: "update mining-group 4 of 2 shutdown 1", err: engine.ErrNoSuchGroup},
+		{name: "no groups of that kind", text: "update mining-group 1 of 1 shutdown 1", err: engine.ErrNoSuchGroup},
+		{name: "another empire's colony", text: "update farming-group 1 of 3 shutdown 1", err: engine.ErrNotControlled},
+		{name: "no such entity", text: "update farming-group 1 of 9 shutdown 1", err: engine.ErrNotControlled},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			d := groups()
-			err := engine.SetIdle(&d, tc.empireID, tc.entityID, tc.kind, tc.groupNo, tc.percent)
-			if !errors.Is(err, tc.err) || (tc.err == nil && err != nil) {
-				t.Fatalf("error = %v, want %v", err, tc.err)
+			result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, tc.text)})
+			if err != nil {
+				t.Fatal(err)
 			}
 			want := groups()
 			if tc.err == nil {
-				c := &want.Colonies[tc.entityID-1]
-				switch tc.kind {
-				case game.KindFarming:
-					c.FarmingGroups[tc.groupNo-1].IdlePercent = tc.percent
-				case game.KindMining:
-					c.MiningGroups[tc.groupNo-1].IdlePercent = tc.percent
-				case game.KindFactory:
-					c.FactoryGroups[tc.groupNo-1].IdlePercent = tc.percent
+				if len(result.Rejected) != 0 {
+					t.Fatalf("rejected %+v, want none", result.Rejected)
 				}
+				tc.want(&want)
+			} else if len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, tc.err) {
+				t.Fatalf("rejected %+v, want one order rejected with %v", result.Rejected, tc.err)
 			}
-			if !reflect.DeepEqual(d, want) {
+			if !reflect.DeepEqual(d.Colonies, want.Colonies) {
 				t.Errorf("colonies = %+v, want %+v", d.Colonies, want.Colonies)
 			}
 		})
 	}
-	t.Run("as an order", func(t *testing.T) {
-		d := groups()
-		result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "set idle for farming group 1 of 2 to 94%\nset idle for mining group 4 of 2 to 5%")})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if d.Colonies[1].FarmingGroups[0].IdlePercent != 94 || len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, engine.ErrNoSuchGroup) {
-			t.Errorf("idle %d%%, rejected %+v; want 94%% and one order rejected for its group", d.Colonies[1].FarmingGroups[0].IdlePercent, result.Rejected)
+	t.Run("the engine checks what the parser does", func(t *testing.T) {
+		for _, tc := range []struct {
+			name string
+			o    orders.UpdateGroup
+			err  error
+		}{
+			{"a farming group can't retool", orders.UpdateGroup{EntityID: 2, Kind: game.KindFarming, GroupNo: 1, Action: game.ActionRetool}, engine.ErrOnlyFactories},
+			{"a mining group can't produce", orders.UpdateGroup{EntityID: 2, Kind: game.KindMining, GroupNo: 3, Action: game.ActionProduce, Producing: cngd}, engine.ErrOnlyFactories},
+			{"factories don't make it", orders.UpdateGroup{EntityID: 2, Kind: game.KindFactory, GroupNo: 7, Action: game.ActionProduce, Producing: game.Unit{Type: "FUEL"}}, orders.ErrInvalidUnit},
+			{"no action", orders.UpdateGroup{EntityID: 2, Kind: game.KindFactory, GroupNo: 4}, orders.ErrInvalidOrder},
+			{"no amount", orders.UpdateGroup{EntityID: 2, Kind: game.KindFactory, GroupNo: 4, Action: game.ActionShutDown}, orders.ErrInvalidOrder},
+			{"two amounts", orders.UpdateGroup{EntityID: 2, Kind: game.KindFactory, GroupNo: 4, Action: game.ActionShutDown, Qty: 1, Percent: 1}, orders.ErrInvalidOrder},
+			{"too much", orders.UpdateGroup{EntityID: 2, Kind: game.KindFactory, GroupNo: 4, Action: game.ActionShutDown, Percent: 101}, orders.ErrInvalidOrder},
+			{"unknown kind", orders.UpdateGroup{EntityID: 2, Kind: game.GroupKind("fishing"), GroupNo: 1, Action: game.ActionShutDown, Qty: 1}, engine.ErrNoSuchGroup},
+		} {
+			d := groups()
+			if err := engine.UpdateGroup(&d, 1, tc.o); !errors.Is(err, tc.err) {
+				t.Errorf("%s: error = %v, want %v", tc.name, err, tc.err)
+			}
+			if want := groups(); !reflect.DeepEqual(d, want) {
+				t.Errorf("%s: colonies = %+v, want %+v", tc.name, d.Colonies, want.Colonies)
+			}
 		}
 	})
 }

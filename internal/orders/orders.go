@@ -11,7 +11,6 @@
 // The orders:
 //
 //	set rations for EntityID to PercentageAmount
-//	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //	draft Quantity UnitOrCadre from EntityID
 //	disband Quantity UnitOrCadre from EntityID
 //	assemble factory-group on EntityID with Quantity FactoryUnit producing Unit
@@ -22,14 +21,18 @@
 //	assemble Quantity Unit on EntityID
 //	disassemble Quantity Unit on EntityID
 //	scrap Quantity Unit on EntityID
+//	update factory-group GroupNo of EntityID retool
+//	update factory-group GroupNo of EntityID produce Unit
+//	update GroupKind-group GroupNo of EntityID shutdown (Quantity | PercentageAmount)
+//	update GroupKind-group GroupNo of EntityID restart (Quantity | PercentageAmount)
 //
 // Any assemble, disassemble, or scrap order may end with "using Quantity CWRK", which caps the CWRK that work
 // on it in a turn. CWKR is read as CWRK there, and it may have a race ID too.
 //
 // EntityID is the ID of an entity. PercentageAmount is a whole number with a
 // "%" joined to it: "50%", not "50 %". For rations it is from game.MinRations
-// to game.MaxRations, and for idle from game.MinIdlePercent to
-// game.MaxIdlePercent. GroupKind is farming, mining, or factory, and GroupNo
+// to game.MaxRations, and for shutdown and restart, where it is a percentage
+// of the units of the group, from 1 to 100. GroupKind is farming, mining, or factory, and GroupNo
 // is the number of a group of that kind. Quantity is a whole number, 1 or
 // more, which may have commas between its thousands: "3600" or "3,600".
 // UnitOrCadre is the code of a population unit or cadre, such as SLD or CWRK.
@@ -65,7 +68,7 @@ const (
 	ErrInvalidDepositNo  = cerrs.Error("invalid deposit number")
 )
 
-// Order is one order. Its type says which: SetRations, SetIdle, Draft,
+// Order is one order. Its type says which: SetRations, UpdateGroup, Draft,
 // Disband, AssembleGroup, or UnitWork.
 type Order interface {
 	// String returns the order as it would be written.
@@ -83,18 +86,36 @@ func (o SetRations) String() string {
 	return fmt.Sprintf("set rations for %d to %d%%", o.EntityID, o.Percent)
 }
 
-// SetIdle is the order "set idle for GroupKind group GroupNo of EntityID to
-// PercentageAmount". It orders Percent percent of the units of a group of the
-// entity with ID EntityID to idle; 0% puts them all back to work.
-type SetIdle struct {
+// UpdateGroup is the order "update GroupKind-group GroupNo of EntityID
+// Action": it changes what the group of that kind numbered GroupNo in the
+// entity with ID EntityID does. A factory group retools, or is told what to
+// produce. A group of any kind shuts down some of its units, or restarts
+// some that are shut down.
+type UpdateGroup struct {
 	EntityID int
 	Kind     game.GroupKind
 	GroupNo  int
-	Percent  int
+	Action   game.GroupAction
+	// Producing is what a produce order has the group make; its Qty is 0.
+	Producing game.Unit
+	// A shutdown or restart order has either Qty, a number of units, or
+	// Percent, a percentage of the units of the group; the other is 0.
+	Qty     int
+	Percent int
 }
 
-func (o SetIdle) String() string {
-	return fmt.Sprintf("set idle for %s group %d of %d to %d%%", o.Kind, o.GroupNo, o.EntityID, o.Percent)
+func (o UpdateGroup) String() string {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "update %s-group %d of %d %s", o.Kind, o.GroupNo, o.EntityID, o.Action)
+	switch {
+	case o.Action == game.ActionProduce:
+		sb.WriteString(" " + unitName(o.Producing))
+	case o.Percent != 0:
+		fmt.Fprintf(&sb, " %d%%", o.Percent)
+	case o.Qty != 0:
+		fmt.Fprintf(&sb, " %d", o.Qty)
+	}
+	return sb.String()
 }
 
 // Draft is the order "draft Quantity UnitOrCadre from EntityID". It drafts
@@ -268,8 +289,8 @@ func parseOrder(tokens []Token) (Order, error) {
 	switch {
 	case len(tokens) >= 2 && tokens[0].Is("set") && tokens[1].Is("rations"):
 		return parseSetRations(tokens)
-	case len(tokens) >= 2 && tokens[0].Is("set") && tokens[1].Is("idle"):
-		return parseSetIdle(tokens)
+	case tokens[0].Is("update"):
+		return parseUpdateGroup(tokens)
 	case tokens[0].Is("draft"):
 		return parseDraft(tokens, "draft")
 	case tokens[0].Is("disband"):
@@ -301,34 +322,84 @@ func parseSetRations(tokens []Token) (Order, error) {
 	return SetRations{EntityID: id, Percent: pct}, nil
 }
 
-const setIdleUsage = "want: set idle for GroupKind group GroupNo of EntityID to PercentageAmount"
+const updateGroupUsage = `want one of:
+  update factory-group GroupNo of EntityID retool
+  update factory-group GroupNo of EntityID produce Unit
+  update GroupKind-group GroupNo of EntityID shutdown Quantity
+  update GroupKind-group GroupNo of EntityID shutdown PercentageAmount
+  update GroupKind-group GroupNo of EntityID restart Quantity
+  update GroupKind-group GroupNo of EntityID restart PercentageAmount
+GroupKind is factory, farming, or mining`
 
-func parseSetIdle(tokens []Token) (Order, error) {
-	if len(tokens) != 10 || !tokens[2].Is("for") || !tokens[4].Is("group") || !tokens[6].Is("of") || !tokens[8].Is("to") {
-		return nil, fmt.Errorf("%w: %s", ErrInvalidOrder, setIdleUsage)
+func parseUpdateGroup(tokens []Token) (Order, error) {
+	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, updateGroupUsage)
+	if len(tokens) < 2 {
+		return nil, usage
 	}
-	var kind game.GroupKind
-	for _, k := range []game.GroupKind{game.KindFarming, game.KindMining, game.KindFactory} {
-		if tokens[3].Is(string(k)) {
-			kind = k
+	o := UpdateGroup{}
+	for k := range groupUnit {
+		if tokens[1].Is(string(k) + "-group") {
+			o.Kind = k
 		}
 	}
-	if kind == "" {
-		return nil, fmt.Errorf("%w: %q: want farming, mining, or factory", ErrInvalidGroupKind, tokens[3].Text)
+	if o.Kind == "" {
+		return nil, fmt.Errorf("%w: %q: want factory-group, farming-group, or mining-group", ErrInvalidGroupKind, tokens[1].Text)
 	}
-	no, ok := number(tokens[5])
-	if !ok || no < 1 {
-		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, tokens[5].Text)
+	if len(tokens) < 6 || !tokens[3].Is("of") {
+		return nil, usage
 	}
-	id, ok := number(tokens[7])
-	if !ok || id < 1 {
-		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidEntityID, tokens[7].Text)
+	var ok bool
+	if o.GroupNo, ok = number(tokens[2]); !ok || o.GroupNo < 1 {
+		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, tokens[2].Text)
 	}
-	pct, err := percentage(tokens[9], game.MinIdlePercent, game.MaxIdlePercent)
-	if err != nil {
+	var err error
+	if o.EntityID, err = entityID(tokens[4]); err != nil {
 		return nil, err
 	}
-	return SetIdle{EntityID: id, Kind: kind, GroupNo: no, Percent: pct}, nil
+	args := tokens[6:]
+	switch action := tokens[5]; {
+	case action.Is("retool") || action.Is("produce"):
+		if o.Kind != game.KindFactory {
+			return nil, fmt.Errorf("%w: only a factory group can %s", ErrInvalidOrder, strings.ToLower(action.Text))
+		}
+		if action.Is("retool") {
+			if len(args) != 0 {
+				return nil, usage
+			}
+			o.Action = game.ActionRetool
+			return o, nil
+		}
+		if len(args) != 1 {
+			return nil, usage
+		}
+		o.Action = game.ActionProduce
+		if o.Producing, err = unitOf(args[0], ""); err != nil {
+			return nil, err
+		}
+		if d, _ := units.Lookup(o.Producing.Type); !d.FactoryMade() {
+			return nil, fmt.Errorf("%w: %q: factories don't make it", ErrInvalidUnit, args[0].Text)
+		}
+		return o, nil
+	case action.Is("shutdown") || action.Is("restart"):
+		o.Action = game.ActionShutDown
+		if action.Is("restart") {
+			o.Action = game.ActionRestart
+		}
+		if len(args) != 1 {
+			return nil, usage
+		}
+		if strings.HasSuffix(args[0].Text, "%") {
+			if o.Percent, err = percentage(args[0], 1, 100); err != nil {
+				return nil, err
+			}
+			return o, nil
+		}
+		if o.Qty, ok = quantity(args[0]); !ok || o.Qty < 1 {
+			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600, or a percentage, such as 50%%", ErrInvalidQuantity, args[0].Text)
+		}
+		return o, nil
+	}
+	return nil, usage
 }
 
 // parseDraft parses a draft or a disband order; verb says which.
@@ -503,8 +574,7 @@ func parseAssemble(tokens []Token) (Order, error) {
 			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidDepositNo, id.Text)
 		}
 	case kind == game.KindFactory:
-		// A new factory group must be told what to make: nothing can
-		// tell it later.
+		// A new factory group must be told what to make.
 		t, ok1 := next()
 		u, ok2 := next()
 		if !ok1 || !ok2 || !t.Is("producing") {

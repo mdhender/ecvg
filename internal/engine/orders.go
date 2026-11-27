@@ -9,6 +9,7 @@ import (
 	"github.com/mdhender/ecvg/internal/cerrs"
 	"github.com/mdhender/ecvg/internal/game"
 	"github.com/mdhender/ecvg/internal/orders"
+	"github.com/mdhender/ecvg/internal/units"
 )
 
 const (
@@ -108,8 +109,8 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		return AssembleGroup(d, empireID, o)
 	case orders.UnitWork:
 		return UnitWork(d, empireID, o)
-	case orders.SetIdle:
-		return SetIdle(d, empireID, o.EntityID, o.Kind, o.GroupNo, o.Percent)
+	case orders.UpdateGroup:
+		return UpdateGroup(d, empireID, o)
 	}
 	return fmt.Errorf("%w: %T", orders.ErrUnknownOrder, order)
 }
@@ -132,53 +133,144 @@ func SetRations(d *game.Data, empireID, entityID, percent int) error {
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }
 
-// ErrNoSuchGroup is the error for an order that names a group its entity
-// doesn't have.
-const ErrNoSuchGroup = cerrs.Error("the entity has no such group")
+const (
+	// ErrNoSuchGroup is the error for an order that names a group its
+	// entity doesn't have.
+	ErrNoSuchGroup = cerrs.Error("the entity has no such group")
+	// ErrNotRetooled is the error for an order that has a factory group
+	// change what it makes before it has retooled.
+	ErrNotRetooled   = cerrs.Error("the group must retool before it changes what it produces")
+	ErrNoneRunning   = cerrs.Error("the group has no units running")
+	ErrNoneShutDown  = cerrs.Error("the group has no units shut down")
+	ErrOnlyFactories = cerrs.Error("only a factory group can retool or be told what to produce")
+)
 
-// SetIdle orders percent percent of the units of a group to idle, on the
-// orders of the empire with ID empireID: the group of the given kind numbered
-// groupNo in the entity with ID entityID. Idled units ask for no staff or
-// fuel when resources are allocated. The setting stands until it is changed;
-// 0 puts the whole group back to work. It fails with ErrNotControlled if the
-// empire has no such entity, ErrNoSuchGroup if the entity has no such group,
-// and orders.ErrInvalidPercentage if percent is not in
-// game.MinIdlePercent..game.MaxIdlePercent.
-func SetIdle(d *game.Data, empireID, entityID int, kind game.GroupKind, groupNo, percent int) error {
-	if percent < game.MinIdlePercent || percent > game.MaxIdlePercent {
-		return fmt.Errorf("%w: %d%%", orders.ErrInvalidPercentage, percent)
-	}
+// UpdateGroup carries out an update order for a group, given by the empire
+// with ID empireID. It is the manual's build change stage (B3.7).
+//
+// Retool has a factory group retool: it stops making what it made, and waits
+// to be told what to produce. Produce tells it. A group must have retooled to
+// change what it produces, except to change to RSCH or from one structural
+// unit (STRN, STRL, STRS) to another (manual H3.6). The retooling itself,
+// which waits for the group's work in process and costs MTL and NMTL, comes
+// with manufacturing.
+//
+// Shutdown shuts down units of the group that are running, and restart
+// restarts units that are shut down: the order's Qty, or its Percent of all
+// the units of the group. A fraction of a unit is rounded up for a shutdown
+// and down for a restart. The order takes what there is: the units running,
+// or shut down, if they are fewer than it asks for. Units shut down ask for
+// no staff or fuel when resources are allocated, and stay shut down until
+// they are restarted.
+//
+// Nothing changes if it fails:
+//
+//   - ErrNotControlled: the empire has no such entity.
+//   - ErrNoSuchGroup: the entity has no such group.
+//   - ErrOnlyFactories: the order is retool or produce, and the group is
+//     not a factory group.
+//   - ErrNotRetooled: a produce order changes what the group makes, and the
+//     group has not retooled.
+//   - ErrNoneRunning, ErrNoneShutDown: the group has no units for a shutdown
+//     or a restart to work on.
+//   - orders.ErrInvalidOrder: the order has no action, or its quantity or
+//     percentage is not valid.
+func UpdateGroup(d *game.Data, empireID int, o orders.UpdateGroup) error {
+	var c *game.Colony
 	for i := range d.Colonies {
-		c := &d.Colonies[i]
-		if c.ID != entityID || c.EmpireID != empireID {
-			continue
+		if d.Colonies[i].ID == o.EntityID && d.Colonies[i].EmpireID == empireID {
+			c = &d.Colonies[i]
 		}
-		var idle *int
-		switch kind {
-		case game.KindFarming:
-			for j := range c.FarmingGroups {
-				if c.FarmingGroups[j].No == groupNo {
-					idle = &c.FarmingGroups[j].IdlePercent
-				}
-			}
-		case game.KindMining:
-			for j := range c.MiningGroups {
-				if c.MiningGroups[j].No == groupNo {
-					idle = &c.MiningGroups[j].IdlePercent
-				}
-			}
-		case game.KindFactory:
-			for j := range c.FactoryGroups {
-				if c.FactoryGroups[j].No == groupNo {
-					idle = &c.FactoryGroups[j].IdlePercent
-				}
+	}
+	if c == nil {
+		return fmt.Errorf("entity %d: %w", o.EntityID, ErrNotControlled)
+	}
+	var (
+		factory  *game.Group
+		shutDown *int
+		groupUs  []game.GroupUnits
+	)
+	switch o.Kind {
+	case game.KindFarming:
+		for j := range c.FarmingGroups {
+			if g := &c.FarmingGroups[j]; g.No == o.GroupNo {
+				shutDown, groupUs = &g.ShutDown, g.Units
 			}
 		}
-		if idle == nil {
-			return fmt.Errorf("entity %d: %s group %d: %w", entityID, kind, groupNo, ErrNoSuchGroup)
+	case game.KindMining:
+		for j := range c.MiningGroups {
+			if g := &c.MiningGroups[j]; g.No == o.GroupNo {
+				shutDown, groupUs = &g.ShutDown, g.Units
+			}
 		}
-		*idle = percent
+	case game.KindFactory:
+		for j := range c.FactoryGroups {
+			if g := &c.FactoryGroups[j]; g.No == o.GroupNo {
+				factory, shutDown, groupUs = g, &g.ShutDown, g.Units
+			}
+		}
+	}
+	if shutDown == nil {
+		return fmt.Errorf("entity %d: %s group %d: %w", o.EntityID, o.Kind, o.GroupNo, ErrNoSuchGroup)
+	}
+
+	switch o.Action {
+	case game.ActionRetool:
+		if factory == nil {
+			return ErrOnlyFactories
+		}
+		factory.Producing, factory.Retooled = game.Unit{}, true
+		return nil
+	case game.ActionProduce:
+		if factory == nil {
+			return ErrOnlyFactories
+		}
+		want := game.Unit{Type: o.Producing.Type, TechLevel: o.Producing.TechLevel}
+		if def, _ := units.Lookup(want.Type); !def.FactoryMade() || !def.ValidTechLevel(want.TechLevel) {
+			return fmt.Errorf("%w: %s: factories don't make it", orders.ErrInvalidUnit, want.Type)
+		}
+		if want == factory.Producing {
+			return nil
+		}
+		if !factory.Retooled && want.Type != units.RSCH && !(structural(want.Type) && structural(factory.Producing.Type)) {
+			return fmt.Errorf("factory group %d: %w", o.GroupNo, ErrNotRetooled)
+		}
+		factory.Producing, factory.Retooled = want, false
+		return nil
+	case game.ActionShutDown, game.ActionRestart:
+	default:
+		return fmt.Errorf("%w: %q: want retool, produce, shutdown, or restart", orders.ErrInvalidOrder, o.Action)
+	}
+
+	// The number of units the order asks for. A fraction of a unit is
+	// rounded against the empire: up for a shutdown, down for a restart.
+	total := game.GroupQty(groupUs)
+	down := min(max(0, *shutDown), total)
+	n := o.Qty
+	switch {
+	case o.Qty < 0 || o.Percent < 0 || o.Percent > 100 || (o.Qty == 0) == (o.Percent == 0):
+		return fmt.Errorf("%w: want a quantity, 1 or more, or a percentage from 1%% to 100%%", orders.ErrInvalidOrder)
+	case o.Percent != 0 && o.Action == game.ActionShutDown:
+		n = (total*o.Percent + 99) / 100
+	case o.Percent != 0:
+		n = total * o.Percent / 100
+	}
+	if o.Action == game.ActionShutDown {
+		if total == down {
+			return fmt.Errorf("%s group %d: %w", o.Kind, o.GroupNo, ErrNoneRunning)
+		}
+		*shutDown = down + min(n, total-down)
 		return nil
 	}
-	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
+	if down == 0 {
+		return fmt.Errorf("%s group %d: %w", o.Kind, o.GroupNo, ErrNoneShutDown)
+	}
+	*shutDown = down - min(n, down)
+	return nil
+}
+
+// structural reports whether code is a structural unit, which a factory
+// group changes between without retooling (manual H3.6).
+func structural(code string) bool {
+	return code == units.STRN || code == units.STRL || code == units.STRS
 }
