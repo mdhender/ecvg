@@ -14,20 +14,24 @@
         "cwrk": 1000
       },
       "operational": [
-        {"type": "AUTO", "tech_level": 10, "qty": 1000},
-        {"type": "FARM", "tech_level": 10, "qty": 100000},
         {"type": "LFSU", "tech_level": 10, "qty": 100},
-        {"type": "SDRV", "tech_level": 10, "qty": 1},
-        {"type": "STRL", "qty": 400000}
+        {"type": "STRS", "qty": 100000}
       ],
       "cargo": [
         {"type": "FOOD", "qty": 4269990},
+        {"type": "CNGD", "qty": 515279}
+      ],
+      "depot": [
         {"type": "FUEL", "qty": 1360000},
         {"type": "MTL", "qty": 5354167},
         {"type": "NMTL", "qty": 2645833},
-        {"type": "CNGD", "qty": 515279},
         {"type": "FACT", "tech_level": 10, "qty": 650000},
         {"type": "MINE", "tech_level": 10, "qty": 100000}
+      ],
+      "depot_operational": [
+        {"type": "AUTO", "tech_level": 10, "qty": 1000},
+        {"type": "FARM", "tech_level": 10, "qty": 100000},
+        {"type": "SDRV", "tech_level": 10, "qty": 1}
       ],
       "farming_groups": [
         {

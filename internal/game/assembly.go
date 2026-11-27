@@ -292,9 +292,11 @@ func (c *Colony) fit(w Work, d units.Def, tl, n, done int) int {
 
 // install moves qty units from storage into use: in the depot, if the colony
 // has one and the unit can be there, and otherwise in the colony itself.
+// Structure always goes up in the colony: in the depot it would enclose
+// nothing.
 func (c *Colony) install(d units.Def, tl, qty int) {
 	c.takeStored(d.Code, tl, qty)
-	if c.HasDepot() && d.DepotAllowed() {
+	if c.HasDepot() && d.DepotAllowed() && d.Encloses() == 0 {
 		c.DepotOperational = addUnits(c.DepotOperational, d.Code, tl, qty)
 	} else {
 		c.Operational = addUnits(c.Operational, d.Code, tl, qty)

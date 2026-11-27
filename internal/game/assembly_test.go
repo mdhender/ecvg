@@ -88,6 +88,19 @@ func TestAssemble(t *testing.T) {
 		}
 	})
 
+	t.Run("an open-air colony assembles structure in the colony, not the depot", func(t *testing.T) {
+		c := game.Colony{
+			Type:     game.COPN,
+			Cadres:   game.Cadres{CWRK: 1},
+			Depot:    []unit{{Type: "STRS", Qty: 1000}},
+			Assembly: []game.Assembly{{Unit: unit{Type: "STRS", Qty: 1000}}},
+		}
+		work(&c)
+		if len(c.DepotOperational) != 0 || len(c.Operational) != 1 || c.Operational[0] != (unit{Type: "STRS", Qty: 1000}) || c.Capacity() != units.Whole(20000) {
+			t.Errorf("operational %+v, depot operational %+v, capacity %v", c.Operational, c.DepotOperational, c.Capacity())
+		}
+	})
+
 	t.Run("an enclosed colony needs room for the assembled units", func(t *testing.T) {
 		// 2,500 STRN enclose 500 VU. 73 FOOD take 219 and 20 stowed FARM-6
 		// 180, which leaves 101. Assembled, a FARM-6 takes 9 VU more.
