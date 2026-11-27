@@ -13,11 +13,14 @@ import (
 )
 
 const (
-	ErrNotEnoughUnits = cerrs.Error("the entity doesn't have that many of the unit in storage that aren't already being assembled")
-	ErrTechLevel      = cerrs.Error("every unit of the group must be of the same tech level")
-	ErrNoSuchDeposit  = cerrs.Error("the entity's planet has no deposit with that number")
-	ErrDepositClaimed = cerrs.Error("another mining group is working that deposit")
-	ErrFarmCap        = cerrs.Error("the planet has no room for that many more FARM-1 units")
+	ErrNotEnoughUnits     = cerrs.Error("the entity doesn't have that many of the unit in storage that aren't already being assembled or scrapped")
+	ErrNotEnoughAssembled = cerrs.Error("the entity doesn't have that many of the unit assembled that aren't already being disassembled")
+	ErrGroupUnit          = cerrs.Error("the unit works in a group: use the group assemble orders (groups can't be disassembled yet)")
+	ErrNotScrappable      = cerrs.Error("the unit wasn't built from MTL and NMTL, so there is nothing to recover")
+	ErrTechLevel          = cerrs.Error("every unit of the group must be of the same tech level")
+	ErrNoSuchDeposit      = cerrs.Error("the entity's planet has no deposit with that number")
+	ErrDepositClaimed     = cerrs.Error("another mining group is working that deposit")
+	ErrFarmCap            = cerrs.Error("the planet has no room for that many more FARM-1 units")
 )
 
 // Assembly is the assembly phase: every colony's CWRK do a turn of its
@@ -130,7 +133,7 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 				if other.PlanetID != c.PlanetID {
 					continue
 				}
-				have += other.Claimed(units.FARM, 1)
+				have += other.BeingAssembled(units.FARM, 1)
 				for _, g := range other.FarmingGroups {
 					for _, gu := range g.Units {
 						if gu.TechLevel == 1 {
@@ -187,9 +190,66 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 	}
 	// The group has an entry for each tech level from the start, so that the
 	// tech level of a group with nothing assembled yet is known.
-	for _, u := range o.Units {
+	// A cap on the CWRK is on the order's work as a whole.
+	for i, u := range o.Units {
 		_, *us = game.GroupUnitsAt(*us, u.TechLevel)
-		c.Assembly = append(c.Assembly, game.Assembly{Kind: o.Kind, GroupNo: no, Unit: u})
+		c.Assembly = append(c.Assembly, game.Assembly{
+			Kind: o.Kind, GroupNo: no, Unit: u, MaxCWRK: o.MaxCWRK, SharesCap: o.MaxCWRK > 0 && i > 0,
+		})
 	}
+	return nil
+}
+
+// UnitWork carries out an assemble, disassemble, or scrap order for units
+// that aren't in a group, given by the empire with ID empireID. It starts the
+// work; the Assembly phase does it. An order to assemble or disassemble a
+// unit that is never assembled is accepted and does nothing. Nothing changes
+// if it fails:
+//
+//   - ErrNotControlled: the empire has no such entity.
+//   - ErrGroupUnit: the unit is one that works in a group (FACT, FARM, MINE),
+//     which the group orders assemble.
+//   - ErrNotScrappable: the unit wasn't built from MTL and NMTL.
+//   - ErrNotEnoughUnits: to assemble or scrap, the entity doesn't have the
+//     units in storage, or other work has claimed them. Scrap never takes
+//     assembled units.
+//   - ErrNotEnoughAssembled: to disassemble, the entity doesn't have the
+//     units assembled, or other work is disassembling them.
+func UnitWork(d *game.Data, empireID int, o orders.UnitWork) error {
+	var c *game.Colony
+	for i := range d.Colonies {
+		if d.Colonies[i].ID == o.EntityID && d.Colonies[i].EmpireID == empireID {
+			c = &d.Colonies[i]
+		}
+	}
+	if c == nil {
+		return fmt.Errorf("entity %d: %w", o.EntityID, ErrNotControlled)
+	}
+	def, _ := units.Lookup(o.Unit.Type)
+	code, tl := o.Unit.Type, o.Unit.TechLevel
+	name := code
+	if tl != 0 {
+		name = fmt.Sprintf("%s-%d", code, tl)
+	}
+	if o.Action == game.WorkScrap {
+		if _, _, ok := def.Inputs(tl, 1); !ok {
+			return fmt.Errorf("%s: %w", name, ErrNotScrappable)
+		}
+	} else {
+		if !def.RequiresAssembly {
+			return nil // nothing to do
+		}
+		if code == units.FACT || code == units.FARM || code == units.MINE {
+			return fmt.Errorf("%s: %w", name, ErrGroupUnit)
+		}
+	}
+	if o.Action == game.WorkDisassemble {
+		if have := c.InUse(code, tl) - c.BeingDisassembled(code, tl); o.Unit.Qty > have {
+			return fmt.Errorf("%s: %d assembled: %w", name, max(0, have), ErrNotEnoughAssembled)
+		}
+	} else if have := c.Stored(code, tl) - c.Claimed(code, tl); o.Unit.Qty > have {
+		return fmt.Errorf("%s: %d free in storage: %w", name, max(0, have), ErrNotEnoughUnits)
+	}
+	c.Assembly = append(c.Assembly, game.Assembly{Action: o.Action, Unit: o.Unit, MaxCWRK: o.MaxCWRK})
 	return nil
 }

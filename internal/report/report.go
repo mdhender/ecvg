@@ -203,16 +203,33 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 			for _, a := range c.Assembly {
 				name := unitName(a.Unit.Type, a.Unit.TechLevel)
-				if a.Unit.Qty == 0 {
-					p("  %s group %d: %s %s assembled last turn, and the work is done", title(a.Kind), a.GroupNo, commas(a.Assembled), name)
-					continue
+				done := map[game.Work]string{game.WorkAssemble: "assembled", game.WorkDisassemble: "disassembled", game.WorkScrap: "scrapped"}[a.Action]
+				what := ""
+				if a.GroupNo != 0 {
+					what = fmt.Sprintf("%s group %d: ", title(a.Kind), a.GroupNo)
 				}
-				p("  %s group %d: %s %s assembled last turn; %s still to assemble, with %s EMU done toward them",
-					title(a.Kind), a.GroupNo, commas(a.Assembled), name, commas(a.Unit.Qty), commas(a.EMU))
-				switch a.Waiting {
-				case "room":
-					p("      WAITING: no room in the entity for more of them assembled")
-				case "units":
+				limit := ""
+				if a.MaxCWRK != 0 {
+					limit = fmt.Sprintf(" (using at most %s CWRK)", commas(a.MaxCWRK))
+				}
+				if a.Unit.Qty == 0 {
+					p("  %s%s %s %s last turn, and the work is done", what, commas(a.Assembled), name, done)
+				} else {
+					p("  %s%s %s %s last turn; %s still to %s, with %s EMU done toward them%s",
+						what, commas(a.Assembled), name, done, commas(a.Unit.Qty), a.Action.Verb(), commas(a.EMU), limit)
+				}
+				if a.Action == game.WorkScrap && a.Assembled > 0 {
+					p("      RECOVERED: %s MTL and %s NMTL", commas(a.MTL), commas(a.NMTL))
+					if a.Lost > 0 {
+						p("      LOST: %s of that, which the entity had no room for", commas(a.Lost))
+					}
+				}
+				switch {
+				case a.Waiting == "room":
+					p("      WAITING: no room in the entity for more of them %s", done)
+				case a.Waiting == "units" && a.Action == game.WorkDisassemble:
+					p("      WAITING: the units aren't assembled")
+				case a.Waiting == "units":
 					p("      WAITING: the units aren't in storage")
 				}
 			}

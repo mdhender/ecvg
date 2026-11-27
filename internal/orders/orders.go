@@ -21,6 +21,13 @@
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit (, Quantity FactoryUnit)*
 //	assemble farming-group GroupNo on EntityID add Quantity FarmUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
+//	assemble Quantity Unit on EntityID
+//	disassemble Quantity Unit on EntityID
+//	scrap Quantity Unit on EntityID
+//
+// Any assemble order but the one for a cadre, and the disassemble and scrap
+// orders, may end with "using Quantity CWRK", which caps the CWRK that work
+// on it in a turn. CWKR is read as CWRK there.
 //
 // EntityID is the ID of an entity. PercentageAmount is a whole number with a
 // "%" joined to it: "50%", not "50 %". For rations it is from game.MinRations
@@ -61,7 +68,7 @@ const (
 )
 
 // Order is one order. Its type says which: SetRations, SetIdle, Draft,
-// Disband, AssembleCadre, or AssembleGroup.
+// Disband, AssembleCadre, AssembleGroup, or UnitWork.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -147,6 +154,9 @@ type AssembleGroup struct {
 	// Producing is what a new factory group is to make, if the order says;
 	// its Qty is 0.
 	Producing game.Unit
+	// MaxCWRK is the most CWRK that may work on the order in a turn, or 0
+	// if the order sets no cap.
+	MaxCWRK int
 }
 
 func (o AssembleGroup) String() string {
@@ -169,7 +179,32 @@ func (o AssembleGroup) String() string {
 	if o.DepositNo != 0 {
 		fmt.Fprintf(&sb, " working %d", o.DepositNo)
 	}
+	sb.WriteString(using(o.MaxCWRK))
 	return sb.String()
+}
+
+// UnitWork is the order "assemble Quantity Unit on EntityID", or the same
+// with disassemble or scrap, as Action says. It has the CWRK of the entity
+// with ID EntityID assemble units that are in its storage, disassemble units
+// it has assembled, or scrap units in its storage for their MTL and NMTL.
+type UnitWork struct {
+	Action   game.Work
+	EntityID int
+	Unit     game.Unit
+	// MaxCWRK is as for AssembleGroup.
+	MaxCWRK int
+}
+
+func (o UnitWork) String() string {
+	return fmt.Sprintf("%s %d %s on %d%s", o.Action.Verb(), o.Unit.Qty, unitName(o.Unit), o.EntityID, using(o.MaxCWRK))
+}
+
+// using returns the clause that caps an order's CWRK, if it has a cap.
+func using(maxCWRK int) string {
+	if maxCWRK == 0 {
+		return ""
+	}
+	return fmt.Sprintf(" using %d CWRK", maxCWRK)
 }
 
 // unitName returns the unit as orders write it: FACT-10, or CNGD.
@@ -230,6 +265,10 @@ func parseOrder(tokens []Token) (Order, error) {
 		return parseDraft(tokens, "disband")
 	case tokens[0].Is("assemble"):
 		return parseAssemble(tokens)
+	case tokens[0].Is("disassemble"):
+		return parseUnitWork(tokens, game.WorkDisassemble)
+	case tokens[0].Is("scrap"):
+		return parseUnitWork(tokens, game.WorkScrap)
 	}
 	return nil, ErrUnknownOrder
 }
@@ -313,17 +352,62 @@ var groupUnit = map[game.GroupKind]string{
 
 const assembleUsage = `want one of:
   assemble Quantity CadreUnit on EntityID (CWRK, TRNE, or SPY)
+  assemble Quantity Unit on EntityID
   assemble factory-group on EntityID with Quantity FACT-n, Quantity FACT-n ... [producing Unit]
   assemble farming-group on EntityID with Quantity FARM-n
   assemble mining-group on EntityID with Quantity MINE-n working DepositNo
   assemble factory-group GroupNo on EntityID add Quantity FACT-n, Quantity FACT-n ...
   assemble farming-group GroupNo on EntityID add Quantity FARM-n
-  assemble mining-group GroupNo on EntityID add Quantity MINE-n`
+  assemble mining-group GroupNo on EntityID add Quantity MINE-n
+any but the first may end with: using Quantity CWRK`
+
+// usingClause takes "using Quantity CWRK" off the end of an order, if it is
+// there, and returns the cap and the tokens before it. CWKR is read as CWRK.
+func usingClause(tokens []Token) (int, []Token, error) {
+	n := len(tokens)
+	if n < 3 || !tokens[n-3].Is("using") {
+		return 0, tokens, nil
+	}
+	maxCWRK, ok := quantity(tokens[n-2])
+	if !ok || maxCWRK < 1 {
+		return 0, nil, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600", ErrInvalidQuantity, tokens[n-2].Text)
+	}
+	if !tokens[n-1].Is(units.CWRK) && !tokens[n-1].Is("CWKR") {
+		return 0, nil, fmt.Errorf("%w: %q: want CWRK", ErrInvalidUnit, tokens[n-1].Text)
+	}
+	return maxCWRK, tokens[:n-3], nil
+}
+
+// parseUnitWork parses "Verb Quantity Unit on EntityID [using Quantity
+// CWRK]", where the verb is that of action.
+func parseUnitWork(tokens []Token, action game.Work) (Order, error) {
+	maxCWRK, tokens, err := usingClause(tokens)
+	if err != nil {
+		return nil, err
+	}
+	if len(tokens) != 5 || !tokens[3].Is("on") {
+		return nil, fmt.Errorf("%w: want: %s Quantity Unit on EntityID [using Quantity CWRK]", ErrInvalidOrder, action.Verb())
+	}
+	unit, err := quantityOf(tokens[1], tokens[2], "")
+	if err != nil {
+		return nil, err
+	}
+	id, err := entityID(tokens[4])
+	if err != nil {
+		return nil, err
+	}
+	return UnitWork{Action: action, EntityID: id, Unit: unit, MaxCWRK: maxCWRK}, nil
+}
 
 func parseAssemble(tokens []Token) (Order, error) {
 	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, assembleUsage)
 	if len(tokens) < 2 {
 		return nil, usage
+	}
+	full := tokens
+	maxCWRK, tokens, err := usingClause(tokens)
+	if err != nil {
+		return nil, err
 	}
 	var kind game.GroupKind
 	for k := range groupUnit {
@@ -332,9 +416,17 @@ func parseAssemble(tokens []Token) (Order, error) {
 		}
 	}
 	if kind == "" {
-		// assemble Quantity CadreUnit on EntityID
+		// assemble Quantity CadreUnit on EntityID, or the same for a unit.
 		if len(tokens) != 5 || !tokens[3].Is("on") {
 			return nil, usage
+		}
+		if c := strings.ToUpper(tokens[2].Text); tokens[2].Quoted || (c != units.CWRK && c != units.TRNE && c != units.SPY) {
+			if d, ok := units.Lookup(c); !ok || !d.Population() {
+				return parseUnitWork(full, game.WorkAssemble)
+			}
+		}
+		if maxCWRK != 0 {
+			return nil, usage // CWRK don't assemble cadres
 		}
 		qty, ok := quantity(tokens[1])
 		if !ok || qty < 1 {
@@ -351,7 +443,7 @@ func parseAssemble(tokens []Token) (Order, error) {
 		return AssembleCadre{EntityID: id, Unit: code, Qty: qty}, nil
 	}
 
-	o := AssembleGroup{Kind: kind}
+	o := AssembleGroup{Kind: kind, MaxCWRK: maxCWRK}
 	rest := tokens[2:]
 	// next takes the next token, or fails if there is none.
 	next := func() (Token, bool) {
@@ -376,7 +468,6 @@ func parseAssemble(tokens []Token) (Order, error) {
 	if t, ok = next(); !ok {
 		return nil, usage
 	}
-	var err error
 	if o.EntityID, err = entityID(t); err != nil {
 		return nil, err
 	}

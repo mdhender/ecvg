@@ -113,6 +113,8 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		return nil
 	case orders.AssembleGroup:
 		return AssembleGroup(d, empireID, o)
+	case orders.UnitWork:
+		return UnitWork(d, empireID, o)
 	case orders.SetIdle:
 		return SetIdle(d, empireID, o.EntityID, o.Kind, o.GroupNo, o.Percent)
 	}

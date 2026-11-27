@@ -1,0 +1,158 @@
+// Copyright (c) 2026 Michael D Henderson.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+package game_test
+
+import (
+	"reflect"
+	"testing"
+
+	"github.com/mdhender/ecvg/internal/game"
+)
+
+func TestAssembleCap(t *testing.T) {
+	type unit = game.Unit
+	hdrv := func(qty int) unit { return unit{Type: "HDRV", TechLevel: 1, Qty: qty} }
+
+	t.Run("the cap is respected", func(t *testing.T) {
+		// An HDRV-1 is 45 MU. 20 of the 100 CWRK do 10,000 EMU: 222 units.
+		c := game.Colony{
+			Type:     game.COPN,
+			Cadres:   game.Cadres{CWRK: 100},
+			Depot:    []unit{hdrv(5000)},
+			Assembly: []game.Assembly{{Unit: hdrv(5000), MaxCWRK: 20}},
+		}
+		c.Assemble()
+		if a := c.Assembly[0]; a.Assembled != 222 || a.Unit.Qty != 4778 || a.EMU != 10 ||
+			c.Construction != (game.Construction{Pool: 50000, Used: 10000}) ||
+			!reflect.DeepEqual(c.DepotOperational, []unit{hdrv(222)}) {
+			t.Errorf("work %+v, construction %+v, depot operational %+v", a, c.Construction, c.DepotOperational)
+		}
+	})
+
+	t.Run("a cap above what the work needs is ignored", func(t *testing.T) {
+		c := game.Colony{
+			Type:     game.COPN,
+			Cadres:   game.Cadres{CWRK: 100},
+			Depot:    []unit{hdrv(1)},
+			Assembly: []game.Assembly{{Unit: hdrv(1), MaxCWRK: 20000}},
+		}
+		c.Assemble()
+		if a := c.Assembly[0]; a.Assembled != 1 || a.Unit.Qty != 0 || c.Construction != (game.Construction{Pool: 50000, Used: 45}) {
+			t.Errorf("work %+v, construction %+v", a, c.Construction)
+		}
+	})
+
+	t.Run("the work of one order shares its cap", func(t *testing.T) {
+		// FACT-1 is 14 MU, FACT-2 16 MU, MINE-10 30 MU. The order's 1 CWRK
+		// does 500 EMU: 420 for the 30 FACT-1, and 80 for 5 FACT-2.
+		fact := func(tl, qty int) unit { return unit{Type: "FACT", TechLevel: tl, Qty: qty} }
+		mine := unit{Type: "MINE", TechLevel: 10, Qty: 5}
+		c := game.Colony{
+			Type:          game.COPN,
+			Cadres:        game.Cadres{CWRK: 10},
+			Depot:         []unit{fact(1, 30), fact(2, 10), mine},
+			FactoryGroups: []game.Group{{No: 1}},
+			MiningGroups:  []game.MiningGroup{{No: 2}},
+			Assembly: []game.Assembly{
+				{Kind: game.KindFactory, GroupNo: 1, Unit: fact(1, 30), MaxCWRK: 1},
+				{Kind: game.KindFactory, GroupNo: 1, Unit: fact(2, 10), MaxCWRK: 1, SharesCap: true},
+				{Kind: game.KindMining, GroupNo: 2, Unit: mine},
+			},
+		}
+		c.Assemble()
+		if a := c.Assembly; a[0].Assembled != 30 || a[1].Assembled != 5 || a[2].Assembled != 5 ||
+			c.Construction != (game.Construction{Pool: 5000, Used: 650}) {
+			t.Fatalf("turn 1: work %+v, construction %+v", a, c.Construction)
+		}
+		// The first work is dropped, and the second has the cap to itself.
+		c.Assemble()
+		if a := c.Assembly; len(a) != 1 || a[0].SharesCap || a[0].Assembled != 5 || c.Construction.Used != 80 {
+			t.Errorf("turn 2: work %+v, construction %+v", a, c.Construction)
+		}
+	})
+}
+
+func TestDisassemble(t *testing.T) {
+	type unit = game.Unit
+	// An enclosed colony's 1,000 STRC-1 make 200 VU. Its 10 LFSU-1 take 80
+	// VU assembled and 40 VU stowed, and are 8 MU each; a STRC-1 is 1 MU and
+	// takes 1 VU stowed.
+	c := game.Colony{
+		Type:        game.CENC,
+		Cadres:      game.Cadres{CWRK: 1},
+		Operational: []unit{{Type: "STRC", TechLevel: 1, Qty: 1000}, {Type: "LFSU", TechLevel: 1, Qty: 10}},
+		Assembly: []game.Assembly{
+			{Action: game.WorkDisassemble, Unit: unit{Type: "LFSU", TechLevel: 1, Qty: 10}},
+			{Action: game.WorkDisassemble, Unit: unit{Type: "STRC", TechLevel: 1, Qty: 1000}},
+		},
+	}
+	c.Assemble()
+	// The LFSU take 80 EMU and go back to cargo. The other 420 EMU are for
+	// 420 STRC-1, but each one stowed takes space and makes none: only 133
+	// fit, leaving 867 that make 173 VU for 40 + 133 VU of cargo.
+	if a := c.Assembly; a[0].Assembled != 10 || a[0].Unit.Qty != 0 || a[1].Assembled != 133 || a[1].EMU != 287 || a[1].Waiting != "room" {
+		t.Errorf("work %+v", a)
+	}
+	wantOp := []unit{{Type: "STRC", TechLevel: 1, Qty: 867}, {Type: "LFSU", TechLevel: 1}}
+	wantCargo := []unit{{Type: "LFSU", TechLevel: 1, Qty: 10}, {Type: "STRC", TechLevel: 1, Qty: 133}}
+	if !reflect.DeepEqual(c.Operational, wantOp) || !reflect.DeepEqual(c.Cargo, wantCargo) || c.SpaceFree() != 0 {
+		t.Errorf("operational %+v, cargo %+v, free %d", c.Operational, c.Cargo, c.SpaceFree())
+	}
+
+	t.Run("in the depot", func(t *testing.T) {
+		auto := func(qty int) unit { return unit{Type: "AUTO", TechLevel: 1, Qty: qty} }
+		c := game.Colony{
+			Type:             game.COPN,
+			Cadres:           game.Cadres{CWRK: 1},
+			DepotOperational: []unit{auto(10)},
+			Assembly:         []game.Assembly{{Action: game.WorkDisassemble, Unit: auto(20)}},
+		}
+		c.Assemble()
+		if a := c.Assembly[0]; a.Assembled != 10 || a.Waiting != "units" || !reflect.DeepEqual(c.Depot, []unit{auto(10)}) || len(c.Cargo) != 0 {
+			t.Errorf("work %+v, depot %+v, cargo %+v", a, c.Depot, c.Cargo)
+		}
+	})
+}
+
+func TestScrap(t *testing.T) {
+	type unit = game.Unit
+	for _, tc := range []struct {
+		name            string
+		colony          game.EntityType
+		structure       int // STRC-1 assembled
+		scrap           unit
+		mtl, nmtl, lost int
+	}{
+		// An HDRV-1 is built from 25 MTL and 20 NMTL.
+		{name: "95% is recovered", colony: game.CENC, structure: 20000, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 2375, nmtl: 1900},
+		// 10 STRC-1 are built from 7 MTL and 3 NMTL: 3 of them give 1.995
+		// and 0.855.
+		{name: "the totals are rounded down", colony: game.CENC, structure: 20000, scrap: unit{Type: "STRC", TechLevel: 1, Qty: 3}, mtl: 1, nmtl: 0},
+		{name: "what there is no room for is lost", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 2375, nmtl: 1900, lost: 4275},
+		{name: "a depot has room", colony: game.COPN, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 2375, nmtl: 1900},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := game.Colony{
+				Type:        tc.colony,
+				Cadres:      game.Cadres{CWRK: 10},
+				Operational: []unit{{Type: "STRC", TechLevel: 1, Qty: tc.structure}, {Type: tc.scrap.Type, TechLevel: tc.scrap.TechLevel, Qty: 7}},
+				Cargo:       []unit{tc.scrap},
+				Assembly:    []game.Assembly{{Action: game.WorkScrap, Unit: tc.scrap}},
+			}
+			c.Assemble()
+			a := c.Assembly[0]
+			if a.Assembled != tc.scrap.Qty || a.Unit.Qty != 0 || a.MTL != tc.mtl || a.NMTL != tc.nmtl || a.Lost != tc.lost {
+				t.Errorf("work %+v", a)
+			}
+			stored := c.Stored("MTL", 0) + c.Stored("NMTL", 0)
+			if stored != tc.mtl+tc.nmtl-tc.lost || c.Stored(tc.scrap.Type, tc.scrap.TechLevel) != 0 {
+				t.Errorf("stored %d MTL and NMTL; cargo %+v, depot %+v", stored, c.Cargo, c.Depot)
+			}
+			// Scrap never takes the units in use.
+			if got := c.InUse(tc.scrap.Type, tc.scrap.TechLevel); got != 7+map[bool]int{true: tc.structure}[tc.scrap.Type == "STRC"] {
+				t.Errorf("%d in use", got)
+			}
+		})
+	}
+}
