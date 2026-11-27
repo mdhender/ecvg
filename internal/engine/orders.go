@@ -5,6 +5,8 @@ package engine
 
 import (
 	"fmt"
+	"slices"
+	"sort"
 
 	"github.com/mdhender/ecvg/internal/cerrs"
 	"github.com/mdhender/ecvg/internal/game"
@@ -27,6 +29,10 @@ type Rejection struct {
 	Text string
 	// Err says why the order was rejected.
 	Err error
+
+	// seq is the order's place among all the turn's orders, which keeps
+	// Rejected in file and line order when a stage rejects an order.
+	seq int
 }
 
 // String formats the rejection as file:line: text: reason.
@@ -34,7 +40,10 @@ func (r Rejection) String() string {
 	return fmt.Sprintf("%s:%d: %s: %v", r.File, r.Line, r.Text, r.Err)
 }
 
-// OrdersResult is the outcome of the orders phase.
+// OrdersResult is the outcome of the turn's orders. The orders phase
+// (ApplyOrders) settles most of them; an order that is carried out in its own
+// stage of the turn sequence (Transfers, BuildChanges, PayChanges) is neither
+// accepted nor rejected until that stage has run.
 type OrdersResult struct {
 	// Accepted is the number of orders carried out.
 	Accepted int
@@ -43,16 +52,101 @@ type OrdersResult struct {
 	// Drafts lists the accepted draft orders, which the draft phase carries
 	// out later in the turn.
 	Drafts []DraftOrder
+
+	// staged lists the orders that wait for their stage, in file and line
+	// order.
+	staged []stagedOrder
 }
 
-// ApplyOrders is the orders phase: it carries out each empire's orders on d,
-// file by file and line by line. An order that is not valid, or that its
-// empire may not give, is rejected and the rest are still carried out. Draft
-// orders are checked here and carried out by the Draft phase. Transfers are
-// carried out here, by the TRNS that each entity has when the phase starts. It
-// replaces d.OrderResults with a record of every order, accepted or not. It
-// fails with ErrNoSuchEmpire, before changing d, if a file is for an empire
-// that is not in the game.
+// stagedOrder is an order that is checked and carried out in its own stage of
+// the turn sequence, not in the orders phase.
+type stagedOrder struct {
+	stage    int // the number of the stage that carries it out
+	seq      int // its place among all the turn's orders
+	empireID int
+	file     string
+	line     orders.Line
+	record   int // the index of its record in game.Data.OrderResults
+}
+
+// orderStage returns the number of the stage that carries out the order, or 0
+// if the orders phase does.
+func orderStage(order orders.Order) int {
+	switch order.(type) {
+	case orders.Transfer:
+		return StageTransfer
+	case orders.UpdateGroup:
+		return StageBuildChange
+	case orders.SetRations:
+		return StagePayChange
+	}
+	return 0
+}
+
+// Pending returns the number of orders that still wait for their stage.
+func (r *OrdersResult) Pending() int {
+	return len(r.staged)
+}
+
+// runStage carries out the orders that wait for the stage numbered stage, in
+// file and line order, and settles each: it is counted in Accepted or added
+// to Rejected, and its record in d.OrderResults is completed.
+func (r *OrdersResult) runStage(d *game.Data, stage int) {
+	var waiting []stagedOrder
+	for _, so := range r.staged {
+		if so.stage != stage {
+			waiting = append(waiting, so)
+			continue
+		}
+		err := applyOrder(d, r, so.empireID, so.line.Order)
+		if so.record < len(d.OrderResults) {
+			rec := &d.OrderResults[so.record]
+			rec.Accepted, rec.Reason = err == nil, ""
+			if err != nil {
+				rec.Reason = err.Error()
+			}
+		}
+		if err == nil {
+			r.Accepted++
+			continue
+		}
+		at := sort.Search(len(r.Rejected), func(i int) bool { return r.Rejected[i].seq > so.seq })
+		r.Rejected = slices.Insert(r.Rejected, at, Rejection{
+			EmpireID: so.empireID, File: so.file, Line: so.line.No, Text: so.line.Text, Err: err, seq: so.seq,
+		})
+	}
+	r.staged = waiting
+}
+
+// Transfers is the Transfer stage (B3.6): it carries out the turn's transfer
+// orders (see Transfer), in file and line order, with the TRNS each entity
+// had when the turn started, less what its set ups have used.
+func Transfers(d *game.Data, result *OrdersResult) {
+	result.runStage(d, StageTransfer)
+}
+
+// BuildChanges is the Build Change stage (B3.7): it carries out the turn's
+// update group orders (see UpdateGroup), in file and line order.
+func BuildChanges(d *game.Data, result *OrdersResult) {
+	result.runStage(d, StageBuildChange)
+}
+
+// PayChanges is the Pay Change stage (B3.13): it carries out the turn's set
+// rations orders (see SetRations), in file and line order.
+func PayChanges(d *game.Data, result *OrdersResult) {
+	result.runStage(d, StagePayChange)
+}
+
+// ApplyOrders is the orders phase: it goes through each empire's orders, file
+// by file and line by line. An order that is not valid, or that its empire
+// may not give, is rejected and the rest are still carried out. Draft orders
+// are checked here and carried out by the Draft phase. Transfer, update group,
+// and set rations orders are not looked at here at all: they wait in the
+// result for their stages (Transfers, BuildChanges, PayChanges), which check
+// them and carry them out. It replaces d.OrderResults with a record of every
+// order; the record of an order that waits for its stage is not accepted and
+// has no reason until the stage completes it. It fails with ErrNoSuchEmpire,
+// before changing d, if a file is for an empire that is not in the game.
 func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 	empires := make(map[int]bool, len(d.Empires))
 	for _, e := range d.Empires {
@@ -68,9 +162,18 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 	for i := range d.Colonies {
 		d.Colonies[i].StartTransport()
 	}
+	seq := 0
 	for _, f := range files {
 		for _, line := range f.Lines {
+			seq++
 			err := line.Err
+			if stage := orderStage(line.Order); err == nil && stage != 0 {
+				result.staged = append(result.staged, stagedOrder{
+					stage: stage, seq: seq, empireID: f.EmpireID, file: f.Name, line: line, record: len(d.OrderResults),
+				})
+				d.OrderResults = append(d.OrderResults, game.OrderResult{EmpireID: f.EmpireID, Line: line.No, Text: line.Text})
+				continue
+			}
 			if err == nil {
 				err = applyOrder(d, &result, f.EmpireID, line.Order)
 			}
@@ -81,7 +184,7 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 			d.OrderResults = append(d.OrderResults, record)
 			if err != nil {
 				result.Rejected = append(result.Rejected, Rejection{
-					EmpireID: f.EmpireID, File: f.Name, Line: line.No, Text: line.Text, Err: err,
+					EmpireID: f.EmpireID, File: f.Name, Line: line.No, Text: line.Text, Err: err, seq: seq,
 				})
 				continue
 			}
@@ -92,7 +195,9 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 }
 
 // applyOrder carries out one order given by the empire with ID empireID. A
-// draft or disband order is only checked and added to result.Drafts.
+// draft or disband order is only checked and added to result.Drafts. The
+// orders phase calls it for the orders it carries out, and a stage for its
+// own.
 func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.Order) error {
 	switch o := order.(type) {
 	case orders.SetRations:
@@ -164,7 +269,7 @@ const (
 )
 
 // UpdateGroup carries out an update order for a group, given by the empire
-// with ID empireID. It is the manual's build change stage (B3.7).
+// with ID empireID. The Build Change stage (B3.7, BuildChanges) calls it.
 //
 // Retool has a factory group retool: it stops making what it made, and waits
 // to be told what to produce. Produce tells it. A group must have retooled to

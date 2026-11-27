@@ -51,8 +51,9 @@ func AssemblePrototype(d *game.Data, empireID int, o orders.AssemblePrototype) e
 
 // Transfer carries out a transfer order, given by the empire with ID
 // empireID: the TRNS of the entity From move units from its storage into the
-// storage of the entity To (see game.Colony.Transfer). It is done at once, so
-// transfers are done in the order they are given, and it takes what there is.
+// storage of the entity To (see game.Colony.Transfer). The Transfer stage
+// (B3.6, Transfers) calls it for each order, in the order they are given, and
+// it takes what there is.
 // Nothing changes if it fails:
 //
 //   - ErrNotControlled: the empire has no entity From.

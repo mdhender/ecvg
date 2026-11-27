@@ -89,8 +89,8 @@ func newRootCommand(stdout io.Writer) *ff.Command {
 			"the current turn in game.json. PATH/turns/N is not changed. It fails if\n" +
 			"PATH/turns/N+1 already exists.\n" +
 			"\n" +
-			"The first phase carries out the orders in PATH/turns/N/orders, one file per\n" +
-			"empire named empire-{id}.txt. An order that is not valid is rejected and\n" +
+			"The orders are read from PATH/turns/N/orders, one file per empire named\n" +
+			"empire-{id}.txt, and carried out in the stages of the turn sequence. An order that is not valid is rejected and\n" +
 			"listed as file:line: order: reason; the turn still runs. Any other file in\n" +
 			"that folder, or a file for an empire that is not in the game, fails the run.",
 		Flags: runFlags,

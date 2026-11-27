@@ -81,6 +81,19 @@ func TestApplyOrders(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Set rations orders wait for the Pay Change stage: until it runs they
+	// are neither accepted nor rejected, and nothing has changed.
+	if result.Pending() != 4 || result.Accepted != 0 || len(result.Rejected) != 1 || d.Colonies[0].Rations != game.DefaultRations {
+		t.Fatalf("before the stage: result = %+v, rations %d; want 4 pending, 1 rejected, rations unchanged", result, d.Colonies[0].Rations)
+	}
+	engine.Transfers(&d, &result) // not this stage's orders
+	if result.Pending() != 4 {
+		t.Fatalf("the Transfer stage settled set rations orders: %d pending, want 4", result.Pending())
+	}
+	engine.PayChanges(&d, &result)
+	if result.Pending() != 0 {
+		t.Fatalf("after the stage: %d pending, want 0", result.Pending())
+	}
 	if got := []int{d.Colonies[0].Rations, d.Colonies[1].Rations, d.Colonies[2].Rations}; got[0] != 75 || got[1] != 100 || got[2] != 90 {
 		t.Errorf("rations = %v, want [75 100 90]", got)
 	}
@@ -223,6 +236,8 @@ func TestUpdateGroup(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			// Update group orders wait for the Build Change stage.
+			engine.BuildChanges(&d, &result)
 			want := groups()
 			if tc.err == nil {
 				if len(result.Rejected) != 0 {

@@ -53,6 +53,8 @@ func apply(t *testing.T, d *game.Data, text string) []error {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Transfers wait for the Transfer stage.
+	engine.Transfers(d, &result)
 	errs := make([]error, len(d.OrderResults))
 	for _, r := range result.Rejected {
 		errs[r.Line-1] = r.Err
@@ -222,27 +224,36 @@ func TestTransportCrewAndFuel(t *testing.T) {
 	}
 }
 
-// Research gets from one entity to another as a prototype, in one turn, and
-// the PRO who operated the TRNS are not in the turn's worker cadre.
+// Research gets from one entity to another as a prototype, and the PRO who
+// operated the TRNS are not in the turn's worker cadre. The prototype is made
+// in the orders phase and moved in the Transfer stage of the same turn; the
+// order that spends it is checked in the orders phase, before the transfer,
+// so it has to wait for the next turn.
 func TestTransferResearch(t *testing.T) {
 	d := traders()
 	d.Colonies[1].Cargo = []game.Unit{{Type: "FOOD", Qty: 100}}
 	d.Game.Turn = 1 // no worker cadre is made in the setup turn
-	text := "assemble PRTO-2 on 1 from laboratory-group 3\ntransfer 1 PRTO-2 from 1 to 2\nassemble tech-level on 2 with 1 PRTO-2"
+	spend := "assemble tech-level on 2 with 1 PRTO-2"
+	text := "assemble PRTO-2 on 1 from laboratory-group 3\ntransfer 1 PRTO-2 from 1 to 2\n" + spend
 	result, err := engine.RunTurn(&d, []orders.File{file(t, 1, text)})
+	if err != nil || len(result.Rejected) != 1 || result.Rejected[0].Line != 3 || !errors.Is(result.Rejected[0].Err, game.ErrNotEnoughResearch) {
+		t.Fatalf("rejected %+v, %v; want only line 3, for want of research", result.Rejected, err)
+	}
+	if result.Accepted != 2 || result.Pending() != 0 || d.Colonies[1].Stored("PRTO", 2) != 1 {
+		t.Fatalf("result %+v, receiver PRTO-2 %d; want 2 accepted and the prototype delivered", result, d.Colonies[1].Stored("PRTO", 2))
+	}
+	sent := d.Colonies[0]
+	if sent.Transport.Used != 2 || sent.Transport.Crew != 1 || sent.Workers.PRO != 4 {
+		t.Errorf("transport %+v, workers %+v; want 2 MU, a crew of 1, and 4 PRO in the cadre", sent.Transport, sent.Workers)
+	}
+	// The next turn starts afresh, and the prototype can be spent.
+	result, err = engine.RunTurn(&d, []orders.File{file(t, 1, spend)})
 	if err != nil || len(result.Rejected) != 0 {
 		t.Fatalf("rejected %+v, %v", result.Rejected, err)
 	}
 	from, to := d.Colonies[0], d.Colonies[1]
 	if from.Stock("RSCH") != 150_000 || from.Stored("PRTO", 2) != 0 || to.Stored("PRTO", 2) != 0 || to.RaisingTechLevel() != 2 {
 		t.Errorf("sender RSCH %d, PRTO-2 %d; receiver PRTO-2 %d, raising to %d", from.Stock("RSCH"), from.Stored("PRTO", 2), to.Stored("PRTO", 2), to.RaisingTechLevel())
-	}
-	if from.Transport.Used != 2 || from.Transport.Crew != 1 || from.Workers.PRO != 4 {
-		t.Errorf("transport %+v, workers %+v; want 2 MU, a crew of 1, and 4 PRO in the cadre", from.Transport, from.Workers)
-	}
-	// The next turn starts afresh.
-	if _, err := engine.RunTurn(&d, nil); err != nil {
-		t.Fatal(err)
 	}
 	if got := d.Colonies[0]; got.Transport.Used != 0 || got.Transport.Crew != 0 || len(got.Transport.Transfers) != 0 || got.Workers.PRO != 5 {
 		t.Errorf("transport %+v, workers %+v; want none, and 5 PRO", got.Transport, got.Workers)
