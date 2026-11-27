@@ -390,8 +390,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | DAM\* | Damage                  | Destruction of units in combat.                     |
 | DAS   | Dis-assemble            | This order is the reverse of an Assemble order.     |
 | DEP   | Deposit gift            | This order gives a mine group (& deposit) to a S/C. |
-| DRF   | Draft                   | This order drafts soldiers and trainees.            |
-| DSB   | Disband                 | This order disbands soldiers and trainees.          |
 | DTS   | Defensive troop support | See Combat ([D4.0](#rule-D4.0)<!-- was 15 -->).                                    |
 | DU\*  | Distance unit           | Equal to 10,000 kilometers.                         |
 
@@ -698,8 +696,7 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.12"></a>
 ### B3.12 Draft Stage
 
-1. <a id="rule-B3.12.1"></a>Draft orders processed (see [S12.1](#rule-S12.1)<!-- was 17.4.40 -->)
-2. <a id="rule-B3.12.2"></a>DSB orders processed (see [S12.2](#rule-S12.2)<!-- was 17.4.41 -->)
+1. <a id="rule-B3.12.1"></a><a id="rule-B3.12.2"></a>Draft and disband orders processed together, in the order the player wrote them (see [S12.1](#rule-S12.1)<!-- was 17.4.40 --> and [S12.2](#rule-S12.2)<!-- was 17.4.41 -->)
 
 <a id="rule-B3.13"></a>
 ### B3.13 Pay Change Stage
@@ -1946,7 +1943,7 @@ Soldiers include all military personnel.
 SLD are drafted from USK, and may be used to help form spy units.
 All SLD not used in spy units are used in combat.
 5% of all soldiers retire annually, (on every fourth turn), and become PRO's.
-Any number of soldiers may be disbanded on any turn, with a disband (DSB) order, and these become USK.
+Any number of soldiers may be disbanded on any turn, with a disband order ([S12.2](#rule-S12.2)), and these become USK.
 
 <a id="rule-G1.5"></a>
 ### G1.5 Spies (SPY)
@@ -2029,7 +2026,7 @@ Unskilled increases are drawn automatically by the computer from the UEM, using 
 | 60% ... 69%             | 16%                      |
 | 70% ... 100%            | 25%                      |
 
-All disbanded SLD become USK, (when a DSB order is written).
+All disbanded SLD become USK, (when a disband order is written).
 
 <a id="rule-G2.3"></a>
 ### G2.3 Professional Increases
@@ -2042,7 +2039,7 @@ These percentages become PRO's automatically.
 ### G2.4 Soldier Increases
 
 Soldier increases are due to the draft of USK.
-The player writes a draft (DRF) order for the SLD needed, and that number is deducted from the quantity of USK and added to the existing SLD on that turn.
+The player writes a draft order ([S12.1](#rule-S12.1)) for the SLD needed, and that number is deducted from the quantity of USK and added to the existing SLD on that turn.
 
 <a id="rule-G2.5"></a>
 ### G2.5 Spy Increases
@@ -2098,7 +2095,7 @@ See [G2.2](#rule-G2.2)<!-- was 5.2.2 -->.
 <a id="rule-G3.2"></a>
 ### G3.2 Unskilled Decreases
 
-Unskilled decreases are due to the DRF orders for trainees or soldiers or ASM orders for CWRK.
+Unskilled decreases are due to the draft orders for trainees, soldiers, or CWRK.
 
 <a id="rule-G3.3"></a>
 ### G3.3 Professional Decreases
@@ -2108,7 +2105,7 @@ Professional decreases are due to ASM orders for SPY and CWRK's.
 <a id="rule-G3.4"></a>
 ### G3.4 Soldier Decreases
 
-Soldier decreases are due to ASM orders for SPY; DSB orders which disband, retirement (5% per *year*), and combat casualties.
+Soldier decreases are due to draft orders for SPY; disband orders, retirement (5% per *year*), and combat casualties.
 Disbanded SLD become USK.
 
 <a id="rule-G3.5"></a>
@@ -2131,7 +2128,7 @@ Rebel soldiers are decreased in the same manner as rebels.
 <a id="rule-G3.8"></a>
 ### G3.8 Trainee Decreases
 
-Trainee decreases are caused by DSB orders which disband them, (they become USK again), and by graduation as PRO's (5% per turn).
+Trainee decreases are caused by disband orders which disband them, (they become USK again), and by graduation as PRO's (5% per turn).
 The trainees who do not graduate are disbanded at the end of the turn they train in, and become USK again ([G1.8](#rule-G1.8)).
 
 <a id="rule-G3.9"></a>
@@ -3232,7 +3229,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Scrap                  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3)\* |
 | Set idle               | `set idle for GroupKind group GroupNo of EntityID to PercentageAmount` | [S8.1](#rule-S8.1)\*, [S8.3](#rule-S8.3)\*, [S8.5](#rule-S8.5)\*, [S8.6](#rule-S8.6)\* |
 | Draft                  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
-| Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2)\* |
+| Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2) |
 | Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4)\* |
 
 Any assemble, disassemble, or scrap order may end with `using Quantity CWRK`.
@@ -4222,12 +4219,53 @@ draft 5,000 CWRK from 99      # cadres are drafted too
 - The S/C does not belong to the player.
 
 <a id="rule-S12.2"></a>
-### S12.2 Disband Orders (DSB)
+### S12.2 Disband
 
-- Format: S/C ID#, "DSB", quantity, units to be disbanded.
-- Example: 66, DSB, 7,000, TRNE-1.
-- Notes: Only SLD or TRNE can be disbanded.
-  (SPY and CWRK cadres must be dis-assembled).
+Disbands soldiers or a cadre of a S/C, which undoes a draft.
+
+**Syntax**
+
+```text
+disband Quantity UnitOrCadre from EntityID
+```
+
+| Value       | Meaning                                                                    |
+|-------------|----------------------------------------------------------------------------|
+| Quantity    | How many to disband ([S2.1](#rule-S2.1)).                                  |
+| UnitOrCadre | SLD, TRNE, CWRK, or SPY. The race number is optional ([S2.4](#rule-S2.4)). |
+| EntityID    | The S/C the soldiers or the cadre are in.                                  |
+
+**Examples**
+
+```text
+disband 7,000 TRNE-1 from 66   # S/C 66 sends 7,000 trainees back to work
+disband 2,500 SLD from 13      # 2,500 soldiers become USK again
+disband 40 SPY from 7          # frees 40 PRO and 40 SLD
+```
+
+**Rules**
+
+- Each one disbanded gives back the people its draft took ([S12.1](#rule-S12.1)):
+
+  | UnitOrCadre | Gives back                                          |
+  |-------------|-----------------------------------------------------|
+  | SLD         | 1 USK: the SLD becomes a USK again.                 |
+  | TRNE        | 1 USK, and the PRO who are no longer needed to train. |
+  | CWRK        | 1 PRO and 1 USK.                                    |
+  | SPY         | 1 PRO and 1 SLD.                                    |
+
+- If the S/C has fewer than the quantity, it disbands as many as it has.
+  The printout shows the quantity asked for and the quantity disbanded.
+- SLD that are part of a SPY cadre can not be disbanded; disband the SPY first.
+- When TRNE are disbanded, the trainees drafted on the same turn go first.
+- Disband orders are carried out in the draft stage ([B3.12](#rule-B3.12)), together with the draft orders and in the order the player wrote them.
+  The people are back at work from the next turn.
+- A TRNE cadre is disbanded by itself at the end of the turn it trains in ([G1.8](#rule-G1.8)), so a disband order is only needed to stop the training early.
+
+**Rejected when**
+
+- UnitOrCadre is not SLD, TRNE, CWRK, or SPY.
+- The S/C does not belong to the player.
 
 <a id="rule-S12.3"></a>
 ### S12.3 Pay Orders (PAY)
