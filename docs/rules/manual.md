@@ -1794,20 +1794,22 @@ If all the S/C's on a home planet are controlled by races other than the home pl
 <a id="rule-F10.0"></a>
 ## F10.0 Assembly and Disassembly
 
-Assembly (ASM) orders are used in two ways: to assemble special purpose population groups (CWRK's and SPY), and to assemble unassembled items.
+Assemble orders ([S6.1](#rule-S6.1)) take unassembled items from storage and put them to use.
+The special purpose population groups (CWRK's and SPY) are not assembled; they are drafted ([S12.1](#rule-S12.1)).
 
 <a id="rule-F10.1"></a>
-### F10.1 Assembling Special Purpose Population Groups
+### F10.1 Forming Special Purpose Population Groups
 
-When an ASM order is given for a SPY cadre, 1 PRO unit and 1 SLD unit are taken from their population segments and joined to form one group spy cadre.
-When an ASM order is given for a CWRK cadre, 1 PRO unit and 1 USK unit are taken from their population segments and formed into one construction worker cadre.
+When a draft order ([S12.1](#rule-S12.1)) is given for a SPY cadre, 1 PRO unit and 1 SLD unit are taken from their population segments and joined to form one group spy cadre.
+When a draft order is given for a CWRK cadre, 1 PRO unit and 1 USK unit are taken from their population segments and formed into one construction worker cadre.
+A disband order ([S12.2](#rule-S12.2)) breaks the cadres up again.
 
 <a id="rule-F10.2"></a>
 ### F10.2 Assembling Unassembled Items
 
 Unassembled items are "assembly type" items that have been just manufactured or disassembled.
-Assembly type items work only when they have been assembled with an ASM (assembly) order; they are called assembled items when assembled.
-When they have been disassembled with a DAS (dis-assembly) order, the items do not function, and they are then called unassembled items.
+Assembly type items work only when they have been assembled with an assemble order; they are called assembled items when assembled.
+When they have been disassembled with a disassemble order ([S6.2](#rule-S6.2)), the items do not function, and they are then called unassembled items.
 *Unassembled items go into storage automatically*.
 
 The following items are assembly type items:
@@ -1827,20 +1829,21 @@ The following items are assembly type items:
 * STRN
 * STRS
 
-An ASM order takes an unassembled item from storage, assembles it, and makes it work.
+An assemble order takes an unassembled item from storage, assembles it, and makes it work.
 In a CSHP, CORB, or CENC, there must be enough enclosure capacity for the item once it is assembled ([F3.2.4](#rule-F3.2.4)).
 
 <a id="rule-F10.3"></a>
 ### F10.3 Disassembling Assembled Items
 
-Dis-assembly (DAS) orders are used to reverse assembly orders.
-That is, they disassemble items and put them into storage, and are also used to break up SPY and CWRK's.
+Disassemble orders ([S6.2](#rule-S6.2)) are used to reverse assemble orders.
+That is, they disassemble items and put them into storage.
+SPY and CWRK's are broken up with a disband order ([S12.2](#rule-S12.2)) instead.
 
-    Note: only group G SPY can be DAS'd.
+    Note: only group G SPY can be disbanded.
 
-Dis-assembly of non-population units causes a 10% *LOSS*.
+Dis-assembly causes a 10% *LOSS*.
 For instance, if 5,000 EWPN-2 are dis-assembled then 500 will be lost and 4,500 will appear in storage under "un-assembled items" in the storage section of the printout.
-There is no loss in disassembling population units.
+There is no loss in disbanding population units.
 When determining the 10% loss, fractions are rounded down, but every dis-assembly order loses at least one unit.
 For instance, an order to dis-assemble 9 EWPN-2 loses 1 of them, and an order to dis-assemble a single unit loses it.
 In a CSHP, CORB, or CENC, STRN, STRL, and STRS are disassembled only as far as the result stays within the S/C's enclosure capacity; no other disassembly is limited by it ([F3.2.2](#rule-F3.2.2)).
@@ -1874,13 +1877,13 @@ NON are taken by the computer from storage automatically as used per turn.
 
 Dis-assembly requires 1 CWRK per 500 mass units being dis-assembled.
 Assembly requires 1 CWRK per 500 mass units being assembled per turn.
-If a S/C has 5,000 EWPN-2 in storage, it would require 200 CWRK ((20 x 5000) ÷ 500) to ASM them.
+If a S/C has 5,000 EWPN-2 in storage, it would require 200 CWRK ((20 x 5000) ÷ 500) to assemble them.
 
 <a id="rule-F10.6"></a>
 ### F10.6 Regents
 
-A Regent is allowed to ASM spies, but not to issue spy movement (SPM) orders.
-All spies assembled by a Regent will be under the control of his Ruler.
+A Regent is allowed to draft spies, but not to issue spy movement (SPM) orders.
+All spies drafted by a Regent will be under the control of his Ruler.
 
 <a id="rule-F10.7"></a>
 ### F10.7 Miscellaneous
@@ -1896,7 +1899,7 @@ Factory units are assembled into factory groups; causing the FACT units to begin
 <a id="rule-F11.0"></a>
 ## F11.0 Scrap
 
-Scrap (SCR) orders convert items *in storage* back into resource units.
+Scrap orders ([S6.3](#rule-S6.3)) convert items *in storage* back into resource units.
 Scrapping causes a 30% loss.
 For instance, scrapping 10,000 MSSL-1 will result in 14,000 NMTL and 14,000 MTL.
 Scrapping requires one CWRK per 300 MU scrapped.
@@ -1946,20 +1949,20 @@ Any number of soldiers may be disbanded on any turn, with a disband order ([S12.
 
 Spies conduct espionage activities.
 
-A spy cadre can be assembled, with an ASM (assemble) order, or disassembled, with a DAS (disassemble) order, on any turn.
-The number of SPY that can be assembled is limited to the number of PRO's and SLD's a player has that are loyal.
+A spy cadre can be formed, with a draft order ([S12.1](#rule-S12.1)), or broken up, with a disband order ([S12.2](#rule-S12.2)), on any turn.
+The number of SPY that can be drafted is limited to the number of PRO's and SLD's a player has that are loyal.
 Each spy cadre is made up of 1 PRO and 1 SLD.
 Each spy cadre, therefore, is made up of 2 population units.
 
 <a id="rule-G1.6"></a>
 ### G1.6 Construction Workers (CWRK)
 
-Construction workers execute ASM (assemble), DAS (disassemble), and SCR (scrap) orders.
+Construction workers execute assemble, disassemble, and scrap orders ([S6.0](#rule-S6.0)).
 
-A construction worker cadre can be assembled, with an ASM (assemble) order, or disassembled, with a DAS (disassemble) order, on any turn.
+A construction worker cadre can be formed, with a draft order ([S12.1](#rule-S12.1)), or broken up, with a disband order ([S12.2](#rule-S12.2)), on any turn.
 Each CWRK is made up of 1 PRO and 1 USK.
 Each CWRK, therefore, is made up of 2 population units.
-The number of CWRK's that can be assembled is limited to the number of PRO's and USK's a player has.
+The number of CWRK's that can be drafted is limited to the number of PRO's and USK's a player has.
 Also, CWRK's are used to do assembly portions of STP and ADN orders.
 
 Note: CWRK's are not needed for merge, combine, or give orders.
@@ -2040,21 +2043,21 @@ The player writes a draft order ([S12.1](#rule-S12.1)) for the SLD needed, and t
 <a id="rule-G2.5"></a>
 ### G2.5 Spy Increases
 
-SPY increases are ordered by the player, using an assemble (ASM) order.
-An ASM order for SPY takes the necessary quantity of PRO's and SLD's from each group, and puts them together to form the SPY ordered.
-1 SLD and 1 PRO assembled become 1 SPY.
-A SPY can be assembled or disassembled (ASM or DAS) on any turn.
-The number of SPY assembled is limited to the number of SLD and PRO units in a S/C that are loyal.
+SPY increases are ordered by the player, using a draft order ([S12.1](#rule-S12.1)).
+A draft order for SPY takes the necessary quantity of PRO's and SLD's from each group, and puts them together to form the SPY ordered.
+1 SLD and 1 PRO drafted become 1 SPY.
+A SPY can be drafted or disbanded on any turn.
+The number of SPY drafted is limited to the number of SLD and PRO units in a S/C that are loyal.
 SPY can't be formed from rebels.
 
 <a id="rule-G2.6"></a>
 ### G2.6 Construction Worker Increases
 
-CWRK increases are ordered using an assemble (ASM) order.
+CWRK increases are ordered using a draft order ([S12.1](#rule-S12.1)).
 This order takes the necessary quantity of PRO's and USK's from each group, and puts them together to form the CWRK's ordered.
 1 USK and 1 PRO become 1 CWRK.
-A CWRK can be ASM or DAS on any turn.
-The number of CWRK's assembled is limited to the number of PRO's and USK's a S/C has.
+A CWRK can be drafted or disbanded on any turn.
+The number of CWRK's drafted is limited to the number of PRO's and USK's a S/C has.
 
 <a id="rule-G2.7"></a>
 ### G2.7 Rebel (and Rebel Soldier) Increases
@@ -2096,7 +2099,7 @@ Unskilled decreases are due to the draft orders for trainees, soldiers, or CWRK.
 <a id="rule-G3.3"></a>
 ### G3.3 Professional Decreases
 
-Professional decreases are due to ASM orders for SPY and CWRK's.
+Professional decreases are due to draft orders for SPY and CWRK's.
 
 <a id="rule-G3.4"></a>
 ### G3.4 Soldier Decreases
@@ -2107,13 +2110,13 @@ Disbanded SLD become USK.
 <a id="rule-G3.5"></a>
 ### G3.5 Spy Decreases
 
-Spy decreases are due to assassination by foreign spies, and by DAS orders that disassemble them.
+Spy decreases are due to assassination by foreign spies, and by disband orders ([S12.2](#rule-S12.2)).
 Each spy unit disassembles into 1 PRO and 1 SLD.
 
 <a id="rule-G3.6"></a>
 ### G3.6 Construction Worker Decreases
 
-Construction worker decreases are due to DAS orders that disassemble them; each CWRK disassembles into 1 USK and 1 PRO.
+Construction worker decreases are due to disband orders ([S12.2](#rule-S12.2)); each CWRK disbands into 1 USK and 1 PRO.
 
 <a id="rule-G3.7"></a>
 ### G3.7 Rebel Decreases
@@ -2229,7 +2232,7 @@ All the farm units at each technological level (TL) form a FARM group.
 There can be only one group *per TL* in a S/C.
 For instance one S/C could have one group of 50,000 FARM-1, and 30,000 FARM-2 and 90,000 FARM-3.
 In order for the farm units to be taken from storage and put to work, the player assembles them into a FARM group.
-This is done with an ASM (assembly) order, and is explained in detail in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
+This is done with an assemble farming group order ([S6.5](#rule-S6.5)), and is explained in detail in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 
 <a id="rule-H1.1"></a>
 ### H1.1 Amount of Food Produced
@@ -2298,7 +2301,7 @@ Mining is done by mine (MINE) units at deposits of natural resources.
 The four types of natural resources are: fuel (FUEL), gold (GOLD), non-metallics (NMTL) and metallics (MTL).
 In order for a mine unit to work, it must be taken from storage and assembled into a MINE group.
 (All MINE's in a group must be of the same TL.)
-This is done with an ASM (assembly) order, and is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
+This is done with an assemble mining group order ([S6.6](#rule-S6.6)), and is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 
 <a id="rule-H2.1"></a>
 ### H2.1 Amount of Resources Mined
@@ -2410,7 +2413,7 @@ For example: A FACT group of 50,000 FACT-1 is set up to build LFSU-2.
 ### H3.4 Work in Process
 
 Work in process (WIP) includes all items in the process of being manufactured.
-Using the example in [H3.3](#rule-H3.3)<!-- was 8.3.3. --> of 50,000 FACT-1 being ASM'd (on turn 3) to build 62,500 LFSU-2, the printout will report the WIP in this way:
+Using the example in [H3.3](#rule-H3.3)<!-- was 8.3.3. --> of 50,000 FACT-1 being assembled (on turn 3) to build 62,500 LFSU-2, the printout will report the WIP in this way:
 
 | TURN | WIP 1/4 COMP. | WIP 1/2 COMP. | WIP 3/4 COMP. |
 |------|---------------|---------------|---------------|
@@ -2493,8 +2496,8 @@ If the shortage still exists, processing will not be done.
 There is no way for a player to change a particular FACT group number of a FACT group to another number; if there is a shortage, the player should issue a BCH, SHT to his less necessary FACT groups.
 The computer assigns the group numbers; the player can not choose one.
 A S/C's FARM, MINE, and FACT groups share one run of group numbers.
-Each new group gets the next number, higher than any the S/C has given out, in the order the computer encounters the ASM orders.
-A number is never used again, even after its group has been DAS'd.
+Each new group gets the next number, higher than any the S/C has given out, in the order the computer encounters the assemble factory group orders ([S6.4](#rule-S6.4)).
+A number is never used again, even after its group has been disassembled.
 
 <a id="rule-H3.10"></a>
 ### H3.10 Automation
@@ -2625,7 +2628,7 @@ If a S/C belongs to a Ruler of another race, or his Regent, only gold may be TFR
 Gold and RSCH do not require a REC order (see [K5.0](#rule-K5.0)<!-- was 11.5 -->).
 Spies are never traded and never change hands.
 Group G spies may be TFR'd into any S/C, and PUP'd back out of it, to conduct espionage; they remain under their Ruler's control (see [N2.2](#rule-N2.2)<!-- was 19.2 -->).
-(A reminder: spies assembled by a Regent are controlled by his Ruler - they become the Ruler's own spies).
+(A reminder: spies drafted by a Regent are controlled by his Ruler - they become the Ruler's own spies).
 
 <a id="rule-K2.0"></a>
 ## K2.0 Transports
@@ -2732,7 +2735,7 @@ At that point, the market report will show up in his printout for that colony.
 The market sells items from a stockpile of items it collects.
 At the beginning of the game, it only has NMTL, MTL, and FUEL in its stockpile, but as it buys items from the players, those items will be for sale.
 All units in the game, even population units, can be sold, except for: SPY and TL's.
-Only NON and UNA can be sold; assembled items must be DAS'd first before they can be sold.
+Only NON and UNA can be sold; assembled items must be disassembled first before they can be sold.
 The units are sold on a highest-bidder-come-first basis.
 If more items are bought by the market than sold, the surplus is added to the market's stockpile of these items.
 When an item is out of stock, that item is taken off the market's list of items that turn.
@@ -2942,8 +2945,8 @@ All groups, other than group G which is non-operational, are listed as follows:
 <a id="rule-N2.2"></a>
 ### N2.2 Group G SPY
 
-To form a spy group, the player writes an ASM order.
-When a spy group is assembled, it automatically becomes group G spy group.
+To form a spy group, the player writes a draft order ([S12.1](#rule-S12.1)).
+When a spy group is drafted, it automatically becomes group G spy group.
 Group G SPY may be viewed as a pool from which one draws spies for any other group; they perform no espionage activity in themselves.
 Only group G spies, however, can be transferred to, or picked up from, another S/C.
 In order for SPY to function, they must be physically at the S/C in which they are to work.
@@ -3069,8 +3072,8 @@ If the group F SPY are assigned to a particular target (section of the report), 
 <a id="rule-N2.9"></a>
 ### N2.9 Regents
 
-Regents may assemble spies, but may not issue SPM orders.
-All spies assembled by a Regent are controlled by his Ruler.
+Regents may draft spies, but may not issue SPM orders.
+All spies drafted by a Regent are controlled by his Ruler.
 A Regent can dis-assemble any group G spies in his S/C's.
 A Regent can also PUP and TFR spies.
 This will be shown on the printout under pickups and transfers, but not in the spy reports.
