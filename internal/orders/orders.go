@@ -14,7 +14,6 @@
 //	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //	draft Quantity UnitOrCadre from EntityID
 //	disband Quantity UnitOrCadre from EntityID
-//	assemble Quantity CadreUnit on EntityID
 //	assemble factory-group on EntityID with Quantity FactoryUnit (, Quantity FactoryUnit)* [producing Unit]
 //	assemble farming-group on EntityID with Quantity FarmUnit
 //	assemble mining-group on EntityID with Quantity MiningUnit working DepositNo
@@ -25,8 +24,7 @@
 //	disassemble Quantity Unit on EntityID
 //	scrap Quantity Unit on EntityID
 //
-// Any assemble order but the one for a cadre, and the disassemble and scrap
-// orders, may end with "using Quantity CWRK", which caps the CWRK that work
+// Any assemble, disassemble, or scrap order may end with "using Quantity CWRK", which caps the CWRK that work
 // on it in a turn. CWKR is read as CWRK there.
 //
 // EntityID is the ID of an entity. PercentageAmount is a whole number with a
@@ -68,7 +66,7 @@ const (
 )
 
 // Order is one order. Its type says which: SetRations, SetIdle, Draft,
-// Disband, AssembleCadre, AssembleGroup, or UnitWork.
+// Disband, AssembleGroup, or UnitWork.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -123,19 +121,6 @@ type Disband struct {
 
 func (o Disband) String() string {
 	return fmt.Sprintf("disband %d %s from %d", o.Qty, o.Unit, o.EntityID)
-}
-
-// AssembleCadre is the order "assemble Quantity CadreUnit on EntityID". It
-// assembles Qty of the cadre with the code Unit, CWRK, TRNE, or SPY, on the
-// entity with ID EntityID.
-type AssembleCadre struct {
-	EntityID int
-	Unit     string
-	Qty      int
-}
-
-func (o AssembleCadre) String() string {
-	return fmt.Sprintf("assemble %d %s on %d", o.Qty, o.Unit, o.EntityID)
 }
 
 // AssembleGroup is the order that assembles units into a factory, farming,
@@ -351,7 +336,6 @@ var groupUnit = map[game.GroupKind]string{
 }
 
 const assembleUsage = `want one of:
-  assemble Quantity CadreUnit on EntityID (CWRK, TRNE, or SPY)
   assemble Quantity Unit on EntityID
   assemble factory-group on EntityID with Quantity FACT-n, Quantity FACT-n ... [producing Unit]
   assemble farming-group on EntityID with Quantity FARM-n
@@ -359,7 +343,7 @@ const assembleUsage = `want one of:
   assemble factory-group GroupNo on EntityID add Quantity FACT-n, Quantity FACT-n ...
   assemble farming-group GroupNo on EntityID add Quantity FARM-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
-any but the first may end with: using Quantity CWRK`
+any of them may end with: using Quantity CWRK`
 
 // usingClause takes "using Quantity CWRK" off the end of an order, if it is
 // there, and returns the cap and the tokens before it. CWKR is read as CWRK.
@@ -416,31 +400,13 @@ func parseAssemble(tokens []Token) (Order, error) {
 		}
 	}
 	if kind == "" {
-		// assemble Quantity CadreUnit on EntityID, or the same for a unit.
-		if len(tokens) != 5 || !tokens[3].Is("on") {
-			return nil, usage
-		}
-		if c := strings.ToUpper(tokens[2].Text); tokens[2].Quoted || (c != units.CWRK && c != units.TRNE && c != units.SPY) {
-			if d, ok := units.Lookup(c); !ok || !d.Population() {
-				return parseUnitWork(full, game.WorkAssemble)
+		// assemble Quantity Unit on EntityID. People aren't assembled.
+		if len(tokens) > 2 && !tokens[2].Quoted {
+			if d, ok := units.Lookup(strings.ToUpper(tokens[2].Text)); ok && d.Population() {
+				return nil, fmt.Errorf("%w: %q: people are drafted, not assembled: draft Quantity UnitOrCadre from EntityID", ErrInvalidUnit, tokens[2].Text)
 			}
 		}
-		if maxCWRK != 0 {
-			return nil, usage // CWRK don't assemble cadres
-		}
-		qty, ok := quantity(tokens[1])
-		if !ok || qty < 1 {
-			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600", ErrInvalidQuantity, tokens[1].Text)
-		}
-		code := strings.ToUpper(tokens[2].Text)
-		if tokens[2].Quoted || (code != units.CWRK && code != units.TRNE && code != units.SPY) {
-			return nil, fmt.Errorf("%w: %q: want CWRK, TRNE, or SPY", ErrInvalidUnit, tokens[2].Text)
-		}
-		id, err := entityID(tokens[4])
-		if err != nil {
-			return nil, err
-		}
-		return AssembleCadre{EntityID: id, Unit: code, Qty: qty}, nil
+		return parseUnitWork(full, game.WorkAssemble)
 	}
 
 	o := AssembleGroup{Kind: kind, MaxCWRK: maxCWRK}

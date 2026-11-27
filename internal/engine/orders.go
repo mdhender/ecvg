@@ -104,13 +104,6 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		}
 		result.Drafts = append(result.Drafts, DraftOrder{Disband: true, EntityID: o.EntityID, Unit: o.Unit, Qty: o.Qty})
 		return nil
-	case orders.AssembleCadre:
-		// Assembling a cadre drafts it.
-		if err := checkDraft(d, empireID, o.EntityID, o.Unit); err != nil {
-			return err
-		}
-		result.Drafts = append(result.Drafts, DraftOrder{EntityID: o.EntityID, Unit: o.Unit, Qty: o.Qty})
-		return nil
 	case orders.AssembleGroup:
 		return AssembleGroup(d, empireID, o)
 	case orders.UnitWork:

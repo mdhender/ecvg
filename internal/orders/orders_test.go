@@ -354,15 +354,16 @@ func TestParseDisbandAndAssemble(t *testing.T) {
 		{line: "disband 10 FARM from 99", err: orders.ErrInvalidUnit},
 		{line: "disband 10 CWRK on 99", err: orders.ErrInvalidOrder},
 
-		{line: "assemble 5,000 CWRK on 5", want: orders.AssembleCadre{EntityID: 5, Unit: "CWRK", Qty: 5000}},
-		{line: "assemble 100 trne on 5", want: orders.AssembleCadre{EntityID: 5, Unit: "TRNE", Qty: 100}},
-		{line: "assemble 7 SPY on 5", want: orders.AssembleCadre{EntityID: 5, Unit: "SPY", Qty: 7}},
+		// Cadres are drafted, not assembled.
+		{line: "assemble 5,000 CWRK on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 100 trne on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 7 SPY on 5", err: orders.ErrInvalidUnit},
 		{line: "assemble 100 SLD on 5", err: orders.ErrInvalidUnit},
 		{line: "assemble 100 STRL-10 on 5", want: orders.UnitWork{EntityID: 5, Unit: unit{Type: "STRL", TechLevel: 10, Qty: 100}}},
 		{line: "assemble 5,000 HDRV-1 on 15 using 20 CWKR", want: orders.UnitWork{EntityID: 15, Unit: unit{Type: "HDRV", TechLevel: 1, Qty: 5000}, MaxCWRK: 20}},
 		{line: "assemble 10 cngd on 5", want: orders.UnitWork{EntityID: 5, Unit: unit{Type: "CNGD", Qty: 10}}},
 		{line: "assemble 1 HDRV-1 using 20,000 CWKR", err: orders.ErrInvalidOrder},
-		{line: "assemble 5 CWRK on 5 using 2 CWRK", err: orders.ErrInvalidOrder},
+		{line: "assemble 5 CWRK on 5 using 2 CWRK", err: orders.ErrInvalidUnit},
 		{line: "assemble 5 HDRV on 5", err: orders.ErrInvalidUnit},
 		{line: "assemble 5 HDRV-11 on 5", err: orders.ErrInvalidUnit},
 
@@ -382,9 +383,9 @@ func TestParseDisbandAndAssemble(t *testing.T) {
 		{line: "scrap 5 HDRV-1 on 5 using 5", err: orders.ErrInvalidOrder},
 		{line: "scrap 5 HDRV-1 on 5 using 5 CWRK now", err: orders.ErrInvalidOrder},
 		{line: "assemble 100 widgets on 5", err: orders.ErrInvalidUnit},
-		{line: "assemble 0 CWRK on 5", err: orders.ErrInvalidQuantity},
-		{line: "assemble 100 CWRK on home", err: orders.ErrInvalidEntityID},
-		{line: "assemble 100 CWRK from 5", err: orders.ErrInvalidOrder},
+		{line: "assemble 0 STRC-1 on 5", err: orders.ErrInvalidQuantity},
+		{line: "assemble 100 STRC-1 on home", err: orders.ErrInvalidEntityID},
+		{line: "assemble 100 STRC-1 from 5", err: orders.ErrInvalidOrder},
 		{line: "assemble", err: orders.ErrInvalidOrder},
 
 		{line: "assemble farming-group on 5 with 1,000 FARM-1", want: group(game.KindFarming, 0, 5, unit{Type: "FARM", TechLevel: 1, Qty: 1000})},

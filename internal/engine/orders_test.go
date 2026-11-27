@@ -275,7 +275,7 @@ func TestDraftedPeopleWorkThisTurn(t *testing.T) {
 	}
 }
 
-func TestDisbandAndAssembleOrders(t *testing.T) {
+func TestDisbandOrders(t *testing.T) {
 	d := twoEmpires()
 	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300, SLD: 50}
 	d.Colonies[0].Cadres = game.Cadres{CWRK: 200, SPY: 10}
@@ -286,7 +286,7 @@ disband 500 SPY from 1
 disband 20 SLD from 1
 disband 5 POL from 1
 disband 5 CWRK from 3
-assemble 25 SPY on 1`)})
+draft 25 SPY from 1`)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -300,7 +300,7 @@ assemble 25 SPY on 1`)})
 	}
 	engine.Draft(&d, result.Drafts)
 	c := d.Colonies[0]
-	// Assembling a cadre drafts it: 25 SPY, after the 10 were disbanded.
+	// 25 SPY are drafted after the 10 were disbanded.
 	if c.Cadres != (game.Cadres{CWRK: 80, SPY: 25}) || c.Population != (game.Population{USK: 1020, PRO: 300, SLD: 30}) {
 		t.Errorf("cadres %+v, population %+v", c.Cadres, c.Population)
 	}
