@@ -219,6 +219,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			p("ASSEMBLY")
 			if k := c.Construction; k.Pool > 0 || k.Used > 0 {
 				p("  LAST TURN: the CWRK did %s EMU of assembly work of the %s EMU they could", commas(k.Used), commas(k.Pool))
+				if k.Setup > 0 {
+					p("  SET UPS: %s EMU of that work was done for setup orders", commas(k.Setup))
+				}
 			} else {
 				p("  LAST TURN: no CWRK, so no assembly work was done")
 			}

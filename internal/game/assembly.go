@@ -120,6 +120,9 @@ type Construction struct {
 	// that went into assembly. The rest is lost.
 	Pool int `json:"pool"`
 	Used int `json:"used"`
+	// Setup is the part of Used that the CWRK did in the orders phase, on
+	// the turn's setup orders, before the rest of the turn's work.
+	Setup int `json:"setup,omitzero"`
 }
 
 // Stored returns the quantity of the unit with the given code and tech level
@@ -178,7 +181,8 @@ func (c *Colony) working(w Work, code string, tl int) int {
 // comes before Assemble in a turn, so what it puts into storage is there for
 // the phases between them, and no unit is taken down and put up in one turn.
 // It starts the turn's construction: work that finished in the prior turn is
-// dropped, and the colony's CWRK make a pool of EMUPerCWRK EMU each, which
+// dropped, and the colony's CWRK make a pool of EMUPerCWRK EMU each, less
+// what they did on the turn's setup orders (Construction.Setup), which
 // this work has first call on. Each piece of work, oldest first, takes as
 // much of the pool as it can use, or as much as its order's cap on CWRK
 // allows. What happens to the units whose mass the work has reached depends
@@ -200,7 +204,8 @@ func (c *Colony) Disassemble() {
 		jobs = append(jobs, a)
 	}
 	c.Assembly = jobs
-	c.Construction = Construction{Pool: max(0, c.Cadres.CWRK) * EMUPerCWRK}
+	pool, setup := max(0, c.Cadres.CWRK)*EMUPerCWRK, max(0, c.Construction.Setup)
+	c.Construction = Construction{Pool: max(pool, setup), Used: setup, Setup: setup}
 	c.construct(func(w Work) bool { return w == WorkDisassemble || w == WorkScrap })
 }
 

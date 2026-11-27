@@ -154,3 +154,26 @@ func (c *Colony) Transfer(to *Colony, code string, tl, qty int) (int, error) {
 	}
 	return n, nil
 }
+
+// loadLimit returns the most of qty lots that the colony's TRNS can still
+// carry this turn, with the FUEL and the free PRO the colony has. Mass(k) is
+// the MU of k lots, and fuelOut(k) and proOut(k) are the FUEL and the free
+// PRO that leave the colony with them, and so can't run the TRNS.
+func (c *Colony) loadLimit(qty int, mass, fuelOut, proOut func(k int) int) int {
+	t := &c.Transport
+	return sort.Search(max(0, qty), func(k int) bool {
+		used := t.Used + mass(k+1)
+		crew, fuel := t.needs(used)
+		return used > t.Capacity || crew > c.FreePRO()-proOut(k+1) || fuel-t.Fuel > c.Stock(units.FUEL)-fuelOut(k+1)
+	})
+}
+
+// load has the colony's TRNS carry mu more MU this turn: it burns the FUEL
+// and sets the crew that takes.
+func (c *Colony) load(mu int) {
+	t := &c.Transport
+	used := t.Used + mu
+	crew, fuel := t.needs(used)
+	c.Spend(units.FUEL, fuel-t.Fuel)
+	t.Used, t.Crew, t.Fuel = used, crew, fuel
+}

@@ -1678,11 +1678,11 @@ POP listed in a STP are taken from the establishing S/C's population groups.
 Items listed in a STP are never taken from the establishing S/C's assembled items.
 NON listed in a STP go to storage at the new S/C immediately.
 (This is done automatically - no order from the player is necessary).
-UNA in a STP are assembled by CWRK and used in the new S/C; they do not go into storage, **EXCEPT FOR MINES AND FACTORIES**.
+UNA in a STP are assembled by CWRK and used in the new S/C; they do not go into storage, unless their line of the order says they are to be stowed ([S5.3](#rule-S5.3)).
 (This is also done automatically and needs no special order from the player).
 POP go into the new S/C's population groups automatically.
-Mines listed in a STP are not automatically assembled upon arrival in the new S/C; they are put into storage and will need an assemble order on the next turn to start them functioning.
-Factory units will be put into storage in the new S/C, unless in the STP order they were ordered to manufacture something, in which case they will begin on the following turn automatically.
+Mines listed in a STP are put into storage in the new S/C, unless in the STP order they were ordered to work a deposit, in which case they are assembled as a mining group.
+Factory units will be put into storage in the new S/C, unless in the STP order they were ordered to manufacture something, in which case they are assembled as a factory group.
 
 <a id="rule-F4.9"></a>
 ### F4.9 Set-Up Locations
@@ -3385,7 +3385,8 @@ The pages should be numbered if there is more than one.
 ## S2.0 General Rules on Writing Orders
 
 A player returns the orders for a turn as one plain text file.
-Each order is written on one line, and an order can not run on to a second line, except for the few whose rules say they take more than one ([S5.2](#rule-S5.2)).
+Each order is written on one line, and an order can not run on to a second line, except for the few whose rules say they take more than one ([S5.2](#rule-S5.2), [S5.3](#rule-S5.3)).
+In those orders a `;` may be written in place of the end of a line.
 Blank lines are ignored, and a line may be as long as the order needs.
 
 An order is made of words, numbers, and unit codes, with spaces between them.
@@ -3788,35 +3789,101 @@ cancel add-on to 205 from [38, 39]   # S/C's 38 and 39 may no longer add-on to S
 ```
 
 <a id="rule-S5.3"></a>
-### S5.3 Set Up Orders (STP)
+### S5.3 Set Up
 
-- Format:
-  ```text
-  S/C ID#, "STP", type of S/C to be set up.
-  Quantity, item.
-  Quantity to be set up, "END".
-  ```
-- Example:
-  ```text
-  29, STP, CSHP.
-  50,000, STRN.
-  5, PRO-2.
-  1, SDRV-1.
-  20, FOOD.
-  5, LFSU-1.
-  1, SENS-1.
-  1000, FUEL.
-  100, HDRV-1.
-  20, CNGD.
-  6, END.
-  ```
-- Notes: The STP order has colony 29 set up 6 identical ships.
-  (There is never more than one colony of any type set up on any turn).
-  The items were listed in the order of their importance, with the STRN heading the list.
-  Only one quantity and one type of unit is allowed per line.
-  Note that the 5,000 FACT-1 will go into storage, but the 6,000 FACT-1 will be assembled and begin to make TRNS-1.
-  In order to STP a S/C for another player, the receiving player's ID# is entered after "the type of S/C to be set up" on the first line of the order.
-  A S/C can be set up for a member of the same race only.
+Has a S/C set up a new ship or colony at its own location ([F4.0](#rule-F4.0)).
+It replaces the 1980 STP order.
+
+**Syntax**
+
+```text
+setup [Quantity] EntityType from EntityID [using Quantity CWRK [each]]
+Quantity Unit [stowed]
+Quantity FACT-n producing Unit
+Quantity MINE-n working DepositNo
+Quantity PopulationUnit
+end
+```
+
+| Value          | Meaning                                                                                              |
+|----------------|------------------------------------------------------------------------------------------------------|
+| Quantity       | On the first line, the number of identical ships to set up; it is 1 if left out, and only a CSHP may have one. After `using`, the most CWRK of the establishing S/C that may help. On the other lines, how many of the unit to install ([S2.1](#rule-S2.1)). |
+| EntityType     | The type of S/C to set up: CSHP, COPN, CENC, or CORB.                                                 |
+| EntityID       | The establishing S/C; it must belong to the player.                                                  |
+| Unit           | The unit, with its TL if it has one ([S2.4](#rule-S2.4)).                                             |
+| DepositNo      | The number of the deposit, on the planet, that the mines are to work.                                |
+| PopulationUnit | UEM, USK, PRO, SLD, CWRK, or SPY, with or without a race number ([S2.4](#rule-S2.4)).                 |
+
+**Examples**
+
+```text
+setup 6 CSHP from 29               # colony 29 sets up 6 identical ships
+50,000 STRN
+5 PRO
+1 SDRV-1
+20 FOOD
+5 LFSU-1
+1 SENS-1
+1,000 FUEL
+end
+
+setup CENC from 29 using 200 CWRK  # no more than 200 of colony 29's CWRK help
+400,000 STRN
+50 CWRK                            # these do the work first, and stay in the new colony
+2,000 PRO
+6,000 USK
+500 LFSU-2
+6,000 FACT-1 producing TRNS-1      # assembled as a factory group
+5,000 FACT-1 stowed                # these go into storage
+1,000 MINE-1 working 3             # assembled as a mining group on deposit 3
+200 FARM-2
+end
+
+setup CORB from 29; 8,000 STRN; 100 PRO; 20 LFSU-1; end
+```
+
+**Rules**
+
+- This order takes more than one line ([S2.0](#rule-S2.0)): the first line, then one line for each kind of unit, then a line with the word `end`.
+  It has at least one unit line, and only one quantity and one unit on each.
+  A `;` may be written in place of the end of a line.
+- The order is carried out at once, in the order the player's orders are written, so later orders can be addressed to what is left in the establishing S/C.
+  The new S/C's ID number is on the next printout ([F4.2](#rule-F4.2)); orders can not be addressed to it on the turn it is set up.
+- The units are taken in the order listed, so list the structure first, and the rest in the order of its importance ([F4.6](#rule-F4.6)).
+- The order takes what there is.
+  Each line is cut down to what the establishing S/C has in storage, what its TRNS can still carry this turn ([F4.7](#rule-F4.7)), what the new S/C has room for ([F3.2](#rule-F3.2)), and what the CWRK can assemble ([F4.6](#rule-F4.6)).
+  Units that can not be moved or assembled stay in the establishing S/C.
+- A unit that requires assembly is assembled in the new S/C, unless its line ends with `stowed`, which puts it in storage.
+  Units that do not require assembly always go to storage.
+- A line of FACT units must say what they are `producing`, or that they are `stowed`; a line of MINE units must say which deposit they are `working`, or that they are `stowed`.
+  Each such line makes a new group.
+  FARM units and LAB units of one TL make one group.
+- People are taken from the establishing S/C's population.
+  A CWRK or SPY line moves the cadre with its people.
+  People are never stowed.
+- CWRK listed in the order work first, and stay in the new S/C.
+  The other CWRK of the establishing S/C help, and return; `using` limits how many of them help, for the whole order, or for each ship if the line ends with `each`.
+  The work the CWRK do is taken from what they can assemble in the Dis-Assembly and Assembly stages of the same turn.
+- A quantity of ships sets them up one after another.
+  A ship that fails to set up ([F4.3.4](#rule-F4.3.4)) ends the order; the ships before it stay set up.
+- The new S/C has the TL of the establishing S/C.
+- **Warning:** installing more population than the new S/C has life support for will result in the deaths of population units ([G6.2](#rule-G6.2)).
+  Only assembled LFSU support anybody, and they need FUEL.
+
+**Rejected when**
+
+- The establishing S/C does not belong to the player.
+- A quantity is given for anything but a CSHP, or is less than 1.
+- The player already has a colony of that type at the location, or 99 ships there ([F4.3.1](#rule-F4.3.1)).
+- A COPN is to be set up on a planet that is not habitable.
+- Another player has a colony on the planet and the player has none: permission to colonize ([S5.1](#rule-S5.1)) is not accepted yet.
+- No population could be installed, or, for a ship, no SDRV ([F4.3.4](#rule-F4.3.4)).
+  For a quantity of ships, this rejects the order only if it is the first ship.
+- A line lists RSCH, a unit that does not exist, or a population unit other than the ones above.
+- A line asks for a group the new S/C can not have: a factory group in a ship, mines or FARM-1 off the surface, laboratories in a ship, a deposit that does not exist or is already being worked, more FARM-1 than the planet allows, or more than 25 factory groups.
+- A line is not written as shown, or the `end` line is missing.
+  The whole order is rejected, not just the line.
+- Setting up a S/C for another player ([F4.3.5](#rule-F4.3.5)) is not accepted yet.
 
 <a id="rule-S5.4"></a>
 ### S5.4 Add-On Orders (ADN)

@@ -32,7 +32,14 @@ func (t Token) Is(word string) bool {
 	return !t.Quoted && strings.EqualFold(t.Text, word)
 }
 
+// Separator is the token that stands for the end of a line inside an order
+// that takes more than one line, so that such an order can be written on one.
+const Separator = ";"
+
 // Lex splits a line into its tokens.
+//
+// A ";" outside quoted text is always a token by itself (Separator), even
+// when it is joined to other text.
 //
 // Tokens are separated by any amount of white space. Text in double quotes is
 // one token, white space and all. A token that starts with "#" or "//" starts
@@ -62,7 +69,14 @@ func Lex(line string) ([]Token, error) {
 			rest = after
 			continue
 		}
-		end := strings.IndexFunc(rest, unicode.IsSpace)
+		// A ";" is a token by itself, wherever it is written: it separates
+		// the lines of an order that takes more than one.
+		if strings.HasPrefix(rest, Separator) {
+			tokens = append(tokens, Token{Text: Separator})
+			rest = rest[len(Separator):]
+			continue
+		}
+		end := strings.IndexFunc(rest, func(r rune) bool { return unicode.IsSpace(r) || r == ';' })
 		if end < 0 {
 			end = len(rest)
 		}

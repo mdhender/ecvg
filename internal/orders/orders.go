@@ -3,7 +3,9 @@
 
 // Package orders reads the orders players return for a turn.
 //
-// Orders are plain text, one order per line, and an order can't span lines.
+// Orders are plain text, one order per line, and an order can't span lines,
+// except for the setup order, whose lines may also be written on one line
+// with ";" between them.
 // Keywords ignore case, white space between tokens is compressed, and a "#"
 // or "//" that starts a token starts a comment that runs to the end of the
 // line (see Lex). Blank lines are ignored.
@@ -23,6 +25,9 @@
 //	assemble PRTO-n on EntityID from laboratory-group GroupNo
 //	assemble Quantity Unit on EntityID
 //	transfer Quantity Unit from EntityID to EntityID
+//	setup [Quantity] EntityType from EntityID [using Quantity CWRK [each]]
+//	    then a line for each unit to install, and a line with the word end
+//	    (see Setup)
 //	disassemble Quantity Unit on EntityID
 //	scrap Quantity Unit on EntityID
 //	update factory-group GroupNo of EntityID retool
@@ -71,11 +76,13 @@ const (
 	ErrInvalidUnit       = cerrs.Error("invalid unit")
 	ErrInvalidDepositNo  = cerrs.Error("invalid deposit number")
 	ErrInvalidTechLevel  = cerrs.Error("invalid tech level")
+	ErrInvalidEntityType = cerrs.Error("invalid entity type")
+	ErrNoEnd             = cerrs.Error("the setup order has no end line")
 )
 
 // Order is one order. Its type says which: SetRations, UpdateGroup, Draft,
-// Disband, AssembleGroup, AssembleTechLevel, AssemblePrototype, Transfer, or
-// UnitWork.
+// Disband, AssembleGroup, AssembleTechLevel, AssemblePrototype, Transfer,
+// Setup, or UnitWork.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -321,26 +328,99 @@ type Line struct {
 // maxLineLength bounds the length of a line of orders, in bytes.
 const maxLineLength = 1 << 20
 
-// Parse reads orders from r. It returns a Line for every line that is not
-// blank or only a comment; a line that is not a valid order has its Err set.
-// The error it returns is one from reading r.
+// Parse reads orders from r. It returns a Line for every order: for most
+// that is a line that is not blank or only a comment, and for an order that
+// takes more than one line (setup) it is the order's first line, with the
+// text of all its lines joined by "; ". A line that is not a valid order has
+// its Err set. The error it returns is one from reading r.
 func Parse(r io.Reader) ([]Line, error) {
 	var lines []Line
+	var block *setupBlock // the setup order being read, if any
 	sc := bufio.NewScanner(r)
 	sc.Buffer(nil, maxLineLength)
 	for no := 1; sc.Scan(); no++ {
-		line := Line{No: no, Text: strings.TrimSpace(sc.Text())}
-		tokens, err := Lex(line.Text)
-		if err == nil && len(tokens) == 0 {
+		text := strings.TrimSpace(sc.Text())
+		tokens, err := Lex(text)
+		if err != nil {
+			if block != nil {
+				block.fail(fmt.Errorf("line %d: %w", no, err))
+				block.texts = append(block.texts, text)
+				continue
+			}
+			lines = append(lines, Line{No: no, Text: text, Err: err})
 			continue
 		}
-		if err == nil {
-			line.Order, err = parseOrder(tokens)
+		for len(tokens) > 0 {
+			if block == nil && !tokens[0].Is("setup") {
+				// An ordinary order is the whole line, or what is left of it.
+				line := Line{No: no, Text: text}
+				line.Order, line.Err = parseOrder(tokens)
+				lines = append(lines, line)
+				break
+			}
+			// One line of a setup order: up to the next separator.
+			seg, rest := tokens, []Token(nil)
+			for i, t := range tokens {
+				if t.Is(Separator) {
+					seg, rest = tokens[:i], tokens[i+1:]
+					break
+				}
+			}
+			tokens = rest
+			text = joinTokens(tokens)
+			if len(seg) == 0 {
+				continue
+			}
+			switch {
+			case block == nil:
+				block = &setupBlock{no: no}
+				block.header(seg)
+			case seg[0].Is("end"):
+				if len(seg) != 1 {
+					block.fail(fmt.Errorf("%w: line %d: want end by itself", ErrInvalidOrder, no))
+				}
+				block.texts = append(block.texts, "end")
+				lines = append(lines, block.line())
+				block = nil
+			case startsItem(seg[0]):
+				block.item(no, seg)
+			default:
+				// Not a line of the order: it has no end. What was read is
+				// read again as the start of the next order.
+				block.fail(ErrNoEnd)
+				lines = append(lines, block.line())
+				block = nil
+				tokens = append(seg[:len(seg):len(seg)], prefixed(rest)...)
+				text = joinTokens(tokens)
+			}
 		}
-		line.Err = err
-		lines = append(lines, line)
+	}
+	if block != nil {
+		block.fail(ErrNoEnd)
+		lines = append(lines, block.line())
 	}
 	return lines, sc.Err()
+}
+
+// prefixed returns the tokens after a separator with the separator back in
+// front of them, or nothing if there are none.
+func prefixed(rest []Token) []Token {
+	if len(rest) == 0 {
+		return nil
+	}
+	return append([]Token{{Text: Separator}}, rest...)
+}
+
+// joinTokens writes tokens as a line of orders.
+func joinTokens(tokens []Token) string {
+	words := make([]string, len(tokens))
+	for i, t := range tokens {
+		words[i] = t.Text
+		if t.Quoted {
+			words[i] = `"` + t.Text + `"`
+		}
+	}
+	return strings.Join(words, " ")
 }
 
 // parseOrder parses the tokens of one line, which has at least one.
@@ -362,6 +442,8 @@ func parseOrder(tokens []Token) (Order, error) {
 		return parseUnitWork(tokens, game.WorkDisassemble)
 	case tokens[0].Is("scrap"):
 		return parseUnitWork(tokens, game.WorkScrap)
+	case tokens[0].Is("end"):
+		return nil, fmt.Errorf("%w: end without a setup order before it", ErrInvalidOrder)
 	}
 	return nil, ErrUnknownOrder
 }
