@@ -1748,7 +1748,7 @@ The receiving Ruler or Regent does not have to write an order allowing the ADN.
 A Ruler can ADN to a S/C belonging to himself or to a Regent (neither case requires an allow add-on order).
 A Ruler not only can ADN and allow an add-on to his own S/C's and those of his Regents, he also can with other Rulers of the same race.
 They must write an allow add-on order (AAN) or the order will fail.
-An AAN is a standing order: it is good until it is cancelled, and the printout for a S/C lists the S/C's that are allowed to add-on to it ([S5.2](#rule-S5.2)).
+An AAN is a standing order: it is good until it is cancelled with a cancel add-on order, and the printout for a S/C lists the S/C's that are allowed to add-on to it ([S5.2](#rule-S5.2)).
 A player can not ADN to a S/C of another race, and an AAN order does not change that.
 
 <a id="rule-F6.0"></a>
@@ -3679,7 +3679,7 @@ It replaces the 1980 PTC order.
 **Syntax**
 
 ```text
-grant EmpireID permission to colonize Coordinates
+grant EmpireID permission-to-colonize Coordinates
 ```
 
 | Value       | Meaning                                                                                                                    |
@@ -3690,7 +3690,7 @@ grant EmpireID permission to colonize Coordinates
 **Examples**
 
 ```text
-grant 54 permission to colonize (-1,-16,-6,2,3)   # player 54 may set up a colony on the planet in orbit 3 of star 2
+grant 54 permission-to-colonize (-1,-16,-6,2,3)   # player 54 may set up a colony on the planet in orbit 3 of star 2
 ```
 
 **Rules**
@@ -3699,6 +3699,8 @@ grant 54 permission to colonize (-1,-16,-6,2,3)   # player 54 may set up a colon
 - The permission is given to the player, not to one of his S/C's; any of his S/C's may do the set up.
 - The permission lasts until it is used: it is used up when the player establishes a colony on the planet.
 - The permission is lost if the player who gave it no longer controls any colony on the planet.
+- `permission-to-colonize` is one word, joined with hyphens.
+- Two players have made contact when they have exchanged at least one message.
 
 **Rejected when**
 
@@ -3722,6 +3724,21 @@ grant 54 permission to colonize (-1,-16,-6,2,3)   # player 54 may set up a colon
   The AAN is a standing order: the S/C's it lists stay allowed, turn after turn, until the player cancels it.
   The printout for a S/C lists the S/C's that are allowed to add-on to it.
   It is needed only between Rulers of the same race ([F5.8](#rule-F5.8)); it does not let a player of another race ADN.
+
+An AAN is cancelled with a cancel add-on order, which is not accepted yet:
+
+```text
+cancel add-on to EntityID from ListOfEntityIDs
+```
+
+| Value           | Meaning                                                                        |
+|-----------------|--------------------------------------------------------------------------------|
+| EntityID        | The S/C that was allowed to be added-on to; it must belong to the player.       |
+| ListOfEntityIDs | The S/C's that are no longer allowed to add-on to it ([S2.5](#rule-S2.5)).      |
+
+```text
+cancel add-on to 205 from [38, 39]   # S/C's 38 and 39 may no longer add-on to S/C 205
+```
 
 <a id="rule-S5.3"></a>
 ### S5.3 Set Up Orders (STP)
