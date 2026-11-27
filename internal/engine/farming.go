@@ -16,9 +16,7 @@ import (
 // what AllocateResources returned for the turn. Nothing is farmed in turn
 // SetupTurn.
 //
-// A working FARM-2 to FARM-10 unit makes game.FarmFood that turn. A FARM-1
-// unit delivers only after game.FarmCropTurns consecutive turns of work, and
-// loses the crop it had begun in a turn it doesn't work (game.AdvanceCrop).
+// A working FARM unit makes game.FarmFood that turn.
 func Farming(d *game.Data, turn int, allocs []Allocation) {
 	for i := range d.Colonies {
 		c := &d.Colonies[i]
@@ -36,7 +34,7 @@ func harvest(c *game.Colony, a Allocation) game.Harvest {
 	var h game.Harvest
 	for j, g := range c.FarmingGroups {
 		for k := range g.Units {
-			u := &g.Units[k]
+			u := g.Units[k]
 			var w Work
 			if j < len(a.Farms) && k < len(a.Farms[j]) {
 				w = a.Farms[j][k]
@@ -47,14 +45,7 @@ func harvest(c *game.Colony, a Allocation) game.Harvest {
 			h.Unfuelled += w.Staffed - w.Worked
 			h.Worked += w.Worked
 			h.Fuel += w.Fuel
-			if u.TechLevel == 1 {
-				var delivered, ruined int
-				u.Pipeline, delivered, ruined = game.AdvanceCrop(u.Qty, u.Pipeline, w.Worked)
-				h.Ruined += ruined
-				h.Food += game.FarmFood(u.TechLevel, delivered)
-			} else {
-				h.Food += game.FarmFood(u.TechLevel, w.Worked)
-			}
+			h.Food += game.FarmFood(u.TechLevel, w.Worked)
 		}
 	}
 	c.Spend(units.FUEL, h.Fuel)

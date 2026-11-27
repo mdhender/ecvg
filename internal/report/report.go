@@ -291,11 +291,6 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				for _, u := range g.Units {
 					p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
 					idleRows(u.Idle)
-					for done, n := range u.Pipeline {
-						if left := game.FarmCropTurns - 1 - done; n > 0 && left > 0 {
-							p("            %14s of them deliver their crop after %d more %s of work", commas(n), left, plural(left, "turn", "turns"))
-						}
-					}
 				}
 			}
 		}
@@ -323,9 +318,6 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 			if h.Lost > 0 {
 				p("  %s FOOD LOST: no room to store it", commas(h.Lost))
-			}
-			if h.Ruined > 0 {
-				p("  %s idle FARM-1 units LOST THE CROP they had begun", commas(h.Ruined))
 			}
 		}
 		p("")

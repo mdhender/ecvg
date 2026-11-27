@@ -4,7 +4,6 @@
 package engine_test
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/mdhender/ecvg/internal/engine"
@@ -16,8 +15,8 @@ func TestFarmRules(t *testing.T) {
 		tl, qty            int
 		food, fuel, perTen int // perTen: units that 10 FUEL can run
 	}{
-		{1, 4, 400, 2, 20}, // a whole crop: 100 a year
-		{1, 3, 300, 2, 20}, // 1.5 FUEL, rounded up
+		{1, 4, 100, 2, 20}, // 25 a turn
+		{1, 3, 75, 2, 20},  // 1.5 FUEL, rounded up
 		{2, 4, 40, 4, 10},  // 20 x 2 a year
 		{5, 3, 75, 8, 4},   // 7.5 FUEL, rounded up
 		{6, 4, 120, 24, 1}, // 1 x TL from FARM-6
@@ -109,10 +108,9 @@ func TestFarming(t *testing.T) {
 				Cargo:         []game.Unit{{Type: "FUEL", Qty: 2}, {Type: "FOOD", Qty: 1}, {Type: "FUEL", Qty: 100}},
 				FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 8, TechLevel: 1})},
 			},
-			// 10 USK staff 3 units, which burn 1.5 FUEL. A FARM-1 delivers
-			// nothing in its first turn of work.
-			want: game.Harvest{Units: 8, Worked: 3, Unstaffed: 5, Fuel: 2},
-			fuel: 100, food: 1,
+			// 10 USK staff 3 units, which burn 1.5 FUEL and make 25 FOOD each.
+			want: game.Harvest{Units: 8, Worked: 3, Unstaffed: 5, Fuel: 2, Food: 75},
+			fuel: 100, food: 76,
 		},
 		{
 			name: "groups in order of seniority; an unfuelled unit keeps its staff",
@@ -263,74 +261,39 @@ func TestFarming(t *testing.T) {
 	})
 }
 
-func TestAdvanceCrop(t *testing.T) {
-	for _, tc := range []struct {
-		name              string
-		qty               int
-		pipeline          []int
-		worked            int
-		next              []int
-		delivered, ruined int
-	}{
-		{"first turn", 100, nil, 100, []int{100, 0, 0}, 0, 0},
-		{"second turn", 100, []int{100, 0, 0}, 100, []int{0, 100, 0}, 0, 0},
-		{"fourth turn delivers", 100, []int{0, 0, 100}, 100, nil, 100, 0},
-		{"a turn without work ruins the crop", 100, []int{0, 0, 100}, 0, nil, 0, 100},
-		{"idle units with nothing begun lose nothing", 100, nil, 0, nil, 0, 0},
-		{"the units closest to delivering work first", 100, []int{10, 20, 30}, 45, []int{0, 0, 15}, 30, 15},
-		{"staggered units all working", 100, []int{10, 20, 30}, 100, []int{40, 10, 20}, 30, 0},
-		{"units added to the group start from nothing", 150, []int{0, 100, 0}, 150, []int{50, 0, 100}, 0, 0},
-		{"units taken out of the group", 50, []int{0, 0, 100}, 50, nil, 50, 0},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			next, delivered, ruined := game.AdvanceCrop(tc.qty, tc.pipeline, tc.worked)
-			if !slices.Equal(next, tc.next) || delivered != tc.delivered || ruined != tc.ruined {
-				t.Errorf("got %v, %d delivered, %d ruined; want %v, %d, %d", next, delivered, ruined, tc.next, tc.delivered, tc.ruined)
-			}
-		})
-	}
-}
-
-// TestFarm1Crop runs a FARM-1 group through turns: it delivers a year's FOOD
-// every fourth turn, and a turn without fuel loses the crop.
-func TestFarm1Crop(t *testing.T) {
+// TestFarm1 runs a FARM-1 group through turns: it makes 25 FOOD a unit in
+// every turn it works, and a turn without fuel costs only that turn's FOOD.
+func TestFarm1(t *testing.T) {
 	d := game.Data{
 		Orbits:  []game.Orbit{{ID: 1, OrbitNo: 3}},
 		Planets: []game.Planet{{ID: 1, OrbitID: 1, Habitable: true, Viability: 25}},
 		Colonies: []game.Colony{{
 			Type: game.COPN, PlanetID: 1, Population: game.Population{USK: 300, PRO: 100},
 			Operational:   []game.Unit{roomy},
-			Cargo:         []game.Unit{{Type: "FUEL", Qty: 50 * 6}},
+			Cargo:         []game.Unit{{Type: "FUEL", Qty: 50 * 2}},
 			FarmingGroups: []game.Group{{No: 1, Units: []game.GroupUnits{{Qty: 100, TechLevel: 1}}}},
 		}},
 	}
-	// The fuel lasts 6 turns at 50 a turn. Turn 7 has none; it comes back in
-	// turn 8.
+	// The fuel lasts 2 turns at 50 a turn. Turn 3 has none; it comes back in
+	// turn 4.
 	for turn, want := range []game.Harvest{
-		1:  {Units: 100, Worked: 100, Fuel: 50},
-		2:  {Units: 100, Worked: 100, Fuel: 50},
-		3:  {Units: 100, Worked: 100, Fuel: 50},
-		4:  {Units: 100, Worked: 100, Fuel: 50, Food: 10000},
-		5:  {Units: 100, Worked: 100, Fuel: 50},
-		6:  {Units: 100, Worked: 100, Fuel: 50},
-		7:  {Units: 100, Unfuelled: 100, Ruined: 100},
-		8:  {Units: 100, Worked: 100, Fuel: 50},
-		9:  {Units: 100, Worked: 100, Fuel: 50},
-		10: {Units: 100, Worked: 100, Fuel: 50},
-		11: {Units: 100, Worked: 100, Fuel: 50, Food: 10000},
+		1: {Units: 100, Worked: 100, Fuel: 50, Food: 2500},
+		2: {Units: 100, Worked: 100, Fuel: 50, Food: 2500},
+		3: {Units: 100, Unfuelled: 100},
+		4: {Units: 100, Worked: 100, Fuel: 50, Food: 2500},
 	} {
 		if turn == 0 {
 			continue
 		}
-		if turn == 8 {
-			d.Colonies[0].Cargo[0].Qty = 200
+		if turn == 4 {
+			d.Colonies[0].Cargo[0].Qty = 50
 		}
 		engine.Farming(&d, turn, engine.AllocateResources(&d, turn))
 		if got := d.Colonies[0].Harvest; got != want {
 			t.Errorf("turn %d: harvest %+v, want %+v", turn, got, want)
 		}
 	}
-	if c := d.Colonies[0]; c.FarmingGroups[0].Units[0].Pipeline != nil || c.Cargo[1].Qty != 20000 {
-		t.Errorf("pipeline %v, cargo %+v; want an empty pipeline and 20,000 FOOD", c.FarmingGroups[0].Units[0].Pipeline, c.Cargo)
+	if c := d.Colonies[0]; c.Cargo[1].Qty != 7500 {
+		t.Errorf("cargo %+v; want 7,500 FOOD", c.Cargo)
 	}
 }

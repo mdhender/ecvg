@@ -75,67 +75,13 @@ const (
 	FarmUSK = 3
 )
 
-// FarmCropTurns is the number of consecutive turns a FARM-1 unit must work to
-// bring in its crop. See AdvanceCrop.
-const FarmCropTurns = 4
-
-// FarmFood returns the FOOD that qty FARM units of tech level tl deliver.
-// For FARM-2 to FARM-10 that is what they make in a turn they work: a quarter
-// of 20 x TL a year. For FARM-1 it is the whole crop of the qty units that
-// finished their FarmCropTurns turns of work: 100 a year.
+// FarmFood returns the FOOD that qty FARM units of tech level tl make in a
+// turn they work: 25 each for FARM-1, and 5 x TL each for the others.
 func FarmFood(tl, qty int) int {
 	if tl == 1 {
-		return 100 * qty
+		return 25 * qty
 	}
 	return 5 * tl * qty
-}
-
-// AdvanceCrop moves a group's qty FARM-1 units through a turn in which worked
-// of them had staff and fuel. Pipeline counts the units that have 1, 2, ...,
-// FarmCropTurns-1 consecutive turns of work behind them; the rest of the qty
-// have none.
-//
-// A unit that works gains a turn. One that reaches FarmCropTurns delivers its
-// crop and starts again from nothing. A unit that doesn't work loses the
-// turns it had: its crop is ruined. When only some units can work, the ones
-// closest to delivering do, so the least is lost.
-//
-// It returns the new pipeline (nil when no unit has any turns behind it), the
-// number of units that delivered, and the number whose crop was ruined.
-func AdvanceCrop(qty int, pipeline []int, worked int) (next []int, delivered, ruined int) {
-	// stage[k] is the number of units with k turns of work behind them.
-	var stage [FarmCropTurns]int
-	left := max(0, qty)
-	for k := FarmCropTurns - 1; k >= 1; k-- {
-		if k-1 < len(pipeline) {
-			stage[k] = max(0, min(left, pipeline[k-1]))
-			left -= stage[k]
-		}
-	}
-	stage[0] = left
-	var after [FarmCropTurns]int
-	worked = max(0, worked)
-	for k := FarmCropTurns - 1; k >= 0; k-- {
-		w := min(worked, stage[k])
-		worked -= w
-		idle := stage[k] - w
-		after[0] += idle
-		if k > 0 {
-			ruined += idle
-		}
-		if k == FarmCropTurns-1 {
-			delivered += w
-			after[0] += w
-		} else {
-			after[k+1] += w
-		}
-	}
-	for _, n := range after[1:] {
-		if n != 0 {
-			return after[1:], delivered, ruined
-		}
-	}
-	return nil, delivered, ruined
 }
 
 // FarmSolar reports whether FARM units of tech level tl run without FUEL in
@@ -176,9 +122,6 @@ type Harvest struct {
 	Ordered   int `json:"ordered,omitzero"`
 	Unstaffed int `json:"unstaffed,omitzero"`
 	Unfuelled int `json:"unfuelled,omitzero"`
-	// Ruined is the number of FARM-1 units that didn't work and lost a crop
-	// they had begun. It is part of Ordered, Unstaffed, and Unfuelled.
-	Ruined int `json:"ruined,omitzero"`
 	// Lost is the FOOD the units delivered that the colony had no room to
 	// store.
 	Lost int `json:"lost,omitzero"`
