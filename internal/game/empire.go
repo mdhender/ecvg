@@ -98,6 +98,9 @@ type Colony struct {
 	Rations int `json:"rations"`
 	// Starved is the population that starved to death in the prior turn.
 	Starved Population `json:"starved,omitzero"`
+	// LifeSupport is what the colony's LFSU did in the prior turn, and who
+	// died because its death rate was above normal.
+	LifeSupport LifeSupport `json:"life_support,omitzero"`
 	// Workers is the colony's worker cadre of the prior turn, and what was
 	// left of it.
 	Workers Workers `json:"workers,omitzero"`

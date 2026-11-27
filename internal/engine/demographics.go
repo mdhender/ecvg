@@ -23,7 +23,8 @@ const SetupTurn = 0
 // (B3.0), in order: ApplyOrders, with the orders the empires returned for the
 // turn; Disassembly (B3.4); Assembly (B3.8); Draft (B3.12); production
 // (B3.17), which is AllocateResources, Farming, Rations, PopulationChanges
-// (the deaths by starvation), and Mining; and Demographics (B3.20). It
+// (the deaths by starvation), Mining, and Research; and Demographics and
+// LifeSupport (B3.20). It
 // returns what became of the orders. If it fails, d is not changed.
 func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	result, err := ApplyOrders(d, files)
@@ -40,6 +41,7 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	Mining(d, d.Game.Turn, allocs)
 	Research(d, d.Game.Turn, allocs)
 	Demographics(d, d.Game.Turn)
+	LifeSupport(d, d.Game.Turn)
 	d.Game.Turn++
 	return result, nil
 }

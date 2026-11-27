@@ -84,6 +84,24 @@ func TestEmpire(t *testing.T) {
 			want:     []string{"CENC (enclosed surface colony)", "Space taken: 1,200,000 VU   Life support needed: 1,200,000 LU"},
 		},
 		{
+			name:     "life support",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.Type = game.CENC
+				c.Operational = append(c.Operational, game.Unit{Type: "LFSU", TechLevel: 10, Qty: 2000})
+				c.LifeSupport = game.LifeSupport{Units: 2000, Worked: 1500, Unfuelled: 500, Fuel: 15000,
+					Needed: 1200000, Supported: 150000, Died: game.Population{UEM: 30, PRO: 4}}
+			},
+			want: []string{
+				"LIFE SUPPORT SHORT: the assembled LFSU support 200,000 units, so 1,000,000 have none and the death rate will rise",
+				"LIFE SUPPORT LAST TURN: 1,500 of 2,000 LFSU ran, burned 15,000 FUEL, and supported 150,000 of the 1,200,000 units that needed it",
+				"500 LFSU idle: no FUEL",
+				"1,050,000 units had NO LIFE SUPPORT: the death rate rose",
+				"DIED LAST TURN, of the raised death rate: 34 units (UEM 30, USK 0, PRO 4, SLD 0)",
+			},
+		},
+		{
 			name:     "empire with no player or colonies",
 			empireID: 2,
 			want:     []string{"Player: (none)", "No colonies."},

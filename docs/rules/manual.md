@@ -2222,6 +2222,10 @@ For instance, a TL-5 LFSU (LFSU-5) will support 25 POP.
 A LFSU uses one fuel unit times its TL per turn (i.e. a LFSU-5 uses 5 fuel units per turn).
 Only COPN's do not require LFSU.
 LFSU on CORB's in orbits 1-5 do not use FUEL, but use solar power.
+Only assembled LFSU support POP; LFSU in storage support none.
+Every assembled LFSU in a S/C that requires them runs each turn and uses its fuel, whether or not the POP need it; a player who has more than he needs must disassemble the extra to save the fuel.
+The LFSU are fuelled last in the turn ([B3.20.6](#rule-B3.20.6)), from the fuel that production has left, and a LFSU that gets no fuel supports no POP that turn.
+LFSU in a COPN do not run, and use no fuel.
 
 <a id="rule-G6.2"></a>
 ### G6.2 Death Rate Affected
@@ -2232,7 +2236,10 @@ If the LFSU capacity of a S/C is exceeded, the death rate will be increased as f
 
 Where P is the fraction of population over the LFSU limit, D is the current death rate, and N is the new death rate.
 
-Each turn the S/C's LFSU capacity is not exceeded, the death rate will be cut in half until it reaches normal (0.0625%).
+The death rate is never more than 100%.
+Each turn the S/C's LFSU capacity is not exceeded, the death rate will be cut in half until it reaches normal (0.625%, [G3.9](#rule-G3.9)).
+The death rate changes after the turn's deaths occur ([B3.20](#rule-B3.20)), so the POP begin to die on the turn after the LFSU capacity is first exceeded.
+For example, a ship with no LFSU at all has a death rate of 6.875% at the end of the first turn, loses POP at that rate on the second turn, and ends it with a death rate of 75.625%.
 Lack of LFSU does not cause rebels.
 
 # H. Production and Industry

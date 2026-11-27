@@ -148,8 +148,27 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		}
 		if c.Type.Enclosed() {
 			p("  Space taken: %s VU   Life support needed: %s LU", commas(pop.Volume()), commas(pop.LifeSupport(c.Type)))
+			if have, need := c.LifeSupportCapacity(), pop.LifeSupport(c.Type); have < need {
+				p("  LIFE SUPPORT SHORT: the assembled LFSU support %s units, so %s have none and the death rate will rise", commas(have), commas(need-have))
+			} else {
+				p("  The assembled LFSU support %s units", commas(have))
+			}
 		} else {
 			p("  Space wanted: %s VU", commas(pop.Volume()))
+		}
+		if l := c.LifeSupport; l.Units > 0 || l.Short() > 0 {
+			p("  LIFE SUPPORT LAST TURN: %s of %s LFSU ran, burned %s FUEL, and supported %s of the %s units that needed it",
+				commas(l.Worked), commas(l.Units), commas(l.Fuel), commas(min(l.Supported, l.Needed)), commas(l.Needed))
+			if l.Unfuelled > 0 {
+				p("  %s LFSU idle: no FUEL", commas(l.Unfuelled))
+			}
+			if l.Short() > 0 {
+				p("  %s units had NO LIFE SUPPORT: the death rate rose", commas(l.Short()))
+			}
+		}
+		if s := c.LifeSupport.Died; s.Units() > 0 {
+			p("  DIED LAST TURN, of the raised death rate: %s units (UEM %s, USK %s, PRO %s, SLD %s)",
+				commas(s.Units()), commas(s.UEM), commas(s.USK), commas(s.PRO), commas(s.SLD))
 		}
 
 		if k := c.Cadres; k != (game.Cadres{}) || len(c.Drafted)+len(c.Disbanded) > 0 || c.Trained.Trainees > 0 {

@@ -57,22 +57,7 @@ func (m Meal) Starved(p game.Population) game.Population {
 	// The percentage is (100*units - 1600*Eaten)/units, and at least 1.
 	pct := max(100*units-16*100*m.Eaten, units)
 	deaths := (pct + 99) / 100 // pct/units percent of units, rounded up
-	var s game.Population
-	left := deaths
-	for _, t := range []struct{ starved, alive *int }{
-		{&s.UEM, &p.UEM}, {&s.USK, &p.USK}, {&s.PRO, &p.PRO}, {&s.SLD, &p.SLD},
-	} {
-		*t.starved = *t.alive * deaths / units
-		left -= *t.starved
-	}
-	for _, t := range []struct{ starved, alive *int }{
-		{&s.UEM, &p.UEM}, {&s.SLD, &p.SLD}, {&s.USK, &p.USK}, {&s.PRO, &p.PRO},
-	} {
-		n := min(left, *t.alive-*t.starved)
-		*t.starved += n
-		left -= n
-	}
-	return s
+	return p.Deaths(deaths)
 }
 
 // Rations is the rations phase of the turn numbered turn: the population of
