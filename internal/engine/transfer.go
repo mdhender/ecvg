@@ -25,7 +25,7 @@ const (
 	// not at the same planet.
 	ErrNotSameOrbit = cerrs.Error("the entities are not at the same orbit")
 	// ErrResearchNeedsPrototype is the error for a transfer of RSCH.
-	ErrResearchNeedsPrototype = cerrs.Error("RSCH is transferred as prototypes: assemble PRTO-n on EntityID from lab-group GroupNo")
+	ErrResearchNeedsPrototype = cerrs.Error("RSCH is transferred as prototypes: assemble PRTO-n on EntityID from laboratory-group GroupNo")
 )
 
 // AssemblePrototype carries out an assemble PRTO order, given by the empire

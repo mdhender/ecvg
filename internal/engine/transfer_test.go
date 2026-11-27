@@ -66,15 +66,15 @@ func TestAssemblePrototype(t *testing.T) {
 		errs       []error
 		rsch, prto int // PRTO-2
 	}{
-		{name: "one prototype", text: "assemble PRTO-2 on 1 from lab-group 3", errs: []error{nil}, rsch: 150_000, prto: 1},
+		{name: "one prototype", text: "assemble PRTO-2 on 1 from laboratory-group 3", errs: []error{nil}, rsch: 150_000, prto: 1},
 		{name: "as many as the research pays for",
-			text: "assemble prto-2 on 1 from lab-group 3\nassemble PRTO-2 on 1 from laboratory-group 3\nassemble PRTO-2 on 1 from lab-group 3",
+			text: "assemble prto-2 on 1 from laboratory-group 3\nassemble PRTO-2 on 1 from laboratory-group 3\nassemble PRTO-2 on 1 from laboratory-group 3",
 			errs: []error{nil, nil, game.ErrNotEnoughResearch}, rsch: 50_000, prto: 2},
-		{name: "another tech level", text: "assemble PRTO-1 on 1 from lab-group 3", errs: []error{game.ErrPrototypeTechLevel}, rsch: 250_000},
-		{name: "a group with no units", text: "assemble PRTO-2 on 1 from lab-group 4", errs: []error{game.ErrNoLabGroup}, rsch: 250_000},
-		{name: "no such group", text: "assemble PRTO-2 on 1 from lab-group 9", errs: []error{game.ErrNoLabGroup}, rsch: 250_000},
-		{name: "a ship has no laboratories", text: "assemble PRTO-2 on 2 from lab-group 3", errs: []error{game.ErrNoLabGroup}, rsch: 250_000},
-		{name: "another empire's entity", text: "assemble PRTO-2 on 4 from lab-group 3", errs: []error{engine.ErrNotControlled}, rsch: 250_000},
+		{name: "another tech level", text: "assemble PRTO-1 on 1 from laboratory-group 3", errs: []error{game.ErrPrototypeTechLevel}, rsch: 250_000},
+		{name: "a group with no units", text: "assemble PRTO-2 on 1 from laboratory-group 4", errs: []error{game.ErrNoLabGroup}, rsch: 250_000},
+		{name: "no such group", text: "assemble PRTO-2 on 1 from laboratory-group 9", errs: []error{game.ErrNoLabGroup}, rsch: 250_000},
+		{name: "a ship has no laboratories", text: "assemble PRTO-2 on 2 from laboratory-group 3", errs: []error{game.ErrNoLabGroup}, rsch: 250_000},
+		{name: "another empire's entity", text: "assemble PRTO-2 on 4 from laboratory-group 3", errs: []error{engine.ErrNotControlled}, rsch: 250_000},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			d := traders()
@@ -228,7 +228,7 @@ func TestTransferResearch(t *testing.T) {
 	d := traders()
 	d.Colonies[1].Cargo = []game.Unit{{Type: "FOOD", Qty: 100}}
 	d.Game.Turn = 1 // no worker cadre is made in the setup turn
-	text := "assemble PRTO-2 on 1 from lab-group 3\ntransfer 1 PRTO-2 from 1 to 2\nassemble tech-level on 2 with 1 PRTO-2"
+	text := "assemble PRTO-2 on 1 from laboratory-group 3\ntransfer 1 PRTO-2 from 1 to 2\nassemble tech-level on 2 with 1 PRTO-2"
 	result, err := engine.RunTurn(&d, []orders.File{file(t, 1, text)})
 	if err != nil || len(result.Rejected) != 0 {
 		t.Fatalf("rejected %+v, %v", result.Rejected, err)

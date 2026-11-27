@@ -20,7 +20,7 @@
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
 //	assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]
-//	assemble PRTO-n on EntityID from lab-group GroupNo
+//	assemble PRTO-n on EntityID from laboratory-group GroupNo
 //	assemble Quantity Unit on EntityID
 //	transfer Quantity Unit from EntityID to EntityID
 //	disassemble Quantity Unit on EntityID
@@ -223,7 +223,7 @@ func (o AssembleTechLevel) String() string {
 	return sb.String()
 }
 
-// AssemblePrototype is the order "assemble PRTO-n on EntityID from lab-group
+// AssemblePrototype is the order "assemble PRTO-n on EntityID from laboratory-group
 // GroupNo". It has a laboratory group of the entity with ID EntityID put the
 // entity's RSCH into one prototype of tech level TechLevel.
 type AssemblePrototype struct {
@@ -233,7 +233,7 @@ type AssemblePrototype struct {
 }
 
 func (o AssemblePrototype) String() string {
-	return fmt.Sprintf("assemble PRTO-%d on %d from lab-group %d", o.TechLevel, o.EntityID, o.GroupNo)
+	return fmt.Sprintf("assemble PRTO-%d on %d from laboratory-group %d", o.TechLevel, o.EntityID, o.GroupNo)
 }
 
 // Transfer is the order "transfer Quantity Unit from EntityID to EntityID".
@@ -513,7 +513,7 @@ const assembleUsage = `want one of:
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
   assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]
 any of them may end with: using Quantity CWRK
-  assemble PRTO-n on EntityID from lab-group GroupNo`
+  assemble PRTO-n on EntityID from laboratory-group GroupNo`
 
 // usingClause takes "using Quantity CWRK" off the end of an order, if it is
 // there, and returns the cap and the tokens before it. CWKR is read as CWRK.
@@ -674,11 +674,11 @@ func parseAssemble(tokens []Token) (Order, error) {
 	return o, nil
 }
 
-// parseAssemblePrototype parses assemble PRTO-n on EntityID from lab-group
+// parseAssemblePrototype parses assemble PRTO-n on EntityID from laboratory-group
 // GroupNo. The laboratories do it, not the CWRK, so it has no using clause.
 func parseAssemblePrototype(tokens []Token) (Order, error) {
-	if len(tokens) != 7 || !tokens[2].Is("on") || !tokens[4].Is("from") || !(tokens[5].Is("lab-group") || tokens[5].Is("laboratory-group")) {
-		return nil, fmt.Errorf("%w: want: assemble PRTO-n on EntityID from lab-group GroupNo", ErrInvalidOrder)
+	if len(tokens) != 7 || !tokens[2].Is("on") || !tokens[4].Is("from") || !tokens[5].Is("laboratory-group") {
+		return nil, fmt.Errorf("%w: want: assemble PRTO-n on EntityID from laboratory-group GroupNo", ErrInvalidOrder)
 	}
 	unit, err := unitOf(tokens[1], units.PRTO)
 	if err != nil {

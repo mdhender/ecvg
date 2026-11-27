@@ -2620,7 +2620,7 @@ There are three ways to do so.
 One way to improve a S/C's TL is to build the required amount of research points necessary to raise it.
 RSCH are built by laboratories ([H4.0](#rule-H4.0)), assembled into a LAB group with an assemble laboratory group order ([S6.8](#rule-S6.8)).
 A LAB will build .25 times its TL in RSCH per turn.
-RSCH may be transferred or sold, decreasing the total number of RSCH accumulated.
+RSCH may be transferred or sold, as prototypes ([J4.2](#rule-J4.2), [J4.3](#rule-J4.3)), decreasing the total number of RSCH accumulated.
 RSCH accumulate in the S/C until the player spends them with an assemble tech level order ([S6.7](#rule-S6.7)).
 The order names the TL wanted, or raises the S/C one level if it names none.
 The RSCH for every level on the way are deducted from the total accumulated as soon as the order is accepted; any RSCH left over stay accumulated.
@@ -2688,10 +2688,12 @@ Prototypes have mass and volume ([R3.0](#rule-R3.0)): a PRTO has a mass of 1 MU 
 Transferring them requires TRNS's and uses up TRNS capacity (see [K2.1](#rule-K2.1)).
 
 <a id="rule-J4.3"></a>
-### J4.3 Buying and Selling RSCH
+### J4.3 Buying and Selling Prototypes
 
-The third way to improve a S/C's TL is to buy technology (RSCH) on the market.
-A S/C selling RSCH will have that number deducted from the total RSCH accumulated.
+The third way to improve a S/C's TL is to buy technology on the market.
+RSCH are not bought or sold as they are: what is bought and sold is prototypes (PRTO).
+A S/C that wants to sell RSCH first has a laboratory group put them into prototypes ([S6.9](#rule-S6.9)), which deducts them from the total RSCH accumulated, and then sells the prototypes.
+A S/C that buys prototypes uses them to raise its TL ([S6.7](#rule-S6.7)).
 
 # K. Transfers and Logistics
 
@@ -3315,7 +3317,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
 | Assemble laboratory group | `assemble laboratory-group on EntityID with Quantity LAB-n` | [S6.8](#rule-S6.8) |
 | Assemble tech level | `assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]` | [S6.7](#rule-S6.7) |
-| Assemble prototype | `assemble PRTO-n on EntityID from lab-group GroupNo` | [S6.9](#rule-S6.9) |
+| Assemble prototype | `assemble PRTO-n on EntityID from laboratory-group GroupNo` | [S6.9](#rule-S6.9) |
 | Transfer | `transfer Quantity Unit from EntityID to EntityID` | [S7.1](#rule-S7.1) |
 | Update factory group   | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
 | Shut down              | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
@@ -4189,7 +4191,7 @@ Has a laboratory group put RSCH into a prototype, so that it can be transferred 
 **Syntax**
 
 ```text
-assemble PRTO-n on EntityID from lab-group GroupNo
+assemble PRTO-n on EntityID from laboratory-group GroupNo
 ```
 
 | Value    | Meaning                                                      |
@@ -4201,7 +4203,7 @@ assemble PRTO-n on EntityID from lab-group GroupNo
 **Examples**
 
 ```text
-assemble PRTO-2 on 75 from lab-group 3    # 100,000 RSCH become one PRTO-2
+assemble PRTO-2 on 75 from laboratory-group 3    # 100,000 RSCH become one PRTO-2
 ```
 
 **Rules**
@@ -4214,7 +4216,6 @@ assemble PRTO-2 on 75 from lab-group 3    # 100,000 RSCH become one PRTO-2
 - The prototype is made at once, and goes into the S/C's storage.
   It may be transferred by a later order on the same turn.
 - The laboratories make it, not the CWRK, so the order takes no `using`.
-- `laboratory-group` may be written for `lab-group`.
 
 **Rejected when**
 
