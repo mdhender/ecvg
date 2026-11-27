@@ -78,6 +78,8 @@ type Colony struct {
 	// draft orders of the prior turn asked for and got.
 	Cadres  Cadres    `json:"cadres,omitzero"`
 	Drafted []Drafted `json:"drafted,omitempty"`
+	// Trained is what became of the TRNE cadre in the prior turn.
+	Trained Trained `json:"trained,omitzero"`
 	// Rations is the percentage of the food its population needs that the
 	// colony hands out, MinRations..MaxRations, by default DefaultRations.
 	Rations int `json:"rations"`

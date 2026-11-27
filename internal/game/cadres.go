@@ -8,10 +8,12 @@ import "github.com/mdhender/ecvg/internal/units"
 // TraineesPerPRO is the most TRNE that one PRO trains.
 const TraineesPerPRO = 100
 
-// Cadres counts the cadres an empire has drafted in an entity. A cadre is
-// made up of population units that stay in the entity's population: they
-// still eat and take up space. They are allocated by the empire, so they
-// don't join the worker (WRKR) cadre.
+// Cadres counts the cadres an empire has drafted in an entity. A cadre is not
+// a population unit: it is made up of population units, which stay in the
+// entity's population, where they still eat and take up space. They are
+// allocated by the empire, so they don't join the worker (WRKR) cadre. CWRK
+// and SPY stay until the empire disbands them; TRNE disbands by itself (see
+// Colony.Train), as WRKR does.
 type Cadres struct {
 	// CWRK is construction workers: each is 1 PRO and 1 USK.
 	CWRK int `json:"cwrk,omitzero"`
@@ -40,6 +42,31 @@ func (k Cadres) SLD() int {
 // trainers returns the PRO that trne TRNE need, rounded up.
 func trainers(trne int) int {
 	return (trne + TraineesPerPRO - 1) / TraineesPerPRO
+}
+
+// TraineePercent is the percentage of a TRNE cadre's USK that become PRO at
+// the end of the turn it trains in.
+const TraineePercent = 5
+
+// Trained records what became of a colony's TRNE cadre.
+type Trained struct {
+	// Trainees is the size of the cadre that trained and Graduated the USK
+	// of it that became PRO.
+	Trainees  int `json:"trainees"`
+	Graduated int `json:"graduated"`
+}
+
+// Train ends the turn for the colony's TRNE cadre: TraineePercent of its
+// trainees, rounded down, stop being USK and become PRO, and the cadre is
+// disbanded, which frees the rest of its USK and its PRO. It returns what
+// happened.
+func (c *Colony) Train() Trained {
+	t := Trained{Trainees: c.Cadres.TRNE}
+	t.Graduated = max(0, min(t.Trainees*TraineePercent/100, c.Population.USK))
+	c.Population.USK -= t.Graduated
+	c.Population.PRO += t.Graduated
+	c.Cadres.TRNE = 0
+	return t
 }
 
 // Fit returns the cadres cut down to what the population p can make up, for

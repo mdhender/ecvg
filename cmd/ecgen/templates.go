@@ -164,7 +164,7 @@ type TemplateColony struct {
 	Type             game.EntityType `json:"type"`
 	TechLevel        int             `json:"tech_level"`
 	Population       game.Population `json:"population"`
-	Cadres           game.Cadres     `json:"cadres,omitzero"`
+	Cadres           []game.Unit     `json:"cadres,omitempty"`
 	Operational      []game.Unit     `json:"operational"`
 	Cargo            []game.Unit     `json:"cargo"`
 	Depot            []game.Unit     `json:"depot,omitempty"`
@@ -221,9 +221,15 @@ func (t EmpireTemplate) Validate() error {
 		if p := c.Population; p.UEM < 0 || p.USK < 0 || p.PRO < 0 || p.SLD < 0 {
 			bad("colony %d: negative population", i+1)
 		}
-		if k := c.Cadres; k.CWRK < 0 || k.TRNE < 0 || k.SPY < 0 {
-			bad("colony %d: negative cadres", i+1)
-		} else if k.Fit(c.Population) != k {
+		for j, u := range c.Cadres {
+			switch {
+			case u.Type != units.CWRK && u.Type != units.TRNE && u.Type != units.SPY:
+				bad("colony %d: cadre %d: %q: want CWRK, TRNE, or SPY", i+1, j+1, u.Type)
+			case u.Qty < 0 || u.TechLevel != 0:
+				bad("colony %d: cadre %d: %s: want a qty of 0 or more and no tech_level", i+1, j+1, u.Type)
+			}
+		}
+		if k := c.cadres(); k.Fit(c.Population) != k {
 			bad("colony %d: cadres: the population can't make them up (CWRK is 1 PRO and 1 USK each, TRNE 1 USK and 1 PRO per 100, SPY 1 PRO and 1 SLD)", i+1)
 		}
 		list := func(kind string, operational bool, us []game.Unit) {
@@ -297,4 +303,20 @@ func (t EmpireTemplate) Validate() error {
 		groups("factory", c.FactoryGroups)
 	}
 	return errors.Join(errs...)
+}
+
+// cadres returns the colony's cadres list as the game's count of each cadre.
+func (c TemplateColony) cadres() game.Cadres {
+	var k game.Cadres
+	for _, u := range c.Cadres {
+		switch u.Type {
+		case units.CWRK:
+			k.CWRK += u.Qty
+		case units.TRNE:
+			k.TRNE += u.Qty
+		case units.SPY:
+			k.SPY += u.Qty
+		}
+	}
+	return k
 }

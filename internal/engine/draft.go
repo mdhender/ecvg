@@ -38,6 +38,22 @@ func checkDraft(d *game.Data, empireID, entityID int, unit string) error {
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }
 
+// Training ends the turn numbered turn for the TRNE cadres: in every colony,
+// game.TraineePercent of the trainees become PRO and the cadre is disbanded
+// (see game.Colony.Train), and the colony's Trained records it. It runs
+// before the draft phase, so a cadre drafted in one turn is kept out of the
+// worker cadre for the whole of the next and graduates at the end of it.
+// Nothing happens in the setup turn.
+func Training(d *game.Data, turn int) {
+	for i := range d.Colonies {
+		c := &d.Colonies[i]
+		c.Trained = game.Trained{}
+		if turn > SetupTurn && c.Cadres.TRNE > 0 {
+			c.Trained = c.Train()
+		}
+	}
+}
+
 // Draft is the draft phase: it carries out the accepted draft orders, in
 // order. Each drafts as many as its entity can supply (see
 // game.Colony.Draft), and the entity's Drafted records what was asked and

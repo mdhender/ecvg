@@ -172,12 +172,14 @@ func TestEmpire(t *testing.T) {
 				c := &d.Colonies[0]
 				c.Cadres = game.Cadres{CWRK: 5000, TRNE: 150, SPY: 40}
 				c.Drafted = []game.Drafted{{Unit: "CWRK", Asked: 5000, Drafted: 5000}, {Unit: "TRNE", Asked: 16880, Drafted: 150}}
+				c.Trained = game.Trained{Trainees: 16880, Graduated: 844}
 			},
 			want: []string{
-				"  Cadres, drafted from the population above:\n",
-				"    CWRK            5,000   (5,000 PRO and 5,000 USK)\n",
-				"    TRNE              150   (2 PRO and 150 USK)\n",
-				"    SPY                40   (40 PRO and 40 SLD)\n",
+				"\nCADRES               Size       PRO held       USK held       SLD held\n",
+				"  CWRK              5,000          5,000          5,000\n",
+				"  TRNE                150              2            150\n",
+				"  SPY                  40             40                            40\n",
+				"  TRAINED LAST TURN: 844 of 16,880 TRNE became PRO, and the cadre was disbanded\n",
 				"  DRAFTED LAST TURN: 5,000 CWRK\n",
 				"  DRAFTED LAST TURN: 150 of the 16,880 TRNE ordered: no more could be drafted\n",
 			},

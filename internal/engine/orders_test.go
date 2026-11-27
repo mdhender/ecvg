@@ -261,4 +261,16 @@ func TestDraftedPeopleWorkThisTurn(t *testing.T) {
 	if c = d.Colonies[0]; c.Workers.PRO != 58 || c.Workers.USK != 650 || c.Drafted != nil {
 		t.Errorf("turn 2: workers %+v, drafted %+v; want 58 PRO and 650 USK", c.Workers, c.Drafted)
 	}
+	// At the end of that turn 5% of the 150 trainees, rounded down, became
+	// PRO, and the TRNE cadre disbanded. The other cadres stay.
+	if c.Trained != (game.Trained{Trainees: 150, Graduated: 7}) || c.Cadres != (game.Cadres{CWRK: 200, SPY: 40}) ||
+		c.Population != (game.Population{USK: 993, PRO: 307, SLD: 50}) {
+		t.Errorf("turn 2: trained %+v, cadres %+v, population %+v", c.Trained, c.Cadres, c.Population)
+	}
+	if _, err := engine.RunTurn(&d, nil); err != nil {
+		t.Fatal(err)
+	}
+	if c = d.Colonies[0]; c.Workers.PRO != 67 || c.Workers.USK != 793 || c.Trained != (game.Trained{}) {
+		t.Errorf("turn 3: workers %+v, trained %+v; want 67 PRO and 793 USK", c.Workers, c.Trained)
+	}
 }

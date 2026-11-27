@@ -10,6 +10,9 @@
         "pro": 200000,
         "sld": 100000
       },
+      "cadres": [
+        {"type": "CWRK", "qty": 1000}
+      ],
       "operational": [
         {"type": "AUTO", "tech_level": 10, "qty": 1000},
         {"type": "FARM", "tech_level": 10, "qty": 100000},
