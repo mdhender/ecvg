@@ -12,11 +12,13 @@ import (
 
 // ErrNotDraftable is the error for an order to draft a unit that can't be
 // drafted.
-const ErrNotDraftable = cerrs.Error("that unit can't be drafted")
+const ErrNotDraftable = cerrs.Error("that unit can't be drafted or disbanded")
 
-// DraftOrder is a draft order that was accepted and waits for the draft
-// phase.
+// DraftOrder is a draft or disband order that was accepted and waits for the
+// draft phase.
 type DraftOrder struct {
+	// Disband is true for a disband order.
+	Disband  bool
 	EntityID int
 	Unit     string
 	Qty      int
@@ -38,37 +40,27 @@ func checkDraft(d *game.Data, empireID, entityID int, unit string) error {
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }
 
-// Training ends the turn numbered turn for the TRNE cadres: in every colony,
-// game.TraineePercent of the trainees become PRO and the cadre is disbanded
-// (see game.Colony.Train), and the colony's Trained records it. It runs
-// before the draft phase, so a cadre drafted in one turn is kept out of the
-// worker cadre for the whole of the next and graduates at the end of it.
-// Nothing happens in the setup turn.
-func Training(d *game.Data, turn int) {
-	for i := range d.Colonies {
-		c := &d.Colonies[i]
-		c.Trained = game.Trained{}
-		if turn > SetupTurn && c.Cadres.TRNE > 0 {
-			c.Trained = c.Train()
-		}
-	}
-}
-
-// Draft is the draft phase: it carries out the accepted draft orders, in
-// order. Each drafts as many as its entity can supply (see
-// game.Colony.Draft), and the entity's Drafted records what was asked and
-// what was drafted. The phase comes after production, so the people drafted
-// worked this turn and a cadre is first of use in the next one. Unlike the
+// Draft is the draft phase: it carries out the accepted draft and disband
+// orders, in order. Each drafts or disbands as many as its entity can supply
+// (see game.Colony.Draft and Disband), and the entity's Drafted and Disbanded
+// record what was asked and what was done. The phase comes after production, so the people drafted
+// worked this turn and a cadre is first of use in the next one; the people
+// disbanded are back in the worker cadre from the next turn. Unlike the
 // other phases it runs in the setup turn too.
 func Draft(d *game.Data, drafts []DraftOrder) {
 	for i := range d.Colonies {
-		d.Colonies[i].Drafted = nil
+		d.Colonies[i].Drafted, d.Colonies[i].Disbanded = nil, nil
 	}
 	for _, o := range drafts {
 		for i := range d.Colonies {
 			if c := &d.Colonies[i]; c.ID == o.EntityID {
-				n := c.Draft(o.Unit, o.Qty)
-				c.Drafted = append(c.Drafted, game.Drafted{Unit: o.Unit, Asked: o.Qty, Drafted: n})
+				if o.Disband {
+					n := c.Disband(o.Unit, o.Qty)
+					c.Disbanded = append(c.Disbanded, game.Drafted{Unit: o.Unit, Asked: o.Qty, Drafted: n})
+				} else {
+					n := c.Draft(o.Unit, o.Qty)
+					c.Drafted = append(c.Drafted, game.Drafted{Unit: o.Unit, Asked: o.Qty, Drafted: n})
+				}
 				break
 			}
 		}

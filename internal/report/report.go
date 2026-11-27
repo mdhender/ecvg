@@ -150,7 +150,7 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			p("  Space taken: %s VU   Life support needed: %s LU", commas(pop.Volume(c.Type)), commas(pop.LifeSupport(c.Type)))
 		}
 
-		if k := c.Cadres; k != (game.Cadres{}) || len(c.Drafted) > 0 || c.Trained.Trainees > 0 {
+		if k := c.Cadres; k != (game.Cadres{}) || len(c.Drafted)+len(c.Disbanded) > 0 || c.Trained.Trainees > 0 {
 			// Cadres aren't population units: they are made up of them.
 			num := func(n int) string {
 				if n == 0 {
@@ -177,6 +177,13 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 			if t := c.Trained; t.Trainees > 0 {
 				p("  TRAINED LAST TURN: %s of %s TRNE became PRO, and the cadre was disbanded", commas(t.Graduated), commas(t.Trainees))
+			}
+			for _, dr := range c.Disbanded {
+				if dr.Drafted < dr.Asked {
+					p("  DISBANDED LAST TURN: %s of the %s %s ordered: there were no more", commas(dr.Drafted), commas(dr.Asked), dr.Unit)
+				} else {
+					p("  DISBANDED LAST TURN: %s %s", commas(dr.Drafted), dr.Unit)
+				}
 			}
 			for _, dr := range c.Drafted {
 				if dr.Drafted < dr.Asked {

@@ -87,7 +87,7 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 }
 
 // applyOrder carries out one order given by the empire with ID empireID. A
-// draft order is only checked and added to result.Drafts.
+// draft or disband order is only checked and added to result.Drafts.
 func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.Order) error {
 	switch o := order.(type) {
 	case orders.SetRations:
@@ -98,6 +98,16 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		}
 		result.Drafts = append(result.Drafts, DraftOrder{EntityID: o.EntityID, Unit: o.Unit, Qty: o.Qty})
 		return nil
+	case orders.Disband:
+		if err := checkDraft(d, empireID, o.EntityID, o.Unit); err != nil {
+			return err
+		}
+		result.Drafts = append(result.Drafts, DraftOrder{Disband: true, EntityID: o.EntityID, Unit: o.Unit, Qty: o.Qty})
+		return nil
+	case orders.Assemble, orders.AssembleGroup:
+		// The orders are read, but the rules for carrying them out aren't
+		// settled: what assembly costs in CWRK and how long it takes.
+		return fmt.Errorf("assemble: %w", ErrNotImplemented)
 	case orders.SetIdle:
 		return SetIdle(d, empireID, o.EntityID, o.Kind, o.GroupNo, o.Percent)
 	}
@@ -121,6 +131,10 @@ func SetRations(d *game.Data, empireID, entityID, percent int) error {
 	}
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }
+
+// ErrNotImplemented is the error for an order that the engine can read but
+// can't carry out yet.
+const ErrNotImplemented = cerrs.Error("the engine can't carry out this order yet")
 
 // ErrNoSuchGroup is the error for an order that names a group its entity
 // doesn't have.

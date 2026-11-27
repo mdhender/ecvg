@@ -329,3 +329,100 @@ func TestParseDraft(t *testing.T) {
 		})
 	}
 }
+
+func TestParseDisbandAndAssemble(t *testing.T) {
+	type unit = game.Unit
+	group := func(kind game.GroupKind, no, entity int, us ...unit) orders.AssembleGroup {
+		return orders.AssembleGroup{EntityID: entity, Kind: kind, GroupNo: no, Units: us}
+	}
+	working := func(o orders.AssembleGroup, deposit int) orders.AssembleGroup {
+		o.DepositID = deposit
+		return o
+	}
+	producing := func(o orders.AssembleGroup, u unit) orders.AssembleGroup {
+		o.Producing = u
+		return o
+	}
+	for _, tc := range []struct {
+		line string
+		want orders.Order
+		err  error
+	}{
+		{line: "disband 5,000 CWRK from 99", want: orders.Disband{EntityID: 99, Unit: "CWRK", Qty: 5000}},
+		{line: "Disband 40 spy From 7", want: orders.Disband{EntityID: 7, Unit: "SPY", Qty: 40}},
+		{line: "disband 0 CWRK from 99", err: orders.ErrInvalidQuantity},
+		{line: "disband 10 FARM from 99", err: orders.ErrInvalidUnit},
+		{line: "disband 10 CWRK on 99", err: orders.ErrInvalidOrder},
+
+		{line: "assemble 20,000 STRL-10 on 5", want: orders.Assemble{EntityID: 5, Unit: unit{Type: "STRL", TechLevel: 10, Qty: 20000}}},
+		{line: "assemble 100 lfsu-1 on 5", want: orders.Assemble{EntityID: 5, Unit: unit{Type: "LFSU", TechLevel: 1, Qty: 100}}},
+		{line: "assemble 100 STRL on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 100 STRL-11 on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 100 FOOD-1 on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 100 CWRK on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 100 widgets on 5", err: orders.ErrInvalidUnit},
+		{line: "assemble 0 STRL-1 on 5", err: orders.ErrInvalidQuantity},
+		{line: "assemble 100 STRL-1 on home", err: orders.ErrInvalidEntityID},
+		{line: "assemble 100 STRL-1 from 5", err: orders.ErrInvalidOrder},
+		{line: "assemble", err: orders.ErrInvalidOrder},
+
+		{line: "assemble farming-group on 5 with 1,000 FARM-1", want: group(game.KindFarming, 0, 5, unit{Type: "FARM", TechLevel: 1, Qty: 1000})},
+		{line: "ASSEMBLE Farming-Group 2 ON 5 ADD 10 farm-10", want: group(game.KindFarming, 2, 5, unit{Type: "FARM", TechLevel: 10, Qty: 10})},
+		{line: "assemble farming-group on 5 with 10 FARM-1, 10 FARM-2", err: orders.ErrInvalidOrder},
+		{line: "assemble farming-group on 5 with 10 MINE-1", err: orders.ErrInvalidUnit},
+		{line: "assemble farming-group on 5 with 10 FARM", err: orders.ErrInvalidUnit},
+		{line: "assemble farming-group on 5 add 10 FARM-1", err: orders.ErrInvalidOrder},
+		{line: "assemble farming-group 2 on 5 with 10 FARM-1", err: orders.ErrInvalidOrder},
+		{line: "assemble farming-group 0 on 5 add 10 FARM-1", err: orders.ErrInvalidGroupNo},
+		{line: "assemble farming-group on 5 with 10 FARM-1 working 3", err: orders.ErrInvalidOrder},
+		{line: "assemble farming-group on 5 with", err: orders.ErrInvalidOrder},
+		{line: "assemble farming-group on 5", err: orders.ErrInvalidOrder},
+		{line: "assemble farming-group", err: orders.ErrInvalidOrder},
+
+		{line: "assemble mining-group on 5 with 25,000 MINE-10 working 17", want: working(group(game.KindMining, 0, 5, unit{Type: "MINE", TechLevel: 10, Qty: 25000}), 17)},
+		{line: "assemble mining-group 3 on 5 add 100 MINE-10", want: group(game.KindMining, 3, 5, unit{Type: "MINE", TechLevel: 10, Qty: 100})},
+		{line: "assemble mining-group on 5 with 100 MINE-10", err: orders.ErrInvalidOrder},
+		{line: "assemble mining-group on 5 with 100 MINE-10 working gold", err: orders.ErrInvalidDepositID},
+		{line: "assemble mining-group on 5 with 100 MINE-10 working 0", err: orders.ErrInvalidDepositID},
+		{line: "assemble mining-group 3 on 5 add 100 MINE-10 working 17", err: orders.ErrInvalidOrder},
+		{line: "assemble mining-group on 5 with 100 FACT-1 working 17", err: orders.ErrInvalidUnit},
+
+		{line: "assemble factory-group on 5 with 100 FACT-1", want: group(game.KindFactory, 0, 5, unit{Type: "FACT", TechLevel: 1, Qty: 100})},
+		{
+			line: "assemble factory-group on 5 with 1,000 FACT-10, 50 FACT-2 , 7 fact-3 producing CNGD",
+			want: producing(group(game.KindFactory, 0, 5, unit{Type: "FACT", TechLevel: 10, Qty: 1000}, unit{Type: "FACT", TechLevel: 2, Qty: 50}, unit{Type: "FACT", TechLevel: 3, Qty: 7}), unit{Type: "CNGD"}),
+		},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing farm-1", want: producing(group(game.KindFactory, 0, 5, unit{Type: "FACT", TechLevel: 1, Qty: 100}), unit{Type: "FARM", TechLevel: 1})},
+		{line: "assemble factory-group 4 on 5 add 100 FACT-1, 5 FACT-2", want: group(game.KindFactory, 4, 5, unit{Type: "FACT", TechLevel: 1, Qty: 100}, unit{Type: "FACT", TechLevel: 2, Qty: 5})},
+		{line: "assemble factory-group 4 on 5 add 100 FACT-1 producing CNGD", err: orders.ErrInvalidOrder},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing FARM", err: orders.ErrInvalidUnit},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing FUEL", err: orders.ErrInvalidUnit},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing SLD", err: orders.ErrInvalidUnit},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing", err: orders.ErrInvalidOrder},
+		{line: "assemble factory-group on 5 with 100 FACT-1,", err: orders.ErrInvalidOrder},
+		{line: "assemble factory-group on 5 with 100 FACT-1 50 FACT-2", err: orders.ErrInvalidOrder},
+		{line: "assemble factory-group on 5 with 100 FARM-1", err: orders.ErrInvalidUnit},
+		{line: "assemble factory-group on 5 with lots FACT-1", err: orders.ErrInvalidQuantity},
+	} {
+		t.Run(tc.line, func(t *testing.T) {
+			lines, err := orders.Parse(strings.NewReader(tc.line))
+			if err != nil || len(lines) != 1 {
+				t.Fatalf("Parse = %+v, %v; want one line", lines, err)
+			}
+			got := lines[0]
+			if !errors.Is(got.Err, tc.err) || (tc.err == nil && got.Err != nil) {
+				t.Fatalf("error = %v, want %v", got.Err, tc.err)
+			}
+			if !reflect.DeepEqual(got.Order, tc.want) {
+				t.Fatalf("order = %+v, want %+v", got.Order, tc.want)
+			}
+			if tc.want != nil {
+				text := tc.want.(interface{ String() string }).String()
+				again, err := orders.Parse(strings.NewReader(text))
+				if err != nil || len(again) != 1 || !reflect.DeepEqual(again[0].Order, tc.want) {
+					t.Errorf("String() = %q, which parses to %+v, %v", text, again, err)
+				}
+			}
+		})
+	}
+}

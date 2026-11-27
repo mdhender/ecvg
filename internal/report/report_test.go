@@ -173,6 +173,7 @@ func TestEmpire(t *testing.T) {
 				c.Cadres = game.Cadres{CWRK: 5000, TRNE: 150, SPY: 40}
 				c.Drafted = []game.Drafted{{Unit: "CWRK", Asked: 5000, Drafted: 5000}, {Unit: "TRNE", Asked: 16880, Drafted: 150}}
 				c.Trained = game.Trained{Trainees: 16880, Graduated: 844}
+				c.Disbanded = []game.Drafted{{Unit: "SPY", Asked: 500, Drafted: 10}, {Unit: "CWRK", Asked: 150, Drafted: 150}}
 			},
 			want: []string{
 				"\nCADRES               Size       PRO held       USK held       SLD held\n",
@@ -181,6 +182,8 @@ func TestEmpire(t *testing.T) {
 				"  SPY                  40             40                            40\n",
 				"  TRAINED LAST TURN: 844 of 16,880 TRNE became PRO, and the cadre was disbanded\n",
 				"  DRAFTED LAST TURN: 5,000 CWRK\n",
+				"  DISBANDED LAST TURN: 10 of the 500 SPY ordered: there were no more\n",
+				"  DISBANDED LAST TURN: 150 CWRK\n",
 				"  DRAFTED LAST TURN: 150 of the 16,880 TRNE ordered: no more could be drafted\n",
 			},
 		},

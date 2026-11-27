@@ -274,3 +274,82 @@ func TestDraftedPeopleWorkThisTurn(t *testing.T) {
 		t.Errorf("turn 3: workers %+v, trained %+v; want 67 PRO and 793 USK", c.Workers, c.Trained)
 	}
 }
+
+func TestDisbandAndAssembleOrders(t *testing.T) {
+	d := twoEmpires()
+	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300, SLD: 50}
+	d.Colonies[0].Cadres = game.Cadres{CWRK: 200, SPY: 10}
+	d.Colonies[0].Disbanded = []game.Drafted{{Unit: "SPY", Asked: 1, Drafted: 1}} // last turn's
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, `disband 150 CWRK from 1
+draft 30 CWRK from 1
+disband 500 SPY from 1
+disband 20 SLD from 1
+disband 5 POL from 1
+disband 5 CWRK from 3
+assemble 100 STRL-1 on 1
+assemble farming-group on 1 with 10 FARM-1`)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Accepted != 4 || len(result.Rejected) != 4 || d.Colonies[0].Cadres != (game.Cadres{CWRK: 200, SPY: 10}) {
+		t.Fatalf("accepted %d, rejected %+v, cadres %+v", result.Accepted, result.Rejected, d.Colonies[0].Cadres)
+	}
+	for i, e := range []error{engine.ErrNotDraftable, engine.ErrNotControlled, engine.ErrNotImplemented, engine.ErrNotImplemented} {
+		if !errors.Is(result.Rejected[i].Err, e) {
+			t.Errorf("rejection %d: %v, want %v", i, result.Rejected[i].Err, e)
+		}
+	}
+	engine.Draft(&d, result.Drafts)
+	c := d.Colonies[0]
+	if c.Cadres != (game.Cadres{CWRK: 80}) || c.Population != (game.Population{USK: 1020, PRO: 300, SLD: 30}) {
+		t.Errorf("cadres %+v, population %+v", c.Cadres, c.Population)
+	}
+	want := []game.Drafted{{Unit: "CWRK", Asked: 150, Drafted: 150}, {Unit: "SPY", Asked: 500, Drafted: 10}, {Unit: "SLD", Asked: 20, Drafted: 20}}
+	if !reflect.DeepEqual(c.Disbanded, want) || len(c.Drafted) != 1 {
+		t.Errorf("disbanded %+v, drafted %+v; want %+v and one draft", c.Disbanded, c.Drafted, want)
+	}
+}
+
+// Disbanded people worked or not as they were at the start of the turn; they
+// are back in the worker cadre from the next.
+func TestDisbandTakesEffectNextTurn(t *testing.T) {
+	d := twoEmpires()
+	d.Game.Turn = 1
+	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300}
+	d.Colonies[0].Cadres = game.Cadres{CWRK: 200}
+	d.Colonies[0].Cargo = []game.Unit{{Type: "FOOD", Qty: 10_000}}
+	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "disband 200 CWRK from 1")}); err != nil {
+		t.Fatal(err)
+	}
+	if c := d.Colonies[0]; c.Workers.PRO != 100 || c.Workers.USK != 800 || c.Cadres != (game.Cadres{}) {
+		t.Fatalf("turn 1: workers %+v, cadres %+v", c.Workers, c.Cadres)
+	}
+	if _, err := engine.RunTurn(&d, nil); err != nil {
+		t.Fatal(err)
+	}
+	if c := d.Colonies[0]; c.Workers.PRO != 300 || c.Workers.USK != 1000 || c.Disbanded != nil {
+		t.Errorf("turn 2: workers %+v, disbanded %+v", c.Workers, c.Disbanded)
+	}
+}
+
+// A trainee cadre must exist at the start of a turn to be promoted in its
+// demographic changes; nobody is promoted in the setup turn.
+func TestTraineesArePromotedInDemographics(t *testing.T) {
+	d := game.Data{Colonies: []game.Colony{
+		{ID: 1, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300, NewTRNE: 100}},
+		{ID: 2, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300, NewTRNE: 100}},
+	}}
+	engine.Demographics(&d, 3)
+	if c := d.Colonies[0]; c.Trained != (game.Trained{Trainees: 200, Graduated: 10}) || c.Cadres != (game.Cadres{TRNE: 100}) ||
+		c.Population != (game.Population{USK: 990, PRO: 20}) {
+		t.Errorf("trained %+v, cadres %+v, population %+v", c.Trained, c.Cadres, c.Population)
+	}
+	// The setup turn: the trainees stay, and all of them train in turn 1.
+	setup := game.Data{Colonies: []game.Colony{
+		{ID: 1, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300, NewTRNE: 100}, Trained: game.Trained{Trainees: 5}},
+	}}
+	engine.Demographics(&setup, 0)
+	if c := setup.Colonies[0]; c.Trained != (game.Trained{}) || c.Cadres != (game.Cadres{TRNE: 300}) || c.Population != (game.Population{USK: 1000, PRO: 10}) {
+		t.Errorf("setup turn: trained %+v, cadres %+v, population %+v", c.Trained, c.Cadres, c.Population)
+	}
+}

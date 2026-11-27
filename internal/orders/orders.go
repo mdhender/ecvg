@@ -13,6 +13,14 @@
 //	set rations for EntityID to PercentageAmount
 //	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //	draft Quantity UnitOrCadre from EntityID
+//	disband Quantity UnitOrCadre from EntityID
+//	assemble Quantity Unit on EntityID
+//	assemble factory-group on EntityID with Quantity FactoryUnit (, Quantity FactoryUnit)* [producing Unit]
+//	assemble farming-group on EntityID with Quantity FarmUnit
+//	assemble mining-group on EntityID with Quantity MiningUnit working DepositID
+//	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit (, Quantity FactoryUnit)*
+//	assemble farming-group GroupNo on EntityID add Quantity FarmUnit
+//	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
 //
 // EntityID is the ID of an entity. PercentageAmount is a whole number with a
 // "%" joined to it: "50%", not "50 %". For rations it is from game.MinRations
@@ -21,6 +29,11 @@
 // is the number of a group of that kind. Quantity is a whole number, 1 or
 // more, which may have commas between its thousands: "3600" or "3,600".
 // UnitOrCadre is the code of a population unit or cadre, such as SLD or CWRK.
+// A unit that has a tech level is written with it, joined by a hyphen:
+// FactoryUnit is FACT-1 to FACT-10, FarmUnit FARM-1 to FARM-10, and
+// MiningUnit MINE-1 to MINE-10. A unit that has none is its code alone, such
+// as CNGD. The comma between the units of a factory group may be joined to
+// the unit before it or stand alone.
 package orders
 
 import (
@@ -44,9 +57,11 @@ const (
 	ErrInvalidGroupNo    = cerrs.Error("invalid group number")
 	ErrInvalidQuantity   = cerrs.Error("invalid quantity")
 	ErrInvalidUnit       = cerrs.Error("invalid unit")
+	ErrInvalidDepositID  = cerrs.Error("invalid deposit ID")
 )
 
-// Order is one order. Its type says which: SetRations, SetIdle, or Draft.
+// Order is one order. Its type says which: SetRations, SetIdle, Draft,
+// Disband, Assemble, or AssembleGroup.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -88,6 +103,78 @@ type Draft struct {
 
 func (o Draft) String() string {
 	return fmt.Sprintf("draft %d %s from %d", o.Qty, o.Unit, o.EntityID)
+}
+
+// Disband is the order "disband Quantity UnitOrCadre from EntityID". It
+// disbands Qty of the unit or cadre with the code Unit in the entity with ID
+// EntityID.
+type Disband struct {
+	EntityID int
+	Unit     string
+	Qty      int
+}
+
+func (o Disband) String() string {
+	return fmt.Sprintf("disband %d %s from %d", o.Qty, o.Unit, o.EntityID)
+}
+
+// Assemble is the order "assemble Quantity Unit on EntityID". It assembles
+// Unit.Qty of a unit on the entity with ID EntityID.
+type Assemble struct {
+	EntityID int
+	Unit     game.Unit
+}
+
+func (o Assemble) String() string {
+	return fmt.Sprintf("assemble %d %s on %d", o.Unit.Qty, unitName(o.Unit), o.EntityID)
+}
+
+// AssembleGroup is the order that assembles units into a factory, farming,
+// or mining group of the entity with ID EntityID: a new group, if GroupNo is
+// 0, or more units for the group numbered GroupNo.
+type AssembleGroup struct {
+	EntityID int
+	Kind     game.GroupKind
+	GroupNo  int
+	// Units is the units to assemble: one entry for a farming or mining
+	// group, one or more for a factory group.
+	Units []game.Unit
+	// DepositID is the deposit a new mining group works.
+	DepositID int
+	// Producing is what a new factory group is to make, if the order says;
+	// its Qty is 0.
+	Producing game.Unit
+}
+
+func (o AssembleGroup) String() string {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "assemble %s-group ", o.Kind)
+	if o.GroupNo != 0 {
+		fmt.Fprintf(&sb, "%d on %d add ", o.GroupNo, o.EntityID)
+	} else {
+		fmt.Fprintf(&sb, "on %d with ", o.EntityID)
+	}
+	for i, u := range o.Units {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		fmt.Fprintf(&sb, "%d %s", u.Qty, unitName(u))
+	}
+	if o.Producing.Type != "" {
+		fmt.Fprintf(&sb, " producing %s", unitName(o.Producing))
+	}
+	if o.DepositID != 0 {
+		fmt.Fprintf(&sb, " working %d", o.DepositID)
+	}
+	return sb.String()
+}
+
+// unitName returns the unit as orders write it: FACT-10, or CNGD.
+func unitName(u game.Unit) string {
+	if u.TechLevel == 0 {
+		return u.Type
+	}
+	return fmt.Sprintf("%s-%d", u.Type, u.TechLevel)
 }
 
 // Line is one line of an orders file that holds an order.
@@ -135,7 +222,11 @@ func parseOrder(tokens []Token) (Order, error) {
 	case len(tokens) >= 2 && tokens[0].Is("set") && tokens[1].Is("idle"):
 		return parseSetIdle(tokens)
 	case tokens[0].Is("draft"):
-		return parseDraft(tokens)
+		return parseDraft(tokens, "draft")
+	case tokens[0].Is("disband"):
+		return parseDraft(tokens, "disband")
+	case tokens[0].Is("assemble"):
+		return parseAssemble(tokens)
 	}
 	return nil, ErrUnknownOrder
 }
@@ -187,11 +278,10 @@ func parseSetIdle(tokens []Token) (Order, error) {
 	return SetIdle{EntityID: id, Kind: kind, GroupNo: no, Percent: pct}, nil
 }
 
-const draftUsage = "want: draft Quantity UnitOrCadre from EntityID"
-
-func parseDraft(tokens []Token) (Order, error) {
+// parseDraft parses a draft or a disband order; verb says which.
+func parseDraft(tokens []Token, verb string) (Order, error) {
 	if len(tokens) != 5 || !tokens[3].Is("from") {
-		return nil, fmt.Errorf("%w: %s", ErrInvalidOrder, draftUsage)
+		return nil, fmt.Errorf("%w: want: %s Quantity UnitOrCadre from EntityID", ErrInvalidOrder, verb)
 	}
 	qty, ok := quantity(tokens[1])
 	if !ok || qty < 1 {
@@ -205,7 +295,198 @@ func parseDraft(tokens []Token) (Order, error) {
 	if !ok || id < 1 {
 		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidEntityID, tokens[4].Text)
 	}
+	if verb == "disband" {
+		return Disband{EntityID: id, Unit: code, Qty: qty}, nil
+	}
 	return Draft{EntityID: id, Unit: code, Qty: qty}, nil
+}
+
+// groupUnit is the unit that the groups of each kind are made of.
+var groupUnit = map[game.GroupKind]string{
+	game.KindFactory: units.FACT,
+	game.KindFarming: units.FARM,
+	game.KindMining:  units.MINE,
+}
+
+const assembleUsage = `want one of:
+  assemble Quantity Unit on EntityID
+  assemble factory-group on EntityID with Quantity FACT-n, Quantity FACT-n ... [producing Unit]
+  assemble farming-group on EntityID with Quantity FARM-n
+  assemble mining-group on EntityID with Quantity MINE-n working DepositID
+  assemble factory-group GroupNo on EntityID add Quantity FACT-n, Quantity FACT-n ...
+  assemble farming-group GroupNo on EntityID add Quantity FARM-n
+  assemble mining-group GroupNo on EntityID add Quantity MINE-n`
+
+func parseAssemble(tokens []Token) (Order, error) {
+	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, assembleUsage)
+	if len(tokens) < 2 {
+		return nil, usage
+	}
+	var kind game.GroupKind
+	for k := range groupUnit {
+		if tokens[1].Is(string(k) + "-group") {
+			kind = k
+		}
+	}
+	if kind == "" {
+		// assemble Quantity Unit on EntityID
+		if len(tokens) != 5 || !tokens[3].Is("on") {
+			return nil, usage
+		}
+		u, err := quantityOf(tokens[1], tokens[2], "")
+		if err != nil {
+			return nil, err
+		}
+		id, err := entityID(tokens[4])
+		if err != nil {
+			return nil, err
+		}
+		return Assemble{EntityID: id, Unit: u}, nil
+	}
+
+	o := AssembleGroup{Kind: kind}
+	rest := tokens[2:]
+	// next takes the next token, or fails if there is none.
+	next := func() (Token, bool) {
+		if len(rest) == 0 {
+			return Token{}, false
+		}
+		t := rest[0]
+		rest = rest[1:]
+		return t, true
+	}
+	t, ok := next()
+	if ok && !t.Is("on") {
+		// A group number: the order adds to a group.
+		if o.GroupNo, ok = number(t); !ok || o.GroupNo < 1 {
+			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, t.Text)
+		}
+		t, ok = next()
+	}
+	if !ok || !t.Is("on") {
+		return nil, usage
+	}
+	if t, ok = next(); !ok {
+		return nil, usage
+	}
+	var err error
+	if o.EntityID, err = entityID(t); err != nil {
+		return nil, err
+	}
+	link := "with"
+	if o.GroupNo != 0 {
+		link = "add"
+	}
+	if t, ok = next(); !ok || !t.Is(link) {
+		return nil, usage
+	}
+	for {
+		q, ok1 := next()
+		u, ok2 := next()
+		if !ok1 || !ok2 {
+			return nil, usage
+		}
+		// The comma that says another unit follows may end this one.
+		more := !u.Quoted && len(u.Text) > 1 && strings.HasSuffix(u.Text, ",")
+		if more {
+			u.Text = strings.TrimSuffix(u.Text, ",")
+		}
+		unit, err := quantityOf(q, u, groupUnit[kind])
+		if err != nil {
+			return nil, err
+		}
+		o.Units = append(o.Units, unit)
+		if !more && len(rest) > 0 && rest[0].Is(",") {
+			rest, more = rest[1:], true
+		}
+		if !more {
+			break
+		}
+	}
+	if len(o.Units) > 1 && kind != game.KindFactory {
+		return nil, fmt.Errorf("%w: a %s group takes units of one tech level", ErrInvalidOrder, kind)
+	}
+	switch {
+	case o.GroupNo != 0:
+		// Nothing follows the units.
+	case kind == game.KindMining:
+		t, ok1 := next()
+		id, ok2 := next()
+		if !ok1 || !ok2 || !t.Is("working") {
+			return nil, usage
+		}
+		if o.DepositID, ok = number(id); !ok || o.DepositID < 1 {
+			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidDepositID, id.Text)
+		}
+	case kind == game.KindFactory && len(rest) > 0:
+		t, ok1 := next()
+		u, ok2 := next()
+		if !ok1 || !ok2 || !t.Is("producing") {
+			return nil, usage
+		}
+		if o.Producing, err = unitOf(u, ""); err != nil {
+			return nil, err
+		}
+		if d, _ := units.Lookup(o.Producing.Type); !d.Manufactured {
+			return nil, fmt.Errorf("%w: %q: factories don't make it", ErrInvalidUnit, u.Text)
+		}
+	}
+	if len(rest) > 0 {
+		return nil, usage
+	}
+	return o, nil
+}
+
+// entityID returns the value of a token that is an entity ID.
+func entityID(t Token) (int, error) {
+	id, ok := number(t)
+	if !ok || id < 1 {
+		return 0, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidEntityID, t.Text)
+	}
+	return id, nil
+}
+
+// quantityOf returns the unit that a quantity token and a unit token name.
+// See unitOf for want.
+func quantityOf(q, u Token, want string) (game.Unit, error) {
+	qty, ok := quantity(q)
+	if !ok || qty < 1 {
+		return game.Unit{}, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600", ErrInvalidQuantity, q.Text)
+	}
+	unit, err := unitOf(u, want)
+	unit.Qty = qty
+	return unit, err
+}
+
+// unitOf returns the unit that a token names: a code and, for a unit that
+// has one, a tech level joined to it by a hyphen, such as FACT-10 or CNGD.
+// Case is ignored. People aren't units to assemble or make. If want is not
+// empty, the unit must have that code.
+func unitOf(t Token, want string) (game.Unit, error) {
+	bad := func(why string) (game.Unit, error) {
+		return game.Unit{}, fmt.Errorf("%w: %q: %s", ErrInvalidUnit, t.Text, why)
+	}
+	code, level, hasLevel := strings.Cut(strings.ToUpper(t.Text), "-")
+	d, ok := units.Lookup(code)
+	switch {
+	case t.Quoted || !ok || d.Population():
+		if want != "" {
+			return bad(fmt.Sprintf("want %s-1 to %s-%d", want, want, units.MaxTechLevel))
+		}
+		return bad("want a unit, such as STRC-1 or CNGD")
+	case want != "" && code != want:
+		return bad(fmt.Sprintf("want %s-1 to %s-%d", want, want, units.MaxTechLevel))
+	case !d.HasTechLevel:
+		if hasLevel {
+			return bad(code + " has no tech level")
+		}
+		return game.Unit{Type: code}, nil
+	}
+	tl, ok := number(Token{Text: level})
+	if !hasLevel || !ok || !d.ValidTechLevel(tl) {
+		return bad(fmt.Sprintf("want %s-%d to %s-%d", code, units.MinTechLevel, code, units.MaxTechLevel))
+	}
+	return game.Unit{Type: code, TechLevel: tl}, nil
 }
 
 // quantity returns the value of a token that is a whole number, which may

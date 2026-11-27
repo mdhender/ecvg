@@ -20,7 +20,7 @@ const SetupTurn = 0
 // RunTurn processes the game's current turn, d.Game.Turn: it runs each phase
 // in order on the state in d, which becomes the state as of the next turn, and
 // then advances d.Game.Turn. The phases, in order: ApplyOrders, with the
-// orders the empires returned for the turn, AllocateResources, Farming, Mining, Training, Draft, Rations,
+// orders the empires returned for the turn, AllocateResources, Farming, Mining, Draft, Rations,
 // PopulationChanges, and Demographics. It returns what became of the orders. If it fails, d is not
 // changed.
 func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
@@ -31,7 +31,6 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	allocs := AllocateResources(d, d.Game.Turn)
 	Farming(d, d.Game.Turn, allocs)
 	Mining(d, d.Game.Turn, allocs)
-	Training(d, d.Game.Turn)
 	Draft(d, result.Drafts)
 	meals := Rations(d, d.Game.Turn)
 	PopulationChanges(d, meals)
@@ -41,12 +40,20 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 }
 
 // Demographics is the demographic changes phase of the turn numbered turn. It
-// applies ChangePopulation to the population of every entity in d, and then
-// cuts the entity's cadres down to what its population can still make up.
+// applies ChangePopulation to the population of every entity in d, promotes
+// the trainees of the TRNE cadre the turn began with (game.Colony.Train; not
+// in the setup turn), and then cuts the entity's cadres down to what its population can still make up.
 func Demographics(d *game.Data, turn int) {
 	for i := range d.Colonies {
 		c := &d.Colonies[i]
 		c.Population = ChangePopulation(c.Population, turn)
+		// The trainees the turn began with are promoted and their cadre is
+		// disbanded. The ones drafted this turn train in the next.
+		c.Trained = game.Trained{}
+		if turn > SetupTurn {
+			c.Trained = c.Train()
+		}
+		c.Cadres.NewTRNE = 0
 		// A cadre can't hold people the colony no longer has.
 		c.Cadres = c.Cadres.Fit(c.Population)
 	}

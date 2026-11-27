@@ -43,7 +43,12 @@ func TestDraft(t *testing.T) {
 		{"nothing asked", pop{USK: 500, PRO: 500}, cad{}, "CWRK", -4, 0, pop{USK: 500, PRO: 500}, cad{}},
 	} {
 		c := game.Colony{Population: tc.pop, Cadres: tc.cadres}
-		if got := c.Draft(tc.unit, tc.qty); got != tc.want || c.Population != tc.wantPop || c.Cadres != tc.wantCad {
+		got := c.Draft(tc.unit, tc.qty)
+		if tc.unit == "TRNE" && c.Cadres.NewTRNE != got {
+			t.Errorf("%s: %d of the trainees are new, want %d", tc.name, c.Cadres.NewTRNE, got)
+		}
+		c.Cadres.NewTRNE = 0
+		if got != tc.want || c.Population != tc.wantPop || c.Cadres != tc.wantCad {
 			t.Errorf("%s: drafted %d, leaving %+v and %+v; want %d, %+v and %+v", tc.name, got, c.Population, c.Cadres, tc.want, tc.wantPop, tc.wantCad)
 		}
 	}
@@ -74,6 +79,43 @@ func TestCadres(t *testing.T) {
 	} {
 		if got := k.Fit(tc.pop); got != tc.want {
 			t.Errorf("Fit(%+v) = %+v, want %+v", tc.pop, got, tc.want)
+		}
+	}
+}
+
+func TestTrainAndDisband(t *testing.T) {
+	// 150 trainees began the turn; 60 more were drafted during it.
+	c := game.Colony{Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 150}}
+	c.Draft("TRNE", 60)
+	if got := c.Train(); got != (game.Trained{Trainees: 150, Graduated: 7}) ||
+		c.Cadres != (game.Cadres{TRNE: 60}) || c.Population != (game.Population{USK: 993, PRO: 17}) {
+		t.Errorf("trained %+v, leaving %+v and %+v", got, c.Cadres, c.Population)
+	}
+	// 19 trainees: 5% rounds down to nothing.
+	c = game.Colony{Population: game.Population{USK: 100, PRO: 1}, Cadres: game.Cadres{TRNE: 19}}
+	if got := c.Train(); got != (game.Trained{Trainees: 19}) || c.Cadres != (game.Cadres{}) {
+		t.Errorf("trained %+v, leaving %+v", got, c.Cadres)
+	}
+
+	for _, tc := range []struct {
+		unit      string
+		qty, want int
+		wantPop   game.Population
+		wantCad   game.Cadres
+	}{
+		{"CWRK", 50, 50, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{CWRK: 150, TRNE: 100, NewTRNE: 30, SPY: 40}},
+		{"CWRK", 5000, 200, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{TRNE: 100, NewTRNE: 30, SPY: 40}},
+		{"SPY", 100, 40, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{CWRK: 200, TRNE: 100, NewTRNE: 30}},
+		{"TRNE", 20, 20, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{CWRK: 200, TRNE: 80, NewTRNE: 10, SPY: 40}},
+		{"TRNE", 500, 100, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{CWRK: 200, SPY: 40}},
+		// The 40 SLD who are spies can't be disbanded as soldiers.
+		{"SLD", 80, 50, game.Population{USK: 550, PRO: 300, SLD: 40}, game.Cadres{CWRK: 200, TRNE: 100, NewTRNE: 30, SPY: 40}},
+		{"POL", 80, 0, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{CWRK: 200, TRNE: 100, NewTRNE: 30, SPY: 40}},
+		{"CWRK", -1, 0, game.Population{USK: 500, PRO: 300, SLD: 90}, game.Cadres{CWRK: 200, TRNE: 100, NewTRNE: 30, SPY: 40}},
+	} {
+		c := game.Colony{Population: game.Population{USK: 500, PRO: 300, SLD: 90}, Cadres: game.Cadres{CWRK: 200, TRNE: 100, NewTRNE: 30, SPY: 40}}
+		if got := c.Disband(tc.unit, tc.qty); got != tc.want || c.Population != tc.wantPop || c.Cadres != tc.wantCad {
+			t.Errorf("Disband(%s, %d) = %d, leaving %+v and %+v; want %d, %+v and %+v", tc.unit, tc.qty, got, c.Population, c.Cadres, tc.want, tc.wantPop, tc.wantCad)
 		}
 	}
 }

@@ -20,6 +20,9 @@ type Cadres struct {
 	// TRNE is trainees: each is 1 USK, and every TraineesPerPRO of them, or
 	// part of that, needs 1 PRO.
 	TRNE int `json:"trne,omitzero"`
+	// NewTRNE is the part of TRNE drafted in the turn being processed. Only
+	// the trainees a turn began with are promoted at the end of it.
+	NewTRNE int `json:"-"`
 	// SPY is spies: each is 1 PRO and 1 SLD.
 	SPY int `json:"spy,omitzero"`
 }
@@ -56,17 +59,48 @@ type Trained struct {
 	Graduated int `json:"graduated"`
 }
 
-// Train ends the turn for the colony's TRNE cadre: TraineePercent of its
-// trainees, rounded down, stop being USK and become PRO, and the cadre is
-// disbanded, which frees the rest of its USK and its PRO. It returns what
-// happened.
+// Train ends the turn for the colony's TRNE cadre. Of the trainees the turn
+// began with, TraineePercent, rounded down, stop being USK and become PRO,
+// and that cadre is disbanded, which frees the rest of its USK and its PRO.
+// The trainees drafted during the turn stay, to train in the next one. It
+// returns what happened.
 func (c *Colony) Train() Trained {
-	t := Trained{Trainees: c.Cadres.TRNE}
+	k := &c.Cadres
+	k.NewTRNE = max(0, min(k.NewTRNE, k.TRNE))
+	t := Trained{Trainees: k.TRNE - k.NewTRNE}
 	t.Graduated = max(0, min(t.Trainees*TraineePercent/100, c.Population.USK))
 	c.Population.USK -= t.Graduated
 	c.Population.PRO += t.Graduated
-	c.Cadres.TRNE = 0
+	k.TRNE, k.NewTRNE = k.NewTRNE, 0
 	return t
+}
+
+// Disband disbands up to qty of the unit with the given code in the colony,
+// which frees the population units it held, and returns the quantity
+// disbanded: as many as there are. A disbanded SLD becomes a USK again. It
+// disbands nothing of a unit that isn't Draftable.
+func (c *Colony) Disband(code string, qty int) int {
+	n, k := max(0, qty), &c.Cadres
+	switch code {
+	case units.SLD:
+		n = min(n, c.FreeSLD())
+		c.Population.SLD -= n
+		c.Population.USK += n
+	case units.CWRK:
+		n = min(n, max(0, k.CWRK))
+		k.CWRK -= n
+	case units.TRNE:
+		// The trainees drafted this turn go first.
+		n = min(n, max(0, k.TRNE))
+		k.TRNE -= n
+		k.NewTRNE = max(0, k.NewTRNE-n)
+	case units.SPY:
+		n = min(n, max(0, k.SPY))
+		k.SPY -= n
+	default:
+		return 0
+	}
+	return n
 }
 
 // Fit returns the cadres cut down to what the population p can make up, for
@@ -80,6 +114,7 @@ func (k Cadres) Fit(p Population) Cadres {
 	pro -= k.CWRK
 	usk -= k.CWRK
 	k.TRNE = max(0, min(k.TRNE, usk, pro*TraineesPerPRO))
+	k.NewTRNE = max(0, min(k.NewTRNE, k.TRNE))
 	return k
 }
 
@@ -99,11 +134,11 @@ func Draftable(code string) bool {
 	return false
 }
 
-// Drafted records a draft order and what came of it.
+// Drafted records a draft or disband order and what came of it.
 type Drafted struct {
 	Unit string `json:"unit"`
 	// Asked is the quantity ordered and Drafted the quantity the entity
-	// could supply.
+	// could supply: drafted, or disbanded.
 	Asked   int `json:"asked"`
 	Drafted int `json:"drafted"`
 }
@@ -133,6 +168,7 @@ func (c *Colony) Draft(code string, qty int) int {
 		most := (trainers(c.Cadres.TRNE) + c.FreePRO()) * TraineesPerPRO
 		n = max(0, min(n, c.FreeUSK(), most-c.Cadres.TRNE))
 		c.Cadres.TRNE += n
+		c.Cadres.NewTRNE += n
 	case units.SPY:
 		n = min(n, c.FreePRO(), c.FreeSLD())
 		c.Cadres.SPY += n
