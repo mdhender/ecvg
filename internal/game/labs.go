@@ -13,6 +13,18 @@ import (
 // ErrLabSite is matched by the errors of CanAssembleLabs.
 const ErrLabSite = cerrs.Error("laboratories can't be assembled here")
 
+// HasLabs reports whether the colony has any assembled laboratories, running
+// or not. It takes them to put research into prototypes or to take out of a
+// prototype more research than it uses.
+func (c *Colony) HasLabs() bool {
+	for _, g := range c.LaboratoryGroups {
+		if GroupQty(g.Units) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // CanAssembleLabs reports whether an entity of type t may assemble a
 // laboratory group: any colony can, and a ship can't, though it may carry LAB
 // units in storage. The error, if any, matches ErrLabSite.

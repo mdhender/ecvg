@@ -204,6 +204,19 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				p("  LAST TURN: no CWRK, so no assembly work was done")
 			}
 			for _, a := range c.Assembly {
+				if a.Action == game.WorkTechLevel {
+					if a.Unit.Qty == 0 {
+						p("  Tech level raised to TL %d last turn, and the work is done", a.Unit.TechLevel)
+						continue
+					}
+					limit := ""
+					if a.MaxCWRK != 0 {
+						limit = fmt.Sprintf(" (using at most %s CWRK)", commas(a.MaxCWRK))
+					}
+					p("  Tech level: raising to TL %d, with %s EMU done of the %s EMU it takes%s",
+						a.Unit.TechLevel, commas(a.EMU), commas(a.Need), limit)
+					continue
+				}
 				name := unitName(a.Unit.Type, a.Unit.TechLevel)
 				done := map[game.Work]string{game.WorkAssemble: "assembled", game.WorkDisassemble: "disassembled", game.WorkScrap: "scrapped"}[a.Action]
 				what := ""

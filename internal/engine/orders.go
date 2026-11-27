@@ -107,6 +107,8 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		return nil
 	case orders.AssembleGroup:
 		return AssembleGroup(d, empireID, o)
+	case orders.AssembleTechLevel:
+		return AssembleTechLevel(d, empireID, o)
 	case orders.UnitWork:
 		return UnitWork(d, empireID, o)
 	case orders.UpdateGroup:

@@ -19,6 +19,7 @@
 //	assemble laboratory-group on EntityID with Quantity LabUnit
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
+//	assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]
 //	assemble Quantity Unit on EntityID
 //	disassemble Quantity Unit on EntityID
 //	scrap Quantity Unit on EntityID
@@ -67,10 +68,11 @@ const (
 	ErrInvalidQuantity   = cerrs.Error("invalid quantity")
 	ErrInvalidUnit       = cerrs.Error("invalid unit")
 	ErrInvalidDepositNo  = cerrs.Error("invalid deposit number")
+	ErrInvalidTechLevel  = cerrs.Error("invalid tech level")
 )
 
 // Order is one order. Its type says which: SetRations, UpdateGroup, Draft,
-// Disband, AssembleGroup, or UnitWork.
+// Disband, AssembleGroup, AssembleTechLevel, or UnitWork.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -185,6 +187,34 @@ func (o AssembleGroup) String() string {
 	}
 	if o.DepositNo != 0 {
 		fmt.Fprintf(&sb, " working %d", o.DepositNo)
+	}
+	sb.WriteString(using(o.MaxCWRK))
+	return sb.String()
+}
+
+// AssembleTechLevel is the order "assemble tech-level on EntityID [to TL-n]
+// [with Quantity PRTO-n]". It has the CWRK of the entity with ID EntityID
+// raise its tech level, paid for with its RSCH or with the PRTO units named.
+type AssembleTechLevel struct {
+	EntityID int
+	// To is the tech level to raise the entity to, or 0 for one more than it
+	// has.
+	To int
+	// PRTO is the prototypes that pay for it, or the zero Unit if the
+	// entity's RSCH does.
+	PRTO game.Unit
+	// MaxCWRK is as for AssembleGroup.
+	MaxCWRK int
+}
+
+func (o AssembleTechLevel) String() string {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "assemble tech-level on %d", o.EntityID)
+	if o.To != 0 {
+		fmt.Fprintf(&sb, " to TL-%d", o.To)
+	}
+	if o.PRTO.Qty != 0 {
+		fmt.Fprintf(&sb, " with %d %s", o.PRTO.Qty, unitName(o.PRTO))
 	}
 	sb.WriteString(using(o.MaxCWRK))
 	return sb.String()
@@ -451,6 +481,7 @@ const assembleUsage = `want one of:
   assemble laboratory-group on EntityID with Quantity LAB-n
   assemble factory-group GroupNo on EntityID add Quantity FACT-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
+  assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]
 any of them may end with: using Quantity CWRK`
 
 // usingClause takes "using Quantity CWRK" off the end of an order, if it is
@@ -515,6 +546,9 @@ func parseAssemble(tokens []Token) (Order, error) {
 		if tokens[1].Is(string(k) + "-group") {
 			kind = k
 		}
+	}
+	if kind == "" && tokens[1].Is("tech-level") {
+		return parseAssembleTechLevel(tokens[2:], maxCWRK)
 	}
 	if kind == "" {
 		// assemble Quantity Unit on EntityID. People aren't assembled.
@@ -601,6 +635,42 @@ func parseAssemble(tokens []Token) (Order, error) {
 		}
 	}
 	if len(rest) > 0 {
+		return nil, usage
+	}
+	return o, nil
+}
+
+const techLevelUsage = "want: assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n] [using Quantity CWRK]"
+
+// parseAssembleTechLevel parses what follows "assemble tech-level", without
+// the using clause: on EntityID [to TL-n] [with Quantity PRTO-n].
+func parseAssembleTechLevel(rest []Token, maxCWRK int) (Order, error) {
+	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, techLevelUsage)
+	if len(rest) < 2 || !rest[0].Is("on") {
+		return nil, usage
+	}
+	o := AssembleTechLevel{MaxCWRK: maxCWRK}
+	var err error
+	if o.EntityID, err = entityID(rest[1]); err != nil {
+		return nil, err
+	}
+	rest = rest[2:]
+	if len(rest) >= 2 && rest[0].Is("to") {
+		level, isTL := strings.CutPrefix(strings.ToUpper(rest[1].Text), "TL-")
+		tl, ok := number(Token{Text: level, Quoted: rest[1].Quoted})
+		if !isTL || !ok || tl < units.MinTechLevel || tl > units.MaxTechLevel {
+			return nil, fmt.Errorf("%w: %q: want TL-%d to TL-%d", ErrInvalidTechLevel, rest[1].Text, units.MinTechLevel, units.MaxTechLevel)
+		}
+		o.To = tl
+		rest = rest[2:]
+	}
+	if len(rest) >= 3 && rest[0].Is("with") {
+		if o.PRTO, err = quantityOf(rest[1], rest[2], units.PRTO); err != nil {
+			return nil, err
+		}
+		rest = rest[3:]
+	}
+	if len(rest) != 0 {
 		return nil, usage
 	}
 	return o, nil

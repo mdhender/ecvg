@@ -269,6 +269,28 @@ func TestEmpire(t *testing.T) {
 			lack: []string{"LABORATORY GROUPS\n  None assembled"},
 		},
 		{
+			name:     "tech level",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.Construction = game.Construction{Pool: 500000, Used: 500000}
+				c.Assembly = []game.Assembly{
+					{Action: game.WorkTechLevel, Unit: game.Unit{TechLevel: 4, Qty: 1}, EMU: 1500000, Need: 6000000, MaxCWRK: 1000},
+				}
+			},
+			want: []string{"  Tech level: raising to TL 4, with 1,500,000 EMU done of the 6,000,000 EMU it takes (using at most 1,000 CWRK)\n"},
+		},
+		{
+			name:     "tech level raised",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.Construction = game.Construction{Pool: 500000, Used: 20}
+				c.Assembly = []game.Assembly{{Action: game.WorkTechLevel, Unit: game.Unit{TechLevel: 2}, EMU: 20, Need: 20, Assembled: 1}}
+			},
+			want: []string{"  Tech level raised to TL 2 last turn, and the work is done\n"},
+		},
+		{
 			name:     "later turn with no orders",
 			empireID: 1,
 			edit:     func(d *game.Data) { d.Game.Turn = 7 },

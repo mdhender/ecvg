@@ -76,8 +76,9 @@ func disassemblyLoss(done, n int) int {
 }
 
 // Assembly is a piece of work for a colony's CWRK: assembling units, into one
-// of the colony's groups or on their own, disassembling them, or scrapping
-// them. An order starts it, and it lasts until it has dealt with every unit.
+// of the colony's groups or on their own, disassembling them, scrapping
+// them, or raising the colony's tech level (WorkTechLevel). An order starts
+// it, and it lasts until it has dealt with every unit.
 type Assembly struct {
 	// Action is what the work does: assemble, if it is empty.
 	Action Work `json:"action,omitzero"`
@@ -90,6 +91,9 @@ type Assembly struct {
 	// what it takes (its mass, and more to scrap it), so a partly done unit
 	// keeps its EMU between turns.
 	EMU int `json:"emu"`
+	// Need is the EMU that work to raise the tech level takes in all. Other
+	// work takes what its units do.
+	Need int `json:"need,omitzero"`
 	// Done is the number of units the work has disassembled so far, which
 	// sets how many of the next are lost.
 	Done int `json:"done,omitzero"`
@@ -197,7 +201,7 @@ func (c *Colony) Disassemble() {
 	}
 	c.Assembly = jobs
 	c.Construction = Construction{Pool: max(0, c.Cadres.CWRK) * EMUPerCWRK}
-	c.construct(func(w Work) bool { return w != WorkAssemble })
+	c.construct(func(w Work) bool { return w == WorkDisassemble || w == WorkScrap })
 }
 
 // Assemble does a turn of the colony's assembly work, with what Disassemble,
@@ -206,9 +210,11 @@ func (c *Colony) Disassemble() {
 // order's cap on CWRK allows; EMU nothing took is lost. The units whose mass
 // the work has reached move from storage into use, in the depot if the colony
 // has one and the unit can be there, and otherwise in the colony itself if it
-// has room for them assembled, and join their group if they have one.
+// has room for them assembled, and join their group if they have one. Work to
+// raise the tech level is done here too, and the colony's tech level changes
+// when all of it is done.
 func (c *Colony) Assemble() {
-	c.construct(func(w Work) bool { return w == WorkAssemble })
+	c.construct(func(w Work) bool { return w == WorkAssemble || w == WorkTechLevel })
 }
 
 // construct does the work of the kinds that phase picks, with what is left
@@ -221,6 +227,19 @@ func (c *Colony) construct(phase func(Work) bool) {
 		budget := math.MaxInt
 		if a.MaxCWRK > 0 {
 			budget = a.MaxCWRK * EMUPerCWRK
+		}
+		if a.Action == WorkTechLevel {
+			if !phase(a.Action) || a.Unit.Qty <= 0 {
+				continue
+			}
+			take := max(0, min(left, budget, a.Need-a.EMU))
+			a.EMU += take
+			left -= take
+			if a.EMU >= a.Need {
+				c.TechLevel = max(c.TechLevel, a.Unit.TechLevel)
+				a.Unit.Qty, a.Assembled = 0, 1
+			}
+			continue
 		}
 		d, ok := units.Lookup(a.Unit.Type)
 		if !ok || !phase(a.Action) {

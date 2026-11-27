@@ -668,7 +668,7 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.8"></a>
 ### B3.8 Assembly Stage
 
-1. <a id="rule-B3.8.1"></a>Assemble orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) and [S6.8](#rule-S6.8) for groups)
+1. <a id="rule-B3.8.1"></a>Assemble orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) and [S6.8](#rule-S6.8) for groups); the work to raise a TL is done here too, and the TL rises when it is finished (see [S6.7](#rule-S6.7))
 
 <a id="rule-B3.9"></a>
 ### B3.9 Market Stage
@@ -728,7 +728,6 @@ All the orders for one stage are processed before any of the orders for the next
 4. <a id="rule-B3.17.4"></a>Factories produce
 5. <a id="rule-B3.17.5"></a>Laboratories do research (see [H4.0](#rule-H4.0))
 6. <a id="rule-B3.17.6"></a>People are paid; back pay is computed
-7. <a id="rule-B3.17.7"></a>TL increases (see [J4.1](#rule-J4.1))
 
 <a id="rule-B3.18"></a>
 ### B3.18 Espionage Stage
@@ -2622,13 +2621,18 @@ One way to improve a S/C's TL is to build the required amount of research points
 RSCH are built by laboratories ([H4.0](#rule-H4.0)), assembled into a LAB group with an assemble laboratory group order ([S6.8](#rule-S6.8)).
 A LAB will build .25 times its TL in RSCH per turn.
 RSCH may be transferred or sold, decreasing the total number of RSCH accumulated.
-RSCH accumulate in the S/C until the player assembles them with an ASM order naming the TL he wants, such as 75, ASM, TL-3 ([S6.7](#rule-S6.7)).
-The ASM order is processed in the assembly stage, but the TL is raised during the production stage ([B3.17.7](#rule-B3.17.7)), so RSCH built that turn are counted.
-The S/C's TL rises one level at a time toward the TL named, as far as its RSCH pay for, and the RSCH used are deducted from the total accumulated; any RSCH left over stay accumulated.
-Several TL's may be gained in one turn this way.
-An ASM order naming the S/C's current TL, a lower TL, or a TL above 10 fails with error E01.
-If the RSCH do not pay for the TL named, the order fails with error E02; but if they pay for at least one level, the S/C still gains the levels they pay for.
-RSCH is applied to TL once per turn, never twice: a second ASM order for TL in the same turn fails with error E01 ([R2.0](#rule-R2.0)).
+RSCH accumulate in the S/C until the player spends them with an assemble tech level order ([S6.7](#rule-S6.7)).
+The order names the TL wanted, or raises the S/C one level if it names none.
+The RSCH for every level on the way are deducted from the total accumulated as soon as the order is accepted; any RSCH left over stay accumulated.
+It is all or nothing: if the RSCH do not pay for every level up to the TL named, the order fails and the S/C gains no level at all.
+An order naming the S/C's current TL, a lower TL, or a TL above 10 fails.
+
+Paying for the levels does not raise the TL: the S/C's CWRK must then do the work ([F10.0](#rule-F10.0)).
+The size of the job is the S/C's enclosed space: each VU of it counts as one MU to assemble, for each level gained.
+A S/C enclosing 1,000,000 VU that is going from TL-1 to TL-3 has 2,000,000 MU of work, which is 4,000 CWRK for one turn.
+The work is done in the assembly stage ([B3.8](#rule-B3.8)), with the S/C's other assembly work, and work not finished carries on next turn.
+The TL is raised when the whole job is done, however many levels it is; the S/C gets no benefit from the levels while the work is in progress.
+A S/C that is raising its TL can't start to raise it again until the job is done.
 The quantities of RSCH listed below for each level are the number required to get from the preceding level to the one listed:
 
 | LEVEL | RSCH       |
@@ -2651,6 +2655,31 @@ Note that MTL and NMTL are not required for the production of RSCH.
 
 The second way to improve a S/C's TL is to transfer RSCH from another S/C.
 A S/C transferring RSCH will have that number deducted from the total RSCH accumulated.
+
+RSCH travel as prototypes (PRTO).
+A laboratory makes them, without an order, when its S/C transfers RSCH; so a S/C must have at least one assembled LAB to transfer RSCH.
+The LAB does not have to be running.
+A LAB makes prototypes of its own TL: a LAB-1 makes PRTO-1, and a LAB-10 makes PRTO-10.
+A prototype holds exactly the RSCH that raises a S/C to its TL from the level below (PRTO-1, which has no level below, holds half of a PRTO-2):
+
+| PROTOTYPE | RSCH       |
+|-----------|------------|
+| PRTO-1    |     50,000 |
+| PRTO-2    |    100,000 |
+| PRTO-3    |    200,000 |
+| PRTO-4    |    400,000 |
+| PRTO-5    |    800,000 |
+| PRTO-6    |  1,600,000 |
+| PRTO-7    |  3,200,000 |
+| PRTO-8    |  6,400,000 |
+| PRTO-9    | 12,800,000 |
+| PRTO-10   | 25,600,000 |
+
+A S/C spends RSCH of its own directly.
+Otherwise it must use up prototypes, which the assemble tech level order names ([S6.7](#rule-S6.7)).
+Prototypes are used up whole, as few as pay for the levels.
+A TL-1 ship using a PRTO-5 could rise to TL-4: it spends 100,000, then 200,000, then 400,000, and 100,000 RSCH remain in the prototype.
+If the S/C has any assembled LAB, the RSCH that remain are added to the RSCH it has accumulated; if it has none, they are lost.
 
 When a S/C's established, it automatically starts out with TL-1, whether the establishing S/C has a higher TL or not.
 
@@ -3275,6 +3304,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
 | Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
 | Assemble laboratory group | `assemble laboratory-group on EntityID with Quantity LAB-n` | [S6.8](#rule-S6.8) |
+| Assemble tech level | `assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]` | [S6.7](#rule-S6.7) |
 | Update factory group   | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
 | Shut down              | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
 | Restart                | `update GroupKind-group GroupNo of EntityID restart Quantity`<br>`update GroupKind-group GroupNo of EntityID restart PercentageAmount` | [S8.6](#rule-S8.6) |
@@ -3291,7 +3321,6 @@ They are listed by their 1980 codes.
 |--------|-------|
 | [S4.0](#rule-S4.0) Combat Orders | [TMV](#rule-S4.1), [CLS](#rule-S4.2), [RUN](#rule-S4.3), [PME](#rule-S4.4), [PMM](#rule-S4.5), [AME](#rule-S4.6), [AMM](#rule-S4.7), [INV](#rule-S4.8), [RAD](#rule-S4.9), [DTS](#rule-S4.10), [OTS](#rule-S4.11), [WTD](#rule-S4.12) |
 | [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [STP](#rule-S5.3), [ADN](#rule-S5.4), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
-| [S6.0](#rule-S6.0) Assembly and Scrap Orders | [ASM](#rule-S6.7), to raise a TL only |
 | [S7.0](#rule-S7.0) Transfer Orders | [TFR](#rule-S7.1), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
 | [S8.0](#rule-S8.0) Production Orders | [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
 | [S9.0](#rule-S9.0) Market Orders | [BUY](#rule-S9.1), [SEL](#rule-S9.2) |
@@ -4054,15 +4083,50 @@ assemble mining-group 1 on 37 add 5,000 MINE-2              # more MINE for grou
 - The S/C does not belong to the player.
 
 <a id="rule-S6.7"></a>
-### S6.7 Assemble TL (ASM)
+### S6.7 Assemble Tech Level
 
-> Not yet rewritten: this order is shown in its 1980 format, and is not accepted.
+Has the S/C's CWRK raise its TL, paid for with RSCH or with prototypes ([J4.0](#rule-J4.0)).
 
-- Format: S/C ID#, "ASM", "TL"-TL#.
-- Example: 75, ASM, TL-3.
-- Notes: This format assembles RSCH to raise the S/C's TL to the TL named (see [J4.1](#rule-J4.1)).
-  If S/C 75 is TL-1 with 300,000 RSCH, it rises to TL-3 and has no RSCH left.
-  With 250,000 RSCH, it rises to TL-2 and keeps 150,000 RSCH, and the order fails with error E02 because TL-3 was not reached.
+**Syntax**
+
+```text
+assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n] [using Quantity CWRK]
+```
+
+| Value    | Meaning                                                                                  |
+|----------|------------------------------------------------------------------------------------------|
+| EntityID | The S/C whose TL is raised.                                                              |
+| TL-n     | The TL to raise it to: TL-2 to TL-10. Optional; one level above the S/C's TL if omitted. |
+| Quantity | The most prototypes to use up ([S2.1](#rule-S2.1)).                                      |
+| PRTO-n   | The prototypes that pay for it, with their TL: PRTO-1 to PRTO-10. Optional.              |
+| using    | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional.           |
+
+**Examples**
+
+```text
+assemble tech-level on 75                          # one level, paid for with RSCH
+assemble tech-level on 75 to TL-3                  # to TL-3, paid for with RSCH
+assemble tech-level on 75 to TL-4 with 1 PRTO-5    # paid for with a prototype
+```
+
+**Rules**
+
+- The levels are paid for when the order is accepted ([J4.1](#rule-J4.1)): with the S/C's RSCH, or, if the order has a `with` clause, with the prototypes it names and no RSCH.
+- It is all or nothing.
+  If S/C 75 is TL-1 with 300,000 RSCH, an order to TL-3 is accepted and leaves it no RSCH.
+  With 250,000 RSCH the order fails, and the S/C keeps its RSCH and gains no level, though it could have paid for TL-2.
+- Only as many prototypes are used up as pay for the levels; the order takes the ones the S/C has if they are fewer than Quantity.
+  What remains in the last prototype is kept as RSCH if the S/C has any assembled LAB, and is lost if it has none ([J4.2](#rule-J4.2)).
+- The work is the S/C's enclosed space, 1 MU for each VU, for each level, and the CWRK do it as they do other assembly work ([F10.0](#rule-F10.0)).
+- The TL is raised when all the work is done.
+  Until then the S/C has its old TL, however many levels the job is.
+
+**Rejected when**
+
+- The TL named is the S/C's own TL or a lower one, or the S/C is TL-10.
+- The S/C's RSCH, or the prototypes named, do not pay for every level.
+- The S/C is already raising its TL.
+- The S/C does not belong to the player.
 
 <a id="rule-S6.8"></a>
 ### S6.8 Assemble Laboratory Group
