@@ -7,7 +7,6 @@ package engine
 
 import (
 	"github.com/mdhender/ecvg/internal/game"
-	"github.com/mdhender/ecvg/internal/orders"
 )
 
 // TurnsPerYear is the number of turns in a game year. A turn whose number
@@ -16,36 +15,6 @@ const TurnsPerYear = 4
 
 // SetupTurn is the number of a game's first turn, the players' setup turn.
 const SetupTurn = 0
-
-// RunTurn processes the game's current turn, d.Game.Turn: it runs each phase
-// in order on the state in d, which becomes the state as of the next turn, and
-// then advances d.Game.Turn. The phases follow the manual's turn sequence
-// (B3.0), in order: ApplyOrders, with the orders the empires returned for the
-// turn; Disassembly (B3.4); Assembly (B3.8); Draft (B3.12); production
-// (B3.17), which is AllocateResources, Farming, Rations, PopulationChanges
-// (the deaths by starvation), Mining, and Research; and Demographics and
-// LifeSupport (B3.20). It
-// returns what became of the orders. If it fails, d is not changed.
-func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
-	result, err := ApplyOrders(d, files)
-	if err != nil {
-		return OrdersResult{}, err
-	}
-	Setups(d)
-	Disassembly(d)
-	Assembly(d)
-	Draft(d, result.Drafts)
-	allocs := AllocateResources(d, d.Game.Turn)
-	Farming(d, d.Game.Turn, allocs)
-	meals := Rations(d, d.Game.Turn)
-	PopulationChanges(d, meals)
-	Mining(d, d.Game.Turn, allocs)
-	Research(d, d.Game.Turn, allocs)
-	Demographics(d, d.Game.Turn)
-	LifeSupport(d, d.Game.Turn)
-	d.Game.Turn++
-	return result, nil
-}
 
 // Demographics is the demographic changes phase of the turn numbered turn. It
 // applies ChangePopulation to the population of every entity in d, promotes
