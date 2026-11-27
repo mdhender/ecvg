@@ -356,6 +356,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | AMSL | Anti-missile                      | A short range missile used for defense.            |
 | APU  | Allow pick-up                     | This order allows a S/C to pick up from another.   |
 | ACFT | Assault craft                     | Armed vehicles capable of short flights in space.  |
+| ASM  | Assemble                          | This order makes items functional, forms groups.   |
 | AWPN | Assault weapons                   | Short range guns of various types.                 |
 | AUTO | Automation                        | Replaces unskilled in farms, factories, and mines. |
 
@@ -363,6 +364,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term         | Definition                                           |
 |------|--------------|------------------------------------------------------|
+| BCH  | Build change | This order changes standing orders for factories.    |
 | BUY  | Buy          | This order attempts to buy items through the market. |
 
 ### C
@@ -387,7 +389,10 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code  | Term                    | Definition                                          |
 |-------|-------------------------|-----------------------------------------------------|
 | DAM\* | Damage                  | Destruction of units in combat.                     |
+| DAS   | Disassemble             | This order is the reverse of an Assemble order.     |
 | DEP   | Deposit gift            | This order gives a mine group (& deposit) to a S/C. |
+| DRF   | Draft                   | This order drafts soldiers and cadres.              |
+| DSB   | Disband                 | This order disbands soldiers and cadres.            |
 | DTS   | Defensive troop support | See Combat ([D4.0](#rule-D4.0)<!-- was 15 -->).                                    |
 | DU\*  | Distance unit           | Equal to 10,000 kilometers.                         |
 
@@ -512,6 +517,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 |       | Regent         | A player who manages a Ruler's S/C's, follows his orders.  |
 | RSCH  | Research point | A unit of research, built by a laboratory (LAB).           |
 |       | Ruler          | Player, not a Regent, who controls a S/C.                  |
+| RTN   | Ration         | This order sets the amount of food eaten in a S/C.         |
 | RUN   | Run            | This order has one ship run from another ship.             |
 
 ### S
@@ -519,8 +525,10 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code | Term           | Definition                                           |
 |------|----------------|------------------------------------------------------|
 | S/C  | Ship or colony | Any ship or colony, interchangeably.                 |
+| SCR  | Scrap          | This order converts items back into MTL and NMTL.    |
 | SEL  | Sell           | This order sells items to or through the market.     |
 | SENS | Sensors        | Devices to do probes and improve EWPN and MLNC firing. |
+| SHT  | Shut-down      | This order shuts down units of a group in a S/C.     |
 
 | Code     | Term                         | Definition                                                    |
 |----------|------------------------------|---------------------------------------------------------------|
@@ -529,6 +537,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | SPM      | Spy move                     | This order changes spies from one group or target to another. |
 | SPY      | Spy cadre                    | Cadre consisting of 1 PRO and 1 SLD.                          |
 | STP      | Set-up                       | This order establishes a ship or colony.                      |
+| STU      | Start-up                     | This order restarts units of a group that were shut down.     |
 | STRL     | Light structural units       | Enclose 5 times the volume of STRN per unit ([F3.1.1](#rule-F3.1.1)). |
 | STRN     | Structural units             | Standard walls, beams, etc. of a S/C.                         |
 | STRS     | Super-light structural units | Enclose 20 times the volume of STRN per unit ([F3.1.1](#rule-F3.1.1)). |
@@ -626,8 +635,8 @@ All the orders for one stage are processed before any of the orders for the next
 
 The orders of this stage only give consent to an order that another player writes; the order consented to is carried out in a later stage of the same turn.
 
-1. <a id="rule-B3.2.1"></a>Allow add-on orders processed (see [S5.2](#rule-S5.2)<!-- was 17.4.14 -->), for the ADN orders of the Set-Up stage ([B3.3.2](#rule-B3.3.2))
-2. <a id="rule-B3.2.2"></a>Grant permission to colonize orders processed (see [S5.1](#rule-S5.1)<!-- was 17.4.13 -->), for the STP orders of the Set-Up stage ([B3.3.1](#rule-B3.3.1))
+1. <a id="rule-B3.2.1"></a>Allow add-on (AAN) orders processed (see [S5.2](#rule-S5.2)<!-- was 17.4.14 -->), for the ADN orders of the Set-Up stage ([B3.3.2](#rule-B3.3.2))
+2. <a id="rule-B3.2.2"></a>Grant permission to colonize (PTC) orders processed (see [S5.1](#rule-S5.1)<!-- was 17.4.13 -->), for the STP orders of the Set-Up stage ([B3.3.1](#rule-B3.3.1))
 3. <a id="rule-B3.2.3"></a>ACP orders processed (see [S5.7](#rule-S5.7)<!-- was 17.4.19 -->), for the GIV orders of the Dis-Assembly stage ([B3.4.5](#rule-B3.4.5)); not in the game, as there are no Regents ([B4.1](#rule-B4.1))
 
 <a id="rule-B3.3"></a>
@@ -639,8 +648,8 @@ The orders of this stage only give consent to an order that another player write
 <a id="rule-B3.4"></a>
 ### B3.4 Dis-Assembly Stage
 
-1. <a id="rule-B3.4.1"></a>Disassemble orders processed (see [S6.2](#rule-S6.2)<!-- was 17.4.50 -->)
-2. <a id="rule-B3.4.2"></a>Scrap orders processed (see [S6.3](#rule-S6.3)<!-- was 17.4.23 -->)
+1. <a id="rule-B3.4.1"></a>Disassemble (DAS) orders processed (see [S6.2](#rule-S6.2)<!-- was 17.4.50 -->)
+2. <a id="rule-B3.4.2"></a>Scrap (SCR) orders processed (see [S6.3](#rule-S6.3)<!-- was 17.4.23 -->)
 3. <a id="rule-B3.4.3"></a>JNK orders processed (see [S5.5](#rule-S5.5)<!-- was 17.4.17 -->)
 4. <a id="rule-B3.4.4"></a>MRG orders processed (see [S5.8](#rule-S5.8)<!-- was 17.4.20 -->)
 5. <a id="rule-B3.4.5"></a>GIV orders processed (see [S5.6](#rule-S5.6)<!-- was 17.4.18 -->); not in the game, as there are no Regents ([B4.1](#rule-B4.1))
@@ -662,15 +671,15 @@ The orders of this stage only give consent to an order that another player write
 <a id="rule-B3.7"></a>
 ### B3.7 Build Change Stage
 
-1. <a id="rule-B3.7.1"></a>Update factory group orders processed (see [S8.1](#rule-S8.1)<!-- was 17.4.28 -->)
+1. <a id="rule-B3.7.1"></a>Update factory group (BCH) orders processed (see [S8.1](#rule-S8.1)<!-- was 17.4.28 -->)
 2. <a id="rule-B3.7.2"></a>MCH orders processed (see [S8.3](#rule-S8.3)<!-- was 17.4.29 -->)
-3. <a id="rule-B3.7.3"></a>Shut down orders processed (see [S8.5](#rule-S8.5)<!-- was 17.4.30 -->)
-4. <a id="rule-B3.7.4"></a>Restart orders processed (see [S8.6](#rule-S8.6)<!-- was 17.4.31 -->)
+3. <a id="rule-B3.7.3"></a>Shut down (SHT) orders processed (see [S8.5](#rule-S8.5)<!-- was 17.4.30 -->)
+4. <a id="rule-B3.7.4"></a>Restart (STU) orders processed (see [S8.6](#rule-S8.6)<!-- was 17.4.31 -->)
 
 <a id="rule-B3.8"></a>
 ### B3.8 Assembly Stage
 
-1. <a id="rule-B3.8.1"></a>Assemble orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) and [S6.8](#rule-S6.8) for groups); the work to raise a TL is done here too, and the TL rises when it is finished (see [S6.7](#rule-S6.7))
+1. <a id="rule-B3.8.1"></a>Assemble (ASM) orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) and [S6.8](#rule-S6.8) for groups); the work to raise a TL is done here too, and the TL rises when it is finished (see [S6.7](#rule-S6.7))
 
 <a id="rule-B3.9"></a>
 ### B3.9 Market Stage
@@ -692,13 +701,13 @@ The orders of this stage only give consent to an order that another player write
 <a id="rule-B3.12"></a>
 ### B3.12 Draft Stage
 
-1. <a id="rule-B3.12.1"></a><a id="rule-B3.12.2"></a>Draft and disband orders processed together, in the order the player wrote them (see [S12.1](#rule-S12.1)<!-- was 17.4.40 --> and [S12.2](#rule-S12.2)<!-- was 17.4.41 -->)
+1. <a id="rule-B3.12.1"></a><a id="rule-B3.12.2"></a>Draft (DRF) and disband (DSB) orders processed together, in the order the player wrote them (see [S12.1](#rule-S12.1)<!-- was 17.4.40 --> and [S12.2](#rule-S12.2)<!-- was 17.4.41 -->)
 
 <a id="rule-B3.13"></a>
 ### B3.13 Pay Change Stage
 
 1. <a id="rule-B3.13.1"></a>PAY orders processed (see [S12.3](#rule-S12.3)<!-- was 17.4.42 -->)
-2. <a id="rule-B3.13.2"></a>Set rations orders processed (see [S12.4](#rule-S12.4)<!-- was 17.4.43 -->)
+2. <a id="rule-B3.13.2"></a>Set rations (RTN) orders processed (see [S12.4](#rule-S12.4)<!-- was 17.4.43 -->)
 
 <a id="rule-B3.14"></a>
 ### B3.14 Naming Stage
@@ -3351,25 +3360,26 @@ The population units that make it up stay in the S/C's POP and are counted there
 
 The orders the game accepts are listed here, each with the rule that describes it.
 [S2.0](#rule-S2.0) explains how an order is written and how to read its syntax.
+The code is the one the order goes by in the Glossary ([A7.0](#rule-A7.0)) and the Turn Sequence ([B3.0](#rule-B3.0)); it is not written in the order.
 
-| Order                  | Syntax | Rule |
-|------------------------|--------|------|
-| Assemble               | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1) |
-| Disassemble            | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2) |
-| Scrap                  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3) |
-| Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n producing Unit`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
-| Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
-| Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
-| Assemble laboratory group | `assemble laboratory-group on EntityID with Quantity LAB-n` | [S6.8](#rule-S6.8) |
-| Assemble tech level | `assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]` | [S6.7](#rule-S6.7) |
-| Assemble prototype | `assemble PRTO-n on EntityID from laboratory-group GroupNo` | [S6.9](#rule-S6.9) |
-| Transfer | `transfer Quantity Unit from EntityID to EntityID` | [S7.1](#rule-S7.1) |
-| Update factory group   | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
-| Shut down              | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
-| Restart                | `update GroupKind-group GroupNo of EntityID restart Quantity`<br>`update GroupKind-group GroupNo of EntityID restart PercentageAmount` | [S8.6](#rule-S8.6) |
-| Draft                  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
-| Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2) |
-| Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4) |
+| Order                  | Code | Syntax | Rule |
+|------------------------|------|--------|------|
+| Assemble               | ASM  | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1) |
+| Disassemble            | DAS  | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2) |
+| Scrap                  | SCR  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3) |
+| Assemble factory group | ASM  | `assemble factory-group on EntityID with Quantity FACT-n producing Unit`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
+| Assemble farming group | ASM  | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
+| Assemble mining group  | ASM  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
+| Assemble laboratory group | ASM  | `assemble laboratory-group on EntityID with Quantity LAB-n` | [S6.8](#rule-S6.8) |
+| Assemble tech level | ASM  | `assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]` | [S6.7](#rule-S6.7) |
+| Assemble prototype | ASM  | `assemble PRTO-n on EntityID from laboratory-group GroupNo` | [S6.9](#rule-S6.9) |
+| Transfer | TFR  | `transfer Quantity Unit from EntityID to EntityID` | [S7.1](#rule-S7.1) |
+| Update factory group   | BCH  | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
+| Shut down              | SHT  | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
+| Restart                | STU  | `update GroupKind-group GroupNo of EntityID restart Quantity`<br>`update GroupKind-group GroupNo of EntityID restart PercentageAmount` | [S8.6](#rule-S8.6) |
+| Draft                  | DRF  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
+| Disband                | DSB  | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2) |
+| Set rations            | RTN  | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4) |
 
 Any assemble, disassemble, or scrap order may end with `using Quantity CWRK` ([S6.0](#rule-S6.0)).
 
@@ -3704,7 +3714,7 @@ will have more STRL for sale next turn. Signed.
 ## S5.0 Ship and Colony Orders
 
 <a id="rule-S5.1"></a>
-### S5.1 Grant Permission to Colonize
+### S5.1 Grant Permission to Colonize (PTC)
 
 > Not accepted yet: this order has been rewritten, but the game does not carry it out.
 
@@ -3745,7 +3755,7 @@ grant 54 permission-to-colonize (-1,-16,-6,2,3)   # player 54 may set up a colon
 - EmpireID is not a player in the game.
 
 <a id="rule-S5.2"></a>
-### S5.2 Allow Add-On
+### S5.2 Allow Add-On (AAN)
 
 > Not accepted yet: these orders have been rewritten, but the game does not carry them out.
 
@@ -3814,7 +3824,7 @@ disallow add-on to 205 from [38, 39] # S/C's 38 and 39 may no longer add-on to S
 ```
 
 <a id="rule-S5.3"></a>
-### S5.3 Set Up
+### S5.3 Set Up (STP)
 
 Has a S/C set up a new ship or colony at its own location ([F4.0](#rule-F4.0)).
 It replaces the 1980 STP order.
@@ -3940,7 +3950,7 @@ cancel setup 31   # the set up of S/C 31 is abandoned
 - Rejected when the player has no S/C that is setting up that S/C.
 
 <a id="rule-S5.4"></a>
-### S5.4 Add-On
+### S5.4 Add-On (ADN)
 
 Has a S/C help with a set up that another of the player's S/C's is doing ([F5.0](#rule-F5.0)).
 It replaces the 1980 ADN order.
@@ -4100,7 +4110,7 @@ assemble 5,000 HDRV-1 on 15 using 20 CWRK   # no more than 20 CWRK a turn
 A limit higher than the work needs changes nothing.
 
 <a id="rule-S6.1"></a>
-### S6.1 Assemble
+### S6.1 Assemble (ASM)
 
 Takes units out of storage and puts them to use.
 
@@ -4146,7 +4156,7 @@ assemble 100 STRL on 5                      # STRL has no TL
 - The S/C does not belong to the player.
 
 <a id="rule-S6.2"></a>
-### S6.2 Disassemble
+### S6.2 Disassemble (DAS)
 
 Takes assembled units out of use and puts them into storage.
 
@@ -4192,7 +4202,7 @@ disassemble 60,000 STRN on 22 using 500 CWRK
 - The S/C does not belong to the player.
 
 <a id="rule-S6.3"></a>
-### S6.3 Scrap
+### S6.3 Scrap (SCR)
 
 Converts units in storage back into MTL and NMTL.
 
@@ -4502,7 +4512,7 @@ assemble PRTO-2 on 75 from laboratory-group 3    # 100,000 RSCH become one PRTO-
 ## S7.0 Transfer Orders
 
 <a id="rule-S7.1"></a>
-### S7.1 Transfer
+### S7.1 Transfer (TFR)
 
 Moves units from the storage of one S/C to the storage of another, using the TRNS's of the sending S/C ([K1.0](#rule-K1.0)).
 
@@ -4690,7 +4700,7 @@ An APU order canceled this way is canceled for every S/C in its list.
 ## S8.0 Production Orders
 
 <a id="rule-S8.1"></a>
-### S8.1 Update Factory Group
+### S8.1 Update Factory Group (BCH)
 
 Has a factory group retool, or tells it what to build ([H3.5](#rule-H3.5), [H3.6](#rule-H3.6)).
 
@@ -4763,7 +4773,7 @@ update factory-group 3 of 16 produce STRL     # from STRN: structural units need
 - Notes: The DEP order has S/C 84 give mine group 5, including the deposit it is on, to S/C 76.
 
 <a id="rule-S8.5"></a>
-### S8.5 Shut Down
+### S8.5 Shut Down (SHT)
 
 Shuts down units of a factory, farming, mining, or laboratory group.
 The units stay assembled, but do not produce, and use no personnel or fuel.
@@ -4809,7 +4819,7 @@ update laboratory-group 9 of 16 shutdown 50%  # half of the group's LAB shut dow
 - The S/C does not belong to the player.
 
 <a id="rule-S8.6"></a>
-### S8.6 Restart
+### S8.6 Restart (STU)
 
 Restarts units of a factory, farming, mining, or laboratory group that have been shut down ([S8.5](#rule-S8.5)).
 
@@ -4968,7 +4978,7 @@ NOTE: ALL SPM ORDERS CAN BE USED IN THE PLAYER'S OWN S/C, OR IN FOREIGN S/C's.
 ## S12.0 Population Orders
 
 <a id="rule-S12.1"></a>
-### S12.1 Draft
+### S12.1 Draft (DRF)
 
 Drafts people of a S/C into soldiers or into a cadre.
 
@@ -5020,7 +5030,7 @@ draft 5,000 CWRK from 99      # cadres are drafted too
 - The S/C does not belong to the player.
 
 <a id="rule-S12.2"></a>
-### S12.2 Disband
+### S12.2 Disband (DSB)
 
 Disbands soldiers or a cadre of a S/C, which undoes a draft.
 
@@ -5076,7 +5086,7 @@ disband 40 SPY from 7          # frees 40 PRO and 40 SLD
   Race numbers are not shown in pay orders.
 
 <a id="rule-S12.4"></a>
-### S12.4 Set Rations
+### S12.4 Set Rations (RTN)
 
 Sets how much food the population of a S/C is given each turn.
 
