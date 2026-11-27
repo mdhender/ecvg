@@ -2399,9 +2399,9 @@ Since all deposits are located on planets, no MINE's can function on ships or or
 MINE's may be held in storage, however.
 
 <a id="rule-H2.5"></a>
-### H2.5 MCH, DEP, and DAS Orders
+### H2.5 MCH, DEP, and Disassemble Orders
 
-When a player no longer needs a mine group, he disassembles it with a DAS (disassembly) order, and the mine units go automatically into storage.
+When a player no longer needs a mine group, he disassembles it with a disassemble order ([S6.2](#rule-S6.2)), and the mine units go automatically into storage.
 This is explained fully in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 Mine units may be moved from one deposit to another with a mine change order (MCH).
 Examples of MCH orders are shown in [S8.3](#rule-S8.3)<!-- was Chapter 17, Order Writing -->.
@@ -2494,12 +2494,12 @@ The printout will show:
 Starting on turn 7, 62,500 LFSU-2 are added to storage each turn.
 
 <a id="rule-H3.5"></a>
-### H3.5 Update Factory Group, COM, and DAS Orders
+### H3.5 Update Factory Group, COM, and Disassemble Orders
 
 Once ordered to manufacture an item, a factory group will continue to do so, unless ordered to build something else with an update factory group order ([S8.1](#rule-S8.1) - see [H3.6](#rule-H3.6)<!-- was 8.3.6 -->, Retooling), or to shut down (a shut down order, [S8.5](#rule-S8.5)).
 Once ordered to shut down, the FACT of a group (still assembled) remain shut down, unless ordered to restart (with a restart order, [S8.6](#rule-S8.6)).
 A shut down order may shut down all of the FACT in a group, or only a portion of them.
-One final way to stop a factory from producing is to disassemble it with a DAS (dis-assembly) order.
+One final way to stop a factory from producing is to disassemble it with a disassemble order ([S6.2](#rule-S6.2)).
 This is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 Dis-assembled factory units go into storage.
 A combine (COM) order combines two factory groups into one; both groups must be manufacturing the same item.
