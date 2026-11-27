@@ -48,7 +48,8 @@ type OrdersResult struct {
 // ApplyOrders is the orders phase: it carries out each empire's orders on d,
 // file by file and line by line. An order that is not valid, or that its
 // empire may not give, is rejected and the rest are still carried out. Draft
-// orders are checked here and carried out by the Draft phase. It
+// orders are checked here and carried out by the Draft phase. Transfers are
+// carried out here, by the TRNS that each entity has when the phase starts. It
 // replaces d.OrderResults with a record of every order, accepted or not. It
 // fails with ErrNoSuchEmpire, before changing d, if a file is for an empire
 // that is not in the game.
@@ -64,6 +65,9 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 	}
 	var result OrdersResult
 	d.OrderResults = nil
+	for i := range d.Colonies {
+		d.Colonies[i].StartTransport()
+	}
 	for _, f := range files {
 		for _, line := range f.Lines {
 			err := line.Err
@@ -107,6 +111,10 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		return nil
 	case orders.AssembleGroup:
 		return AssembleGroup(d, empireID, o)
+	case orders.AssemblePrototype:
+		return AssemblePrototype(d, empireID, o)
+	case orders.Transfer:
+		return Transfer(d, empireID, o)
 	case orders.AssembleTechLevel:
 		return AssembleTechLevel(d, empireID, o)
 	case orders.UnitWork:

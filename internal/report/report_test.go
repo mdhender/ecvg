@@ -269,6 +269,23 @@ func TestEmpire(t *testing.T) {
 			lack: []string{"LABORATORY GROUPS\n  None assembled"},
 		},
 		{
+			name:     "transfers",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Colonies[0].Transport = game.Transport{
+					Capacity: 20000, Used: 3004, Crew: 2, Fuel: 2,
+					Transfers: []game.Transfer{
+						{To: 7, Unit: game.Unit{Type: "PRTO", TechLevel: 2, Qty: 2}, Ordered: 2},
+						{To: 8, Unit: game.Unit{Type: "FOOD", Qty: 3000}, Ordered: 5000},
+					},
+				}
+			},
+			want: []string{
+				"TRANSFERS\n  LAST TURN: the TRNS carried 3,004 MU of the 20,000 MU they could, with 2 PRO to operate them, and burned 2 FUEL\n",
+				"  2 PRTO-2 to entity 7\n  3,000 FOOD to entity 8 (of the 5,000 ordered)\n",
+			},
+		},
+		{
 			name:     "tech level",
 			empireID: 1,
 			edit: func(d *game.Data) {

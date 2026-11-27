@@ -91,6 +91,8 @@ type Colony struct {
 	// Construction what its CWRK did in the prior turn.
 	Assembly     []Assembly   `json:"assembly,omitempty"`
 	Construction Construction `json:"construction,omitzero"`
+	// Transport is what the colony's TRNS did in the prior turn.
+	Transport Transport `json:"transport,omitzero"`
 	// Rations is the percentage of the food its population needs that the
 	// colony hands out, MinRations..MaxRations, by default DefaultRations.
 	Rations int `json:"rations"`

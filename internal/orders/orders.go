@@ -20,7 +20,9 @@
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
 //	assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]
+//	assemble PRTO-n on EntityID from lab-group GroupNo
 //	assemble Quantity Unit on EntityID
+//	transfer Quantity Unit from EntityID to EntityID
 //	disassemble Quantity Unit on EntityID
 //	scrap Quantity Unit on EntityID
 //	update factory-group GroupNo of EntityID retool
@@ -72,7 +74,8 @@ const (
 )
 
 // Order is one order. Its type says which: SetRations, UpdateGroup, Draft,
-// Disband, AssembleGroup, AssembleTechLevel, or UnitWork.
+// Disband, AssembleGroup, AssembleTechLevel, AssemblePrototype, Transfer, or
+// UnitWork.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -220,6 +223,31 @@ func (o AssembleTechLevel) String() string {
 	return sb.String()
 }
 
+// AssemblePrototype is the order "assemble PRTO-n on EntityID from lab-group
+// GroupNo". It has a laboratory group of the entity with ID EntityID put the
+// entity's RSCH into one prototype of tech level TechLevel.
+type AssemblePrototype struct {
+	EntityID  int
+	TechLevel int
+	GroupNo   int
+}
+
+func (o AssemblePrototype) String() string {
+	return fmt.Sprintf("assemble PRTO-%d on %d from lab-group %d", o.TechLevel, o.EntityID, o.GroupNo)
+}
+
+// Transfer is the order "transfer Quantity Unit from EntityID to EntityID".
+// It has the TRNS of the entity with ID From move units from its storage to
+// the entity with ID To.
+type Transfer struct {
+	From, To int
+	Unit     game.Unit
+}
+
+func (o Transfer) String() string {
+	return fmt.Sprintf("transfer %d %s from %d to %d", o.Unit.Qty, unitName(o.Unit), o.From, o.To)
+}
+
 // UnitWork is the order "assemble Quantity Unit on EntityID", or the same
 // with disassemble or scrap, as Action says. It has the CWRK of the entity
 // with ID EntityID assemble units that are in its storage, disassemble units
@@ -328,6 +356,8 @@ func parseOrder(tokens []Token) (Order, error) {
 		return parseDraft(tokens, "disband")
 	case tokens[0].Is("assemble"):
 		return parseAssemble(tokens)
+	case tokens[0].Is("transfer"):
+		return parseTransfer(tokens)
 	case tokens[0].Is("disassemble"):
 		return parseUnitWork(tokens, game.WorkDisassemble)
 	case tokens[0].Is("scrap"):
@@ -482,7 +512,8 @@ const assembleUsage = `want one of:
   assemble factory-group GroupNo on EntityID add Quantity FACT-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
   assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]
-any of them may end with: using Quantity CWRK`
+any of them may end with: using Quantity CWRK
+  assemble PRTO-n on EntityID from lab-group GroupNo`
 
 // usingClause takes "using Quantity CWRK" off the end of an order, if it is
 // there, and returns the cap and the tokens before it. CWKR is read as CWRK.
@@ -546,6 +577,9 @@ func parseAssemble(tokens []Token) (Order, error) {
 		if tokens[1].Is(string(k) + "-group") {
 			kind = k
 		}
+	}
+	if kind == "" && strings.HasPrefix(strings.ToUpper(tokens[1].Text), units.PRTO) && !tokens[1].Quoted {
+		return parseAssemblePrototype(full)
 	}
 	if kind == "" && tokens[1].Is("tech-level") {
 		return parseAssembleTechLevel(tokens[2:], maxCWRK)
@@ -636,6 +670,50 @@ func parseAssemble(tokens []Token) (Order, error) {
 	}
 	if len(rest) > 0 {
 		return nil, usage
+	}
+	return o, nil
+}
+
+// parseAssemblePrototype parses assemble PRTO-n on EntityID from lab-group
+// GroupNo. The laboratories do it, not the CWRK, so it has no using clause.
+func parseAssemblePrototype(tokens []Token) (Order, error) {
+	if len(tokens) != 7 || !tokens[2].Is("on") || !tokens[4].Is("from") || !(tokens[5].Is("lab-group") || tokens[5].Is("laboratory-group")) {
+		return nil, fmt.Errorf("%w: want: assemble PRTO-n on EntityID from lab-group GroupNo", ErrInvalidOrder)
+	}
+	unit, err := unitOf(tokens[1], units.PRTO)
+	if err != nil {
+		return nil, err
+	}
+	o := AssemblePrototype{TechLevel: unit.TechLevel}
+	if o.EntityID, err = entityID(tokens[3]); err != nil {
+		return nil, err
+	}
+	no, ok := number(tokens[6])
+	if !ok || no < 1 {
+		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, tokens[6].Text)
+	}
+	o.GroupNo = no
+	return o, nil
+}
+
+// parseTransfer parses transfer Quantity Unit from EntityID to EntityID.
+func parseTransfer(tokens []Token) (Order, error) {
+	if len(tokens) != 7 || !tokens[3].Is("from") || !tokens[5].Is("to") {
+		return nil, fmt.Errorf("%w: want: transfer Quantity Unit from EntityID to EntityID", ErrInvalidOrder)
+	}
+	if _, _, ok := popCode(tokens[2]); ok {
+		return nil, fmt.Errorf("%w: %q: transfers of people are not accepted yet", ErrInvalidUnit, tokens[2].Text)
+	}
+	o := Transfer{}
+	var err error
+	if o.Unit, err = quantityOf(tokens[1], tokens[2], ""); err != nil {
+		return nil, err
+	}
+	if o.From, err = entityID(tokens[4]); err != nil {
+		return nil, err
+	}
+	if o.To, err = entityID(tokens[6]); err != nil {
+		return nil, err
 	}
 	return o, nil
 }

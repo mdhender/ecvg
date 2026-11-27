@@ -379,6 +379,19 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 		}
 		groups("FACTORY GROUPS", c.FactoryGroups)
+		if t := c.Transport; len(t.Transfers) > 0 {
+			p("")
+			p("TRANSFERS")
+			p("  LAST TURN: the TRNS carried %s MU of the %s MU they could, with %s PRO to operate them, and burned %s FUEL",
+				commas(t.Used), commas(t.Capacity), commas(t.Crew), commas(t.Fuel))
+			for _, x := range t.Transfers {
+				short := ""
+				if x.Unit.Qty < x.Ordered {
+					short = fmt.Sprintf(" (of the %s ordered)", commas(x.Ordered))
+				}
+				p("  %s %s to entity %d%s", commas(x.Unit.Qty), unitName(x.Unit.Type, x.Unit.TechLevel), x.To, short)
+			}
+		}
 		p("")
 		p("LABORATORY GROUPS")
 		if len(c.LaboratoryGroups) == 0 {

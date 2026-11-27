@@ -2656,10 +2656,11 @@ Note that MTL and NMTL are not required for the production of RSCH.
 The second way to improve a S/C's TL is to transfer RSCH from another S/C.
 A S/C transferring RSCH will have that number deducted from the total RSCH accumulated.
 
-RSCH travel as prototypes (PRTO).
-A laboratory makes them, without an order, when its S/C transfers RSCH; so a S/C must have at least one assembled LAB to transfer RSCH.
-The LAB does not have to be running.
+RSCH are not transferred as they are: they travel as prototypes (PRTO).
+A laboratory group puts RSCH into a prototype when it is ordered to ([S6.9](#rule-S6.9)), so a S/C must have assembled LAB's to transfer RSCH.
+The LAB's do not have to be running.
 A LAB makes prototypes of its own TL: a LAB-1 makes PRTO-1, and a LAB-10 makes PRTO-10.
+The RSCH a prototype holds are deducted from the S/C's RSCH when it is made, and the prototype is then transferred like any other unit ([S7.1](#rule-S7.1)).
 A prototype holds exactly the RSCH that raises a S/C to its TL from the level below (PRTO-1, which has no level below, holds half of a PRTO-2):
 
 | PROTOTYPE | RSCH       |
@@ -2683,7 +2684,8 @@ If the S/C has any assembled LAB, the RSCH that remain are added to the RSCH it 
 
 When a S/C's established, it automatically starts out with TL-1, whether the establishing S/C has a higher TL or not.
 
-TFR'ing RSCH requires TRNS's, but RSCH do not use up any TRNS capacity (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
+Prototypes have mass and volume ([R3.0](#rule-R3.0)): a PRTO has a mass of 1 MU times its TL, and requires 3 VU times its TL.
+Transferring them requires TRNS's and uses up TRNS capacity (see [K2.1](#rule-K2.1)).
 
 <a id="rule-J4.3"></a>
 ### J4.3 Buying and Selling RSCH
@@ -2724,7 +2726,13 @@ When used in combat, TRNS's are operated by the SLD's they carry.
 TRNS capacity is the mass units a TRNS can carry.
 To determine TRNS capacity, a player multiplies the TRNS's TL squared times 200.
 For instance, a TRNS-4 will have a capacity of 3,200 MU.
-RSCH TFR's do not use up TRNS capacity.
+The capacity is for the turn: every transfer a S/C makes in a turn comes out of it, and each transfer's mass is rounded up to a whole MU.
+All of a S/C's TRNS's count, those in storage as well as those in use; TRNS's are never assembled.
+
+A TRNS that is used burns 0.1 times its TL squared in fuel, so 1 FUEL moves 2,000 MU at any TL.
+The fuel for a turn is the MU carried, divided by 2,000 and rounded up.
+The TRNS's of the highest TL are used first, and one PRO operates 10 TRNS's.
+The PRO's that operate TRNS's in a turn do no other work that turn.
 
 <a id="rule-K2.2"></a>
 ### K2.2 Transferring Transports
@@ -2766,6 +2774,7 @@ This TFR order TFR's 500 PRO-3 to S/C 398 without rebels.
 
 Shortages of fuel or PRO's will result in all or part of the TFR or PUP orders failing.
 TFR's and PUP's are done in the order in which they are listed on the turnsheet; they are done one by one until stopped by a shortage.
+A transfer moves as many whole units as the TRNS capacity left, the fuel, and the PRO's allow, and fails only if it can not move one.
 
     NOTE: NEVER WRITE MORE THAN ONE TFR OR PUP ORDER FOR THE SAME ITEM TO THE SAME S/C ON THE SAME TURN, ie: 30, TFR, 40,000, MTL, [26]. and 30, TFR, 80,000, MTL, [26].
 
@@ -2775,9 +2784,9 @@ If the receiving S/C lacks the enclosure capacity to house the new items, it rec
 <a id="rule-K5.0"></a>
 ## K5.0 RSCH
 
-RSCH are transferred, but are never picked up.
+RSCH are transferred as prototypes ([J4.2](#rule-J4.2)), and are never picked up.
 REC orders are unnecessary for them.
-They do not use up any TRNS capacity.
+Prototypes use up TRNS capacity as other units do.
 All other rules concerning TFR's apply to them.
 
 <a id="rule-K6.0"></a>
@@ -3270,6 +3279,7 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 | MLNC          | 15xTL                 | 10xTL                 | 25xTL               | 0                 | 1 MSSL/attack                 | none                        | 12.5xTL   | UNA       |
 | MSSL          | 2xTL                  | 2xTL                  | 4xTL                | 0                 | 100xTL^2=MU DAM              | none                        | 4xTL      | NON       |
 | CSUP          | 0.02                  | 0.02                  | 0.04                | 0                 | 1 CSUP/SLD/TN                | --                          | 0.02      | NON       |
+| PRTO          | --                    | --                    | 1xTL                | --                | holds RSCH ([J4.2](#rule-J4.2)) | --                       | 3xTL      | NON       |
 | RSCH          | --                    | --                    | 0                   | --                | --                           | --                          | 0         |           |
 | SENS          | 1,000xTL              | 2,000xTL              | 3,000xTL            | 0.05xTL           | 1 probe/TL                   | none                        | 1500xTL   | UNA       |
 | SDRV          | 15xTL                 | 10xTL                 | 25xTL               | TL^2              | 1000xTL^2=thrust/TN          | none                        | 12.5xTL   | UNA       |
@@ -3305,6 +3315,8 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
 | Assemble laboratory group | `assemble laboratory-group on EntityID with Quantity LAB-n` | [S6.8](#rule-S6.8) |
 | Assemble tech level | `assemble tech-level on EntityID [to TL-n] [with Quantity PRTO-n]` | [S6.7](#rule-S6.7) |
+| Assemble prototype | `assemble PRTO-n on EntityID from lab-group GroupNo` | [S6.9](#rule-S6.9) |
+| Transfer | `transfer Quantity Unit from EntityID to EntityID` | [S7.1](#rule-S7.1) |
 | Update factory group   | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
 | Shut down              | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
 | Restart                | `update GroupKind-group GroupNo of EntityID restart Quantity`<br>`update GroupKind-group GroupNo of EntityID restart PercentageAmount` | [S8.6](#rule-S8.6) |
@@ -3321,7 +3333,7 @@ They are listed by their 1980 codes.
 |--------|-------|
 | [S4.0](#rule-S4.0) Combat Orders | [TMV](#rule-S4.1), [CLS](#rule-S4.2), [RUN](#rule-S4.3), [PME](#rule-S4.4), [PMM](#rule-S4.5), [AME](#rule-S4.6), [AMM](#rule-S4.7), [INV](#rule-S4.8), [RAD](#rule-S4.9), [DTS](#rule-S4.10), [OTS](#rule-S4.11), [WTD](#rule-S4.12) |
 | [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [STP](#rule-S5.3), [ADN](#rule-S5.4), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
-| [S7.0](#rule-S7.0) Transfer Orders | [TFR](#rule-S7.1), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
+| [S7.0](#rule-S7.0) Transfer Orders | [multiple TFR](#rule-S7.1.2), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
 | [S8.0](#rule-S8.0) Production Orders | [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
 | [S9.0](#rule-S9.0) Market Orders | [BUY](#rule-S9.1), [SEL](#rule-S9.2) |
 | [S10.0](#rule-S10.0) Exploration Orders | [PRB](#rule-S10.1), [SUR](#rule-S10.2) |
@@ -4169,30 +4181,105 @@ assemble laboratory-group on 16 with 200 LAB-2 using 50 CWRK   # a second group,
 - The order names a group number.
 - The S/C does not belong to the player.
 
+<a id="rule-S6.9"></a>
+### S6.9 Assemble Prototype
+
+Has a laboratory group put RSCH into a prototype, so that it can be transferred ([J4.2](#rule-J4.2)).
+
+**Syntax**
+
+```text
+assemble PRTO-n on EntityID from lab-group GroupNo
+```
+
+| Value    | Meaning                                                      |
+|----------|--------------------------------------------------------------|
+| PRTO-n   | The prototype to make, with its TL: PRTO-1 to PRTO-10.       |
+| EntityID | The S/C that has the RSCH and the laboratory group.          |
+| GroupNo  | The number of the laboratory group that makes the prototype. |
+
+**Examples**
+
+```text
+assemble PRTO-2 on 75 from lab-group 3    # 100,000 RSCH become one PRTO-2
+```
+
+**Rules**
+
+- Each order makes one prototype.
+  To make several, the order is written several times.
+- The RSCH the prototype holds ([J4.2](#rule-J4.2)) are deducted from the S/C's RSCH.
+- The laboratory group must have assembled LAB's of the prototype's TL.
+  They do not have to be running, and making a prototype does not stop them doing research.
+- The prototype is made at once, and goes into the S/C's storage.
+  It may be transferred by a later order on the same turn.
+- The laboratories make it, not the CWRK, so the order takes no `using`.
+- `laboratory-group` may be written for `lab-group`.
+
+**Rejected when**
+
+- The S/C has no laboratory group with that number, or the group has no assembled LAB's.
+- The group's LAB's are of another TL than the prototype.
+- The S/C has fewer RSCH than the prototype holds.
+- The S/C does not belong to the player.
+
 <a id="rule-S7.0"></a>
 ## S7.0 Transfer Orders
 
 <a id="rule-S7.1"></a>
-### S7.1 Transfer Orders (TFR)
+### S7.1 Transfer
 
-- Format: S/C ID#, "TFR", quantity, item, [receiving S/C ID#'s].
-- Examples:
-  ```text
-  75, TFR, 1,000,000, NMTL, [74].
-  75, TFR, 30,000, RSCH, [70, 71, 72, 73, 74].
-  ```
-- Notes: The first TFR order has S/C 75 transfer 1,000,000 NMTL TO S/C 74; a single S/C is still written as a list ([S2.5](#rule-S2.5)).
-  The second causes the RSCH to be transferred to 70, 71, 72, 73, and 74.
-  Each S/C listed receives the full quantity, and the S/C's are supplied in the order listed ([K4.0](#rule-K4.0)).
-  A S/C listed more than once is transferred to only the first time; each repeat fails with error E01, and the rest of the list is still processed.
-  `[*]` can not be used in a TFR order.
-  The items are taken from 75's storage and are put into 74's storage.
-  Any item can be TFR'd to another Ruler of the same race if the receiving S/C writes a REC order.
-  Only gold can be TFR'd to a Ruler of another race.
-  Group G SPY may be TFR'd into a foreign S/C to conduct espionage, but they remain under their Ruler's control (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
+Moves units from the storage of one S/C to the storage of another, using the TRNS's of the sending S/C ([K1.0](#rule-K1.0)).
+
+**Syntax**
+
+```text
+transfer Quantity Unit from EntityID to EntityID
+```
+
+| Value    | Meaning                                                   |
+|----------|-----------------------------------------------------------|
+| Quantity | How many to transfer ([S2.1](#rule-S2.1)).                |
+| Unit     | The unit, with its TL if it has one ([S2.4](#rule-S2.4)). |
+| from     | The S/C that has the units in storage, and the TRNS's.    |
+| to       | The S/C that receives them.                               |
+
+**Examples**
+
+```text
+transfer 1,000,000 NMTL from 75 to 74
+transfer 2 PRTO-3 from 75 to 70     # research, as prototypes
+```
+
+**Rules**
+
+- Transfers are done as the computer encounters them, in the order they are written ([K4.0](#rule-K4.0)).
+  What is transferred is in the receiving S/C's storage at once, and its later orders may use it.
+- The units must be in the sending S/C's storage, and not already being assembled or scrapped.
+  They go into the receiving S/C's storage.
+- The order takes what there is.
+  It moves the units the S/C has, if they are fewer than the quantity; as many as its TRNS's can still carry this turn, with the fuel and PRO's it has ([K2.1](#rule-K2.1)); and only the whole units the receiving S/C has room for ([F3.2.1](#rule-F3.2.1)).
+  The rest stay where they are.
+- Both S/C's must be at the same orbit ([K2.0](#rule-K2.0)).
+- RSCH is transferred as prototypes, which a laboratory group makes ([S6.9](#rule-S6.9)).
+- TRNS's that are transferred move themselves and use no TRNS capacity.
+  They do the sending S/C's work on the turn they are transferred, and the receiving S/C can not use them until the next turn ([K2.2](#rule-K2.2)).
+- Only transfers between a player's own S/C's are accepted so far, and transfers of population are not.
+  S/C 0 (a jettison, [K6.0](#rule-K6.0)) can not be transferred to yet.
+
+**Rejected when**
+
+- The sending S/C has none of the units in storage that are not already being assembled or scrapped.
+- Its TRNS's can not carry one of the units: it has no TRNS's, no capacity left this turn, no fuel, or no PRO to operate them.
+- The receiving S/C has no room for one of the units.
+- The unit is RSCH, or population.
+- The S/C's are not at the same orbit, or are the same S/C.
+- The sending S/C does not belong to the player, or the receiving S/C does not.
 
 <a id="rule-S7.1.2"></a>
 #### S7.1.2 Multiple TFR Orders
+
+> Not yet rewritten: this order is shown in its 1980 format, and is not accepted.
 
 - Format: S/C ID#, "TFR", quantity of unit types, M, [receiving S/C ID#'s].
 - Example:

@@ -29,7 +29,8 @@ type Workers struct {
 }
 
 // NewWorkers returns the worker cadre of the colony c, with none of it taken:
-// every PRO and USK that no drafted cadre holds, plus the USK its operational
+// every PRO and USK that no drafted cadre holds, less the PRO that operated
+// its TRNS this turn (Transport.Crew), plus the USK its operational
 // AUTO units, in the colony or its depot, stand in for.
 func NewWorkers(c Colony) Workers {
 	auto := 0
@@ -40,7 +41,7 @@ func NewWorkers(c Colony) Workers {
 			}
 		}
 	}
-	pro, usk := c.FreePRO(), c.FreeUSK()+auto
+	pro, usk := max(0, c.FreePRO()-c.Transport.Crew), c.FreeUSK()+auto
 	return Workers{PRO: pro, USK: usk, AutoUSK: auto, IdlePRO: pro, IdleUSK: usk}
 }
 

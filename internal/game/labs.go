@@ -25,6 +25,43 @@ func (c *Colony) HasLabs() bool {
 	return false
 }
 
+const (
+	// ErrNoLabGroup is the error for a prototype ordered from a laboratory
+	// group that the entity doesn't have, or that has no assembled units.
+	ErrNoLabGroup = cerrs.Error("the entity has no assembled laboratory group with that number")
+	// ErrPrototypeTechLevel is the error for a prototype of another tech
+	// level than the laboratories that are to make it.
+	ErrPrototypeTechLevel = cerrs.Error("a laboratory makes prototypes of its own tech level only")
+)
+
+// MakePrototype has the colony's laboratory group numbered groupNo make one
+// PRTO unit of tech level tl out of PrototypeResearch(tl) of the colony's
+// RSCH. The group must have assembled units of that tech level; they need
+// not be running. The prototype goes into the colony's cargo, even if the
+// colony is over its capacity. Nothing changes if it fails: ErrNoLabGroup,
+// ErrPrototypeTechLevel, or ErrNotEnoughResearch.
+func (c *Colony) MakePrototype(groupNo, tl int) error {
+	var group *LaboratoryGroup
+	for i := range c.LaboratoryGroups {
+		if g := &c.LaboratoryGroups[i]; g.No == groupNo && GroupQty(g.Units) > 0 {
+			group = g
+		}
+	}
+	if group == nil {
+		return fmt.Errorf("laboratory group %d: %w", groupNo, ErrNoLabGroup)
+	}
+	if u, _ := GroupUnitsAt(group.Units, tl); u == nil || u.Qty <= 0 {
+		return fmt.Errorf("PRTO-%d from laboratory group %d: %w", tl, groupNo, ErrPrototypeTechLevel)
+	}
+	cost := PrototypeResearch(tl)
+	if have := c.Stock(units.RSCH); cost <= 0 || have < cost {
+		return fmt.Errorf("a PRTO-%d holds %d RSCH and the entity has %d: %w", tl, cost, have, ErrNotEnoughResearch)
+	}
+	c.Spend(units.RSCH, cost)
+	c.Cargo = addUnits(c.Cargo, units.PRTO, tl, 1)
+	return nil
+}
+
 // CanAssembleLabs reports whether an entity of type t may assemble a
 // laboratory group: any colony can, and a ship can't, though it may carry LAB
 // units in storage. The error, if any, matches ErrLabSite.
