@@ -4114,18 +4114,42 @@ NOTE: ALL SPM ORDERS CAN BE USED IN THE PLAYER'S OWN S/C, OR IN FOREIGN S/C's.
 ## S12.0 Population Orders
 
 <a id="rule-S12.1"></a>
-### S12.1 Draft Orders (DRF)
+### S12.1 Draft
 
-- Format: draft Quantity UnitOrCadre from EntityID
-- Example: draft 3,000 SLD from 13
-- Example: draft 16,880 TRNE-2 from 78
-- Example: draft 5,000 CWRK from 99
-- Notes: The first draft order has S/C 13 draft 3,000 SLD from its USK.
-  UnitOrCadre is SLD, TRNE, CWRK, or SPY; nothing else can be drafted.
-  The race number is optional ([S2.4](#rule-S2.4)).
-  Cadres are drafted, not assembled: an assemble order for CWRK or SPY is rejected.
-  If the S/C does not have the people for the whole quantity, it drafts as many as it can, and the printout shows the quantity asked for and the quantity drafted.
-  Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), after production, so the people drafted still do their old work on the turn they are drafted.
+Drafts people of a S/C into soldiers or into a cadre.
+
+**Syntax**
+
+```text
+draft Quantity UnitOrCadre from EntityID
+```
+
+| Value       | Meaning                                                                    |
+|-------------|----------------------------------------------------------------------------|
+| Quantity    | How many to draft ([S2.1](#rule-S2.1)).                                    |
+| UnitOrCadre | SLD, TRNE, CWRK, or SPY. The race number is optional ([S2.4](#rule-S2.4)). |
+| EntityID    | The S/C the people are drafted from.                                       |
+
+**Examples**
+
+```text
+draft 3,000 SLD from 13       # S/C 13 drafts 3,000 soldiers from its USK
+draft 16,880 TRNE-2 from 78   # the race number may be given
+draft 5,000 CWRK from 99      # cadres are drafted too
+```
+
+**Rules**
+
+- If the S/C does not have the people for the whole quantity, it drafts as many as it can.
+  The printout shows the quantity asked for and the quantity drafted.
+- Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), after production.
+  The people drafted still do their old work on the turn they are drafted.
+- Cadres are drafted, not assembled.
+
+**Rejected when**
+
+- UnitOrCadre is not SLD, TRNE, CWRK, or SPY.
+- The S/C does not belong to the player.
 
 <a id="rule-S12.2"></a>
 ### S12.2 Disband Orders (DSB)
