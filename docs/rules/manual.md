@@ -572,7 +572,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | WIP\* | Work in process | Items in the process of being manufactured. |
 | WTD   | Withdraw        | This order withdraws troops from combat.    |
 
-In writing orders, all words listed in the Glossary must be abbreviated as shown ([S2.0](#rule-S2.0)).
+In writing orders, units are written with the abbreviations shown, and are never spelled out ([S2.0](#rule-S2.0)).
 Abbreviations followed by asterisks are never used in writing orders, but are used in the text of this rule book, or in the printouts you receive.
 
 # B. How to Play
@@ -3229,27 +3229,55 @@ The pages should be numbered if there is more than one.
 <a id="rule-S2.0"></a>
 ## S2.0 General Rules on Writing Orders
 
-All order lines must end in a period, and must start with a S/C ID number since all orders are addressed to S/C's.
-All words in orders shown on the abbreviation list must be abbreviated, or the order will be rejected with error E01 ([R2.0](#rule-R2.0)).
-All order lines must be less than 80 characters long, including spaces.
-The S/C ID# at the beginning of the order must belong to the player writing the order.
+A player returns the orders for a turn as one plain text file.
+Each order is written on one line, and an order can not run on to a second line.
+Blank lines are ignored, and a line may be as long as the order needs.
+
+An order is made of words, numbers, and unit codes, with spaces between them.
+Any amount of space may be used.
+Capital and small letters are the same: `DRAFT`, `Draft`, and `draft` are one word.
+An order does not end in a period, and commas are not used to separate its parts ([S2.2](#rule-S2.2)).
+
+Orders are written with the words shown in their formats, such as `assemble` or `set rations`, and not with the three letter codes of the Glossary.
+Units are written with their codes ([A7.0](#rule-A7.0)), such as `FUEL` or `FACT-4`, and never spelled out.
+
+In a format, a word in small letters is written as shown, and a name that starts with a capital, such as Quantity, stands for a value the player supplies.
+EntityID is the ID number of a S/C.
+A part of a format inside brackets may be left out.
+For example:
+
+    draft Quantity UnitOrCadre from EntityID
+
+is written as:
+
+    draft 3,000 SLD from 13
+
+Every order names the S/C it is addressed to, in the place its format shows.
+That S/C must belong to the player writing the order.
+
+An order that is not written as its format shows, or that the player may not give, is rejected, and the player's other orders are still carried out.
+The next printout lists every order received, and gives the reason for each one that was rejected.
+
+The orders are being rewritten in this style a few at a time.
+An order that has not been rewritten is still shown in its 1980 format, which starts with the S/C ID# and a three letter code, has commas between its parts, and ends in a period:
+
+    29, TFR, 100,000, FUEL, [295].
+
+An order in the 1980 format is not accepted yet.
+[S2.3](#rule-S2.3) and [S2.5](#rule-S2.5) are still written for the 1980 formats.
 
 <a id="rule-S2.1"></a>
-### S2.1 Zeros
+### S2.1 Quantities
 
-Zeros do not need a slash through them.
-Players may save time by eliminating the zeros from quantities in this way: 4E7 instead of 40,000,000.
-The digit that follows the E represents the number of zeros to follow the digit preceding the E.
-For instance, 1,000 = 1E3, 1,250,000 = 125E4, and 400,300,000 = 4003E5.
-The use of E numbers is optional.
-There can be no more than one E per quantity; commas and decimal points should not be used in E numbers.
+A quantity is a whole number, 1 or more, unless the rule for the order says otherwise.
+E numbers, such as 4E7 for 40,000,000, are not accepted; the quantity must be written out.
 
 <a id="rule-S2.2"></a>
 ### S2.2 Commas
 
-Commas should be written in quantities where applicable (200,000), and are necessary between quantity and item, (200,000, GOLD), and are used to separate the parts of an order.
-The sample turnsheet, [S3.0](#rule-S3.0)<!-- was section 17.3 -->, has examples of this.
-E numbers can not have commas in them.
+Commas may be written between the thousands of a quantity, or left out: `3,600` and `3600` are the same.
+If they are written, they must be in the right places: `36,00` is rejected.
+There is no comma between a quantity and its item (`200,000 GOLD`), or between the other parts of an order.
 
 <a id="rule-S2.3"></a>
 ### S2.3 TL's
@@ -3267,11 +3295,15 @@ And:
 <a id="rule-S2.4"></a>
 ### S2.4 Race Numbers and TL Numbers
 
-All POP's, except for spies, *must* have their race number attached, as: CWRK-1 or SLD-3 or PRO-2.
+A POP may be written with its race number attached, as SLD-3 or PRO-2, or without it, as SLD or PRO.
+A POP written without a race number, or with race number 0, is of the race of the player writing the order ([A6.0](#rule-A6.0)).
+For a player of race 3, SLD, SLD-0, and SLD-3 are all the same.
 Spies are simply listed as SPY.
 Race numbers are NOT used in PAY orders, however.
 Non-population units, (except for consumable units which have four letters each, such as CNGD, NMTL, STRN, and except for TL) *must* have their TL numbers attached.
 Examples: TRNS-1, SENS-4, ACFT-6, AUTO-8, FACT-5.
+A TL number attached to a unit that has none, as CNGD-1, is rejected.
+The race number or TL number is joined to the code with a hyphen, and no spaces.
 
 <a id="rule-S2.5"></a>
 ### S2.5 Lists
@@ -3284,6 +3316,24 @@ An empty list, `[]`, is a format error (E01).
 `[*]` stands alone; a list such as `[5, *]` is a format error (E01).
 Each order's rule says what an item listed more than once does.
 A list in an order that does not take one is a format error (E01).
+
+<a id="rule-S2.6"></a>
+### S2.6 Percentages
+
+A percentage is a whole number with the percent sign joined to it: `50%`, and not `50 %` or `50`.
+The rule for the order gives the lowest and highest percentage allowed.
+
+<a id="rule-S2.7"></a>
+### S2.7 Comments
+
+A `#` or `//` at the start of a word starts a comment, which runs to the end of the line and is ignored.
+A line that holds only a comment is ignored.
+For example:
+
+    # build up the garrison
+    draft 3,000 SLD from 13   // all we can spare
+
+A `#` or `//` joined to the end of a word does not start a comment.
 
 <a id="rule-S3.0"></a>
 ## S3.0 Sample Turnsheet
