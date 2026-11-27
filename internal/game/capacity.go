@@ -98,9 +98,12 @@ func (c *Colony) StoreCargo(code string, qty int) int {
 
 // StoreResource puts qty of a mined resource into the colony's inventory and
 // returns the quantity stored: all of it into the depot, which is unlimited,
-// if the colony has one, and otherwise as much as the cargo has room for.
+// if the colony has one, and otherwise as much as the cargo has room for. An
+// enclosed surface colony keeps its MTL and NMTL outside its walls, where
+// they never run short of room (manual H2.2): they go into its depot list,
+// which holds nothing else.
 func (c *Colony) StoreResource(code string, qty int) int {
-	if c.HasDepot() {
+	if c.HasDepot() || (c.Type == CENC && (code == units.MTL || code == units.NMTL)) {
 		c.Depot = store(c.Depot, code, qty)
 		return max(0, qty)
 	}

@@ -114,7 +114,8 @@ type Colony struct {
 	// the units assembled and in use there. The depot is unlimited and what
 	// is in it takes none of the colony's space. Only an open-air surface
 	// colony has one (HasDepot), and only units whose class allows it can be
-	// there (units.Def.DepotAllowed).
+	// there (units.Def.DepotAllowed). An enclosed surface colony uses Depot
+	// for the MTL and NMTL it keeps outside its walls, and nothing else.
 	Depot            []Unit `json:"depot,omitempty"`
 	DepotOperational []Unit `json:"depot_operational,omitempty"`
 	// The groups put the operational farm, mine, and factory units to work.

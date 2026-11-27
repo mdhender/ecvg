@@ -101,6 +101,23 @@ func TestDisassemble(t *testing.T) {
 		t.Errorf("operational %+v, cargo %+v, free %d", c.Operational, c.Cargo, c.SpaceFree())
 	}
 
+	t.Run("an order loses at least 1 unit", func(t *testing.T) {
+		auto := func(qty int) unit { return unit{Type: "AUTO", TechLevel: 1, Qty: qty} }
+		c := game.Colony{
+			Type:             game.COPN,
+			Cadres:           game.Cadres{CWRK: 1},
+			DepotOperational: []unit{auto(10)},
+			Assembly: []game.Assembly{
+				{Action: game.WorkDisassemble, Unit: auto(9)},
+				{Action: game.WorkDisassemble, Unit: auto(1)},
+			},
+		}
+		work(&c)
+		if a := c.Assembly; a[0].Destroyed != 1 || a[1].Destroyed != 1 || !reflect.DeepEqual(c.Depot, []unit{auto(8)}) {
+			t.Errorf("work %+v, depot %+v", a, c.Depot)
+		}
+	})
+
 	t.Run("in the depot", func(t *testing.T) {
 		auto := func(qty int) unit { return unit{Type: "AUTO", TechLevel: 1, Qty: qty} }
 		c := game.Colony{
@@ -156,8 +173,9 @@ func TestScrap(t *testing.T) {
 		// 10 STRC-1 are built from 7 MTL and 3 NMTL: 3 of them give 1.47
 		// and 0.855.
 		{name: "the totals are rounded down", colony: game.CENC, structure: 20000, scrap: unit{Type: "STRC", TechLevel: 1, Qty: 3}, mtl: 1, nmtl: 0},
-		{name: "what there is no room for is lost", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400, lost: 3150},
+		{name: "what there is no room for is lost", colony: game.CORB, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400, lost: 3150},
 		{name: "a depot has room", colony: game.COPN, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
+		{name: "an enclosed colony keeps them outside its walls", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := game.Colony{

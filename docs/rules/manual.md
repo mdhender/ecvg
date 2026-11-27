@@ -1824,7 +1824,8 @@ That is, they disassemble items and put them into storage, and are also used to 
 Dis-assembly of non-population units causes a 10% *LOSS*.
 For instance, if 5,000 EWPN-2 are dis-assembled then 500 will be lost and 4,500 will appear in storage under "un-assembled items" in the storage section of the printout.
 There is no loss in disassembling population units.
-When determining the 10% loss, fractions are rounded down.
+When determining the 10% loss, fractions are rounded down, but every dis-assembly order loses at least one unit.
+For instance, an order to dis-assemble 9 EWPN-2 loses 1 of them, and an order to dis-assemble a single unit loses it.
 In a CSHP, CORB, or CENC, a disassembly is refused if the result would exceed the s/c's enclosure capacity ([F3.2.2](#rule-F3.2.2)).
 
 <a id="rule-F10.4"></a>
@@ -2308,7 +2309,7 @@ One MINE of any TL requires one PRO and three USK to operate it.
 Only one s/c may have a MINE group at a deposit.
 If two s/c's attempt to place MINE groups on the same deposit, one of them will be chosen randomly by the computer to succeed, and the other will fail.
 A s/c may not have more than one MINE group at a deposit.
-Only 40 mine groups are allowed in any enclosed surface colony, or in any open colony.
+There is no other limit on mine groups: a colony may have as many as there are deposits on its planet that no MINE group is working.
 Since all deposits are located on planets, no MINE's can function on ships or orbiting colonies.
 MINE's may be held in storage, however.
 

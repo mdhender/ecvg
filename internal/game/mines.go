@@ -99,8 +99,14 @@ func (c *Colony) Spend(code string, qty int) int {
 	return max(0, qty) - left
 }
 
+// MaxFactoryGroups is the most factory groups an entity may have (manual
+// H3.0).
+const MaxFactoryGroups = 25
+
 // HasDepot reports whether the colony has a depot: storage outside the
-// entity, which only an open-air surface colony has.
+// entity, which only an open-air surface colony has. (An enclosed surface
+// colony keeps MTL and NMTL outside its walls, but nothing else: see
+// StoreResource.)
 func (c *Colony) HasDepot() bool {
 	return c.Type == COPN
 }

@@ -197,7 +197,9 @@ func parseEmpireTemplate(data []byte) (EmpireTemplate, error) {
 // depot_operational for assembled ones), and not units of a class that must
 // be kept in the colony. A colony may start with more than it has capacity
 // for; that isn't checked here. A group's units are all
-// of one tech level, so it has one entry of units. Groups of each kind must be numbered from 1 in
+// of one tech level, so it has one entry of units. A colony has at most one
+// farming group of each tech level, and at most game.MaxFactoryGroups factory
+// groups. Groups of each kind must be numbered from 1 in
 // order and hold at least one entry of units, each with a quantity and tech
 // level of at least 1. The errors match errInvalidTemplate.
 func (t EmpireTemplate) Validate() error {
@@ -302,6 +304,18 @@ func (t EmpireTemplate) Validate() error {
 		}
 		groups("farming", c.FarmingGroups)
 		groups("factory", c.FactoryGroups)
+		farmTLs := map[int]bool{}
+		for j, g := range c.FarmingGroups {
+			for _, u := range g.Units {
+				if farmTLs[u.TechLevel] {
+					bad("colony %d: farming group %d: tech_level %d: another farming group of the colony is of that tech level", i+1, j+1, u.TechLevel)
+				}
+				farmTLs[u.TechLevel] = true
+			}
+		}
+		if len(c.FactoryGroups) > game.MaxFactoryGroups {
+			bad("colony %d: %d factory groups: want at most %d", i+1, len(c.FactoryGroups), game.MaxFactoryGroups)
+		}
 	}
 	return errors.Join(errs...)
 }

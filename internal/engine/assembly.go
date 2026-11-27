@@ -21,6 +21,8 @@ const (
 	ErrNoSuchDeposit      = cerrs.Error("the entity's planet has no deposit with that number")
 	ErrDepositClaimed     = cerrs.Error("another mining group is working that deposit")
 	ErrFarmCap            = cerrs.Error("the planet has no room for that many more FARM-1 units")
+	ErrFarmGroupExists    = cerrs.Error("the entity has a farming group of that tech level: add the units to it")
+	ErrTooManyGroups      = cerrs.Error("the entity has all the factory groups it may have")
 )
 
 // Disassembly is the dis-assembly phase: every colony's CWRK do a turn of
@@ -58,6 +60,10 @@ func Assembly(d *game.Data) {
 //   - game.ErrFarmSite, game.ErrMineSite: the entity can't have such a group.
 //   - ErrFarmCap: the planet's FARM-1 units, everyone's together, would pass
 //     its cap.
+//   - ErrFarmGroupExists: the entity has a farming group of the units' tech
+//     level already; it may have one for each tech level (manual H1.0).
+//   - ErrTooManyGroups: the entity has game.MaxFactoryGroups factory groups
+//     already (manual H3.0).
 //   - ErrNoSuchDeposit, ErrDepositClaimed: a new mining group's deposit isn't
 //     on the entity's planet, or a mining group of any empire works it.
 func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
@@ -104,8 +110,25 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		}
 	}
 
-	// The entity must have the units, and not have promised them elsewhere.
 	u := o.Unit
+	if o.GroupNo == 0 {
+		switch o.Kind {
+		case game.KindFarming:
+			for _, g := range c.FarmingGroups {
+				for _, gu := range g.Units {
+					if gu.TechLevel == u.TechLevel {
+						return fmt.Errorf("farming group %d is of tech level %d: %w", g.No, gu.TechLevel, ErrFarmGroupExists)
+					}
+				}
+			}
+		case game.KindFactory:
+			if len(c.FactoryGroups) >= game.MaxFactoryGroups {
+				return fmt.Errorf("%d factory groups: %w", len(c.FactoryGroups), ErrTooManyGroups)
+			}
+		}
+	}
+
+	// The entity must have the units, and not have promised them elsewhere.
 	if have := c.Stored(u.Type, u.TechLevel) - c.Claimed(u.Type, u.TechLevel); u.Qty > have {
 		return fmt.Errorf("%s-%d: %d free in storage: %w", u.Type, u.TechLevel, max(0, have), ErrNotEnoughUnits)
 	}

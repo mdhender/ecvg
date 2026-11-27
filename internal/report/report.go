@@ -263,9 +263,12 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		}
 		units("OPERATIONAL", c.Operational)
 		units("CARGO", c.Cargo)
-		if c.HasDepot() {
+		switch {
+		case c.HasDepot():
 			units("DEPOT, OPERATIONAL", c.DepotOperational)
 			units("DEPOT, STORED", c.Depot)
+		case len(c.Depot) > 0:
+			units("STORED OUTSIDE THE WALLS", c.Depot)
 		}
 
 		idleRows := func(idle game.Idle) {

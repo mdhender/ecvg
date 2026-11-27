@@ -103,7 +103,8 @@ func TestAssembleGroupOrders(t *testing.T) {
 				}
 			},
 		},
-		{name: "the FARM-1 cap counts units being assembled", text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group on 1 with 21 FARM-1", err: engine.ErrFarmCap},
+		{name: "the FARM-1 cap counts units being assembled", text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group 5 on 1 add 21 FARM-1", err: engine.ErrFarmCap},
+		{name: "one farming group for each tech level", text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group on 1 with 5 FARM-1", err: engine.ErrFarmGroupExists},
 		{
 			name: "an orbital colony farms with FARM-2",
 			text: "assemble farming-group on 2 with 10 FARM-2",
@@ -212,5 +213,25 @@ func TestGroupNumbersAreShared(t *testing.T) {
 	c := d.Colonies[0]
 	if c.MiningGroups[0].No != 9 || c.FactoryGroups[0].No != 10 || c.FarmingGroups[1].No != 11 || c.MiningGroups[1].No != 12 || c.LastGroupNo != 12 {
 		t.Errorf("mining %+v, factory %+v, farming %+v, last %d", c.MiningGroups, c.FactoryGroups, c.FarmingGroups, c.LastGroupNo)
+	}
+}
+
+// An entity may have game.MaxFactoryGroups factory groups and no more.
+func TestFactoryGroupLimit(t *testing.T) {
+	d := builders()
+	c := &d.Colonies[0]
+	c.FactoryGroups = nil
+	for len(c.FactoryGroups) < game.MaxFactoryGroups-1 {
+		c.FactoryGroups = append(c.FactoryGroups, game.Group{No: 100 + len(c.FactoryGroups)})
+	}
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble factory-group on 1 with 1 FACT-1\nassemble factory-group on 1 with 1 FACT-1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Accepted != 1 || len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, engine.ErrTooManyGroups) {
+		t.Errorf("accepted %d, rejected %+v; want the second order rejected with %v", result.Accepted, result.Rejected, engine.ErrTooManyGroups)
+	}
+	if got := len(d.Colonies[0].FactoryGroups); got != game.MaxFactoryGroups {
+		t.Errorf("%d factory groups, want %d", got, game.MaxFactoryGroups)
 	}
 }

@@ -78,7 +78,7 @@ func TestMining(t *testing.T) {
 			workers: game.Workers{PRO: 100, USK: 300},
 		},
 		{
-			name: "an enclosed colony mines into its cargo, and a deposit gives no more than it has",
+			name: "an enclosed colony keeps MTL outside its walls, and a deposit gives no more than it has",
 			colony: game.Colony{
 				Type: game.CENC, Population: game.Population{USK: 300, PRO: 100},
 				Operational:  []game.Unit{roomy},
@@ -89,7 +89,8 @@ func TestMining(t *testing.T) {
 			mined:   []game.Mined{{Worked: 100, Fuel: 500, Product: 500}},
 			idle:    []game.Idle{{}},
 			sizes:   []int{1_000_000, 0, 9_000},
-			cargo:   []game.Unit{{Type: "FUEL", Qty: 500}, {Type: "MTL", Qty: 500}},
+			cargo:   []game.Unit{{Type: "FUEL", Qty: 500}},
+			depot:   []game.Unit{{Type: "MTL", Qty: 500}},
 			workers: game.Workers{PRO: 100, USK: 300},
 		},
 		{
@@ -117,7 +118,7 @@ func TestMining(t *testing.T) {
 			workers: game.Workers{PRO: 20, USK: 30, IdlePRO: 10},
 		},
 		{
-			name: "product the cargo has no room for goes back to the deposit",
+			name: "FUEL the cargo has no room for goes back to the deposit",
 			colony: game.Colony{
 				Type: game.CENC, Population: game.Population{USK: 300, PRO: 100},
 				// 2,125 STRC-1 enclose 425 VU, which the 400 population units

@@ -46,7 +46,7 @@ const ScrapPercent = 70
 const ScrapMUPerCWRK = 300
 
 // DisassemblyLossPercent is the percentage of the units an order disassembles
-// that are lost, rounded down (manual F10.3).
+// that are lost, rounded down, with at least 1 unit lost (manual F10.3).
 const DisassemblyLossPercent = 10
 
 // workEMU returns the work it takes to assemble, disassemble, or scrap qty of
@@ -62,10 +62,17 @@ func workEMU(w Work, d units.Def, tl, qty int) int {
 
 // disassemblyLoss returns how many of the next n units an order disassembles
 // are lost, when it has already disassembled done of them. The loss is
-// DisassemblyLossPercent of the order's units so far, rounded down, so it is
-// the same however many turns the work takes.
+// DisassemblyLossPercent of the order's units so far, rounded down, but at
+// least 1 unit, so that small orders don't escape it. It is the same however
+// many turns the work takes.
 func disassemblyLoss(done, n int) int {
-	return (done+n)*DisassemblyLossPercent/100 - done*DisassemblyLossPercent/100
+	lost := func(k int) int {
+		if k <= 0 {
+			return 0
+		}
+		return max(1, k*DisassemblyLossPercent/100)
+	}
+	return lost(done+n) - lost(done)
 }
 
 // Assembly is a piece of work for a colony's CWRK: assembling units, into one
