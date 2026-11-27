@@ -626,7 +626,7 @@ All the orders for one stage are processed before any of the orders for the next
 
 The orders of this stage only give consent to an order that another player writes; the order consented to is carried out in a later stage of the same turn.
 
-1. <a id="rule-B3.2.1"></a>AAN orders processed (see [S5.2](#rule-S5.2)<!-- was 17.4.14 -->), for the ADN orders of the Set-Up stage ([B3.3.2](#rule-B3.3.2))
+1. <a id="rule-B3.2.1"></a>Allow add-on orders processed (see [S5.2](#rule-S5.2)<!-- was 17.4.14 -->), for the ADN orders of the Set-Up stage ([B3.3.2](#rule-B3.3.2))
 2. <a id="rule-B3.2.2"></a>Grant permission to colonize orders processed (see [S5.1](#rule-S5.1)<!-- was 17.4.13 -->), for the STP orders of the Set-Up stage ([B3.3.1](#rule-B3.3.1))
 3. <a id="rule-B3.2.3"></a>ACP orders processed (see [S5.7](#rule-S5.7)<!-- was 17.4.19 -->), for the GIV orders of the Dis-Assembly stage ([B3.4.5](#rule-B3.4.5)); not in the game, as there are no Regents ([B4.1](#rule-B4.1))
 
@@ -1604,7 +1604,9 @@ Conversely, a Regent may not set up the same kind of colony that his Ruler has i
 <a id="rule-F4.3.3"></a>
 #### F4.3.3 Permission to Colonize
 
-A player may not set up a colony on a planet controlled by another player, unless he has communicated with the other player asking his permission to colonize, and the controller has agreed and has written a grant permission to colonize order ([S5.1](#rule-S5.1)).
+A player may not set up a colony on a planet where another player has a colony, on the surface or in orbit, unless one of the players with a colony there has written a grant permission to colonize order for him ([S5.1](#rule-S5.1)).
+This keeps a player from establishing a colony on a planet just because the players already there failed to notice his ship.
+Any player with a colony on the planet may grant the permission, whether or not he controls the planet, and one grant is enough.
 Permission is given to the player, not to one of his S/C's; any of his S/C's may do the set up.
 It lasts until it is used, which is when the player establishes a colony on the planet, or until the player who gave it no longer controls any colony on the planet.
 There is no limit to the number of players that may establish colonies at a location, as long as permission is granted, and as long as the limit of one of each type of colony per location per player is observed.
@@ -1747,9 +1749,9 @@ A Regent can only ADN to S/C's belonging to his Ruler or another Regent of his R
 The receiving Ruler or Regent does not have to write an order allowing the ADN.
 A Ruler can ADN to a S/C belonging to himself or to a Regent (neither case requires an allow add-on order).
 A Ruler not only can ADN and allow an add-on to his own S/C's and those of his Regents, he also can with other Rulers of the same race.
-They must write an allow add-on order (AAN) or the order will fail.
-An AAN is a standing order: it is good until it is cancelled with a cancel add-on order, and the printout for a S/C lists the S/C's that are allowed to add-on to it ([S5.2](#rule-S5.2)).
-A player can not ADN to a S/C of another race, and an AAN order does not change that.
+They must write an allow add-on order ([S5.2](#rule-S5.2)) or the order will fail.
+An allow add-on is a standing order: it is good until it is cancelled with a cancel add-on order, and the printout for a S/C lists the add-ons that are still allowed to it.
+A player can not ADN to a S/C of another race, and an allow add-on order does not change that.
 
 <a id="rule-F6.0"></a>
 ## F6.0 Junking
@@ -1787,9 +1789,9 @@ Neither CWRK's nor TRNS's are necessary to perform a MRG order.
 ## F9.0 Control of Planets
 
 Each planet is controlled directly by a colony, (indirectly by a player; this means that if the controlling colony is overthrown, the control of that world will be terminated immediately).
-A player, wishing to set-up a colony on a planet that is controlled by another player, must first contact the controller via diplomatic message, asking his permission to colonize the planet.
-If the controller agrees, he writes a grant permission to colonize order ([S5.1](#rule-S5.1)).
-If the planet is not controlled, the player may set up a colony there with a STP order, and then on the following turn write an order for control of the planet (CON).
+A player, wishing to set-up a colony on a planet where another player has a colony, must first contact that player via diplomatic message, asking his permission to colonize the planet.
+If he agrees, he writes a grant permission to colonize order ([S5.1](#rule-S5.1)); he does not have to control the planet ([F4.3.3](#rule-F4.3.3)).
+A player who has set up a colony on a planet that is not controlled may, on the following turn, write an order for control of the planet (CON).
 The colony set-up may be an orbiting colony, an enclosed surface colony, or an open colony.
 A player may give up control of a planet by writing an uncontrol (UNC) order.
 A player with a colony on a world where control has been given up may take control by writing a CON order.
@@ -3340,7 +3342,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 Any assemble, disassemble, or scrap order may end with `using Quantity CWRK` ([S6.0](#rule-S6.0)).
 
 The orders below are not accepted yet ([S2.0](#rule-S2.0)).
-They are listed by their 1980 codes, and all but PTC, which is now grant permission to colonize, are still in their 1980 formats.
+They are listed by their 1980 codes, and all but PTC and AAN, which are now grant permission to colonize and allow add-on, are still in their 1980 formats.
 
 | Orders | Codes |
 |--------|-------|
@@ -3376,7 +3378,7 @@ The pages should be numbered if there is more than one.
 ## S2.0 General Rules on Writing Orders
 
 A player returns the orders for a turn as one plain text file.
-Each order is written on one line, and an order can not run on to a second line.
+Each order is written on one line, and an order can not run on to a second line, except for the few whose rules say they take more than one ([S5.2](#rule-S5.2)).
 Blank lines are ignored, and a line may be as long as the order needs.
 
 An order is made of words, numbers, and unit codes, with spaces between them.
@@ -3673,7 +3675,8 @@ will have more STRL for sale next turn. Signed.
 
 > Not accepted yet: this order has been rewritten, but the game does not carry it out.
 
-Gives another player permission to set up a colony on a planet where the player has a colony ([F4.3.3](#rule-F4.3.3), [F9.0](#rule-F9.0)).
+Gives another player permission to set up a colony on a planet where the player has a colony, on the surface or in orbit ([F4.3.3](#rule-F4.3.3)).
+The player does not have to control the planet.
 It replaces the 1980 PTC order.
 
 **Syntax**
@@ -3705,34 +3708,71 @@ grant 54 permission-to-colonize (-1,-16,-6,2,3)   # player 54 may set up a colon
 **Rejected when**
 
 - The player has not made contact with the receiving player before writing the order.
-- Coordinates is not a planet on which the player has established a colony, and still has one.
+- Coordinates is not a planet where the player has a colony, on the surface or in orbit.
 - EmpireID is not a player in the game.
 
 <a id="rule-S5.2"></a>
-### S5.2 Allow Add-On Orders (AAN)
+### S5.2 Allow Add-On
 
-- Format: S/C ID#, "AAN", [S/C ID#'s to do the add-ons].
-- Examples:
-  ```text
-  205, AAN, [38].
-  205, AAN, [38, 39, 42, 46, 48, 49].
-  ```
-- Notes: The first AAN order allows S/C 38 to add-on items to S/C 205; a single S/C is still written as a list ([S2.5](#rule-S2.5)).
-  The second allows S/C's 38, 39, 42, 46, 48, and 49 to add-on items to S/C 205.
+> Not accepted yet: these orders have been rewritten, but the game does not carry them out.
+
+Allows S/C's of another Ruler of the same race to add-on to one of the player's S/C's ([F5.8](#rule-F5.8)).
+It replaces the 1980 AAN order.
+
+**Syntax**
+
+```text
+allow add-on to EntityID from ListOfEntityIDs
+Quantity Unit
+end
+```
+
+| Value           | Meaning                                                                         |
+|-----------------|---------------------------------------------------------------------------------|
+| EntityID        | The S/C that may be added-on to.                                                |
+| ListOfEntityIDs | The S/C's that may do the add-ons ([S2.5](#rule-S2.5)).                         |
+| Quantity        | How many of the unit may be added-on ([S2.1](#rule-S2.1)).                      |
+| Unit            | The unit, with its TL or race number if it has one ([S2.4](#rule-S2.4)).        |
+
+**Examples**
+
+```text
+allow add-on to 205 from [38]
+1,400,000 STRS
+12 LFSU-1
+end
+
+allow add-on to 205 from [38, 39, 42]
+300 PRO
+end
+```
+
+**Rules**
+
+- This order takes more than one line ([S2.0](#rule-S2.0)): the first line, then one line for each unit, then a line with the word `end`.
+  It has at least one unit line, and only one quantity and one unit on each.
+- The order is processed in the Pre Set-Up stage ([B3.2.1](#rule-B3.2.1)), before any ADN order, so it can be used on the turn it is written.
+- This is a standing order: it is good, turn after turn, until the player cancels it.
+- The printout for a S/C lists the add-ons that are still allowed to it.
+- A single S/C is still written as a list, and `[*]` can not be used.
   A S/C listed more than once is allowed only once; the repeat is not an error.
-  `[*]` can not be used in an AAN order.
-  The AAN is a standing order: the S/C's it lists stay allowed, turn after turn, until the player cancels it.
-  The printout for a S/C lists the S/C's that are allowed to add-on to it.
-  It is needed only between Rulers of the same race ([F5.8](#rule-F5.8)); it does not let a player of another race ADN.
+- It is needed only between Rulers of the same race; it does not let a player of another race ADN.
+- The forms for adding to farming, mining, factory, and laboratory groups are not written yet.
 
-An AAN is cancelled with a cancel add-on order, which is not accepted yet:
+**Rejected when**
+
+- The S/C to be added-on to does not belong to the player.
+
+#### Cancel Add-On
+
+Cancels what an allow add-on order allowed.
 
 ```text
 cancel add-on to EntityID from ListOfEntityIDs
 ```
 
-| Value           | Meaning                                                                        |
-|-----------------|--------------------------------------------------------------------------------|
+| Value           | Meaning                                                                         |
+|-----------------|---------------------------------------------------------------------------------|
 | EntityID        | The S/C that was allowed to be added-on to; it must belong to the player.       |
 | ListOfEntityIDs | The S/C's that are no longer allowed to add-on to it ([S2.5](#rule-S2.5)).      |
 
