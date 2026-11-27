@@ -1983,8 +1983,15 @@ There are no rebels at all in the SPY.
 ### G1.8 Trainees (TRNE)
 
 Trainees are USK in training to become PRO's.
-Each 100 TRNE requires one PRO to train them.
-5% of all trainees graduate each turn.
+Each 100 TRNE, or part of 100, requires one PRO to train them.
+Trainees and the PRO who train them do no other work while they train.
+
+A TRNE cadre trains for one turn only, the turn after it is drafted.
+At the end of that turn 5% of its trainees, rounded down, graduate as PRO, and the cadre is disbanded: the other 95% become USK again, and the PRO who trained them are free.
+A player who wants to keep training must draft TRNE again every turn.
+This is unlike CWRK and SPY cadres, which stay until the player disbands them.
+
+Because of the rounding, a cadre of fewer than 20 TRNE graduates no one.
 
 <a id="rule-G1.9"></a>
 ### G1.9 Population Units (POP)
@@ -2076,7 +2083,8 @@ Rebels also increase if a foreign nation has his "E" spies incite loyal populati
 Trainees increase when the player writes a draft order ([S12.1](#rule-S12.1)) for a quantity of TRNE to be trained as PRO's.
 This number is deducted from the USK and added to the existing trainee units.
 Each 100 TRNE in the S/C, or part of 100, requires one PRO to train them ([G1.8](#rule-G1.8)), so the S/C drafts no more TRNE than it has PRO to train.
-5% of all TRNE graduate each *turn* as professionals.
+The trainees train on the turn after they are drafted, and 5% of them, rounded down, graduate as professionals at the end of it.
+The rest are disbanded then, so trainees must be drafted every turn to keep training ([G1.8](#rule-G1.8)).
 
 <a id="rule-G3.0"></a>
 ## G3.0 Population Decreases
@@ -2124,6 +2132,7 @@ Rebel soldiers are decreased in the same manner as rebels.
 ### G3.8 Trainee Decreases
 
 Trainee decreases are caused by DSB orders which disband them, (they become USK again), and by graduation as PRO's (5% per turn).
+The trainees who do not graduate are disbanded at the end of the turn they train in, and become USK again ([G1.8](#rule-G1.8)).
 
 <a id="rule-G3.9"></a>
 ### G3.9 Death Rate
@@ -4203,6 +4212,9 @@ draft 5,000 CWRK from 99      # cadres are drafted too
 - Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), after production.
   The people drafted still do their old work on the turn they are drafted.
 - Cadres are drafted, not assembled.
+- CWRK and SPY cadres stay until they are disbanded ([S12.2](#rule-S12.2)).
+  A TRNE cadre does not: it trains on the turn after it is drafted, 5% of it graduate as PRO at the end of that turn, and the rest become USK again ([G1.8](#rule-G1.8)).
+  To keep training, draft TRNE again every turn.
 
 **Rejected when**
 
