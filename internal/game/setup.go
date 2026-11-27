@@ -33,6 +33,16 @@ type Setup struct {
 	// listed by their unit (UEM, USK, PRO, SLD) or their cadre (CWRK, SPY).
 	Want []Unit `json:"want"`
 	BOM  []Unit `json:"bom"`
+	// Delivered is the part of the bill of material that add-ons have
+	// carried to the job site: it is no entity's until the work is done.
+	// (People that add-ons deliver join the colony instead, and its BOM.)
+	// Pledged is the part that add-ons have still to deliver, which the
+	// colony does not supply.
+	Delivered []Unit `json:"delivered,omitempty"`
+	Pledged   []Unit `json:"pledged,omitempty"`
+	// Turns is the number of turns that the set up has been worked on.
+	// Add-ons deliver nothing in its first.
+	Turns int `json:"turns,omitzero"`
 	// Built is set once all of the entity's structure has been supplied. No
 	// assembly work is done before that, and what is supplied after it must
 	// be carried by the colony's TRNS.
@@ -56,11 +66,12 @@ type Setup struct {
 	Waiting string `json:"waiting,omitzero"`
 }
 
-// Short returns what the set up still wants and the colony hasn't reserved.
+// Short returns what the set up still wants: what the colony hasn't
+// reserved and no add-on has delivered.
 func (s Setup) Short() []Unit {
 	var short []Unit
 	for _, u := range s.Want {
-		if n := u.Qty - count(u.Type, u.TechLevel, s.BOM); n > 0 {
+		if n := u.Qty - count(u.Type, u.TechLevel, s.BOM, s.Delivered); n > 0 {
 			short = append(short, Unit{Type: u.Type, TechLevel: u.TechLevel, Qty: n})
 		}
 	}
@@ -93,12 +104,15 @@ type SetupItem struct {
 }
 
 // Reserved returns the quantity of the unit with the given code and tech
-// level that the colony's set ups have reserved. For people, the code is the
+// level that the colony's set ups and add-ons have reserved. For people, the code is the
 // population unit or the cadre.
 func (c *Colony) Reserved(code string, tl int) int {
 	n := 0
 	for _, s := range c.Setups {
 		n += count(code, tl, s.BOM)
+	}
+	for _, a := range c.AddOns {
+		n += count(code, tl, a.BOM)
 	}
 	return n
 }
@@ -217,33 +231,15 @@ func (c *Colony) Supply(s *Setup) int {
 	late, hauled := s.Built, 0
 	none := func(int) int { return 0 }
 	for _, u := range s.Short() {
-		code, tl, n := u.Type, u.TechLevel, u.Qty
-		d, _ := units.Lookup(code)
-		mass, fuelOut, proOut := none, none, none
-		if p, ok := peopleOf(code); ok {
-			switch code {
-			case units.UEM:
-				n = min(n, c.Population.UEM-c.Reserved(units.UEM, 0))
-			case units.USK:
-				n = min(n, c.FreeUSK())
-			case units.PRO:
-				n, proOut = min(n, c.FreePRO()-c.Transport.Crew), func(k int) int { return k }
-			case units.SLD:
-				n = min(n, c.FreeSLD())
-			case units.CWRK:
-				n = min(n, c.FreeCWRK())
-			case units.SPY:
-				n = min(n, c.FreeSPY())
-			}
-			mass = func(k int) int { return k * p.Mass() }
-		} else {
-			n = min(n, c.Stored(code, tl)-c.Claimed(code, tl))
-			if code != units.TRNS { // TRNS move themselves
-				mass = func(k int) int { return d.Mass(tl, k).Ceil() }
-			}
-			if code == units.FUEL {
-				fuelOut = func(k int) int { return k }
-			}
+		code, tl := u.Type, u.TechLevel
+		// What add-ons have pledged is theirs to supply.
+		n := min(u.Qty-count(code, tl, s.Pledged), c.spare(code, tl))
+		mass, fuelOut, proOut := unitMass(code, tl), none, none
+		switch code {
+		case units.PRO:
+			n, proOut = min(n, c.FreePRO()-c.Transport.Crew), func(k int) int { return k }
+		case units.FUEL:
+			fuelOut = func(k int) int { return k }
 		}
 		if late {
 			n = c.loadLimit(n, mass, fuelOut, proOut)
@@ -261,6 +257,59 @@ func (c *Colony) Supply(s *Setup) int {
 		s.Built = true
 	}
 	return hauled
+}
+
+// spare returns the quantity of the unit with the given code and tech level
+// that the colony can still reserve: units in its storage that nothing has
+// claimed or reserved, people that no cadre holds and nothing has reserved,
+// or cadres that nothing has reserved.
+func (c *Colony) spare(code string, tl int) int {
+	switch code {
+	case units.UEM:
+		return max(0, c.Population.UEM-c.Reserved(units.UEM, 0))
+	case units.USK:
+		return c.FreeUSK()
+	case units.PRO:
+		return c.FreePRO()
+	case units.SLD:
+		return c.FreeSLD()
+	case units.CWRK:
+		return c.FreeCWRK()
+	case units.SPY:
+		return c.FreeSPY()
+	}
+	return max(0, c.Stored(code, tl)-c.Claimed(code, tl))
+}
+
+// unitMass returns a function for the MU of TRNS capacity that k of the unit
+// with the given code and tech level take: their mass, rounded up, 1 MU for
+// each population unit, and nothing for TRNS, which move themselves.
+func unitMass(code string, tl int) func(k int) int {
+	if p, ok := peopleOf(code); ok {
+		return func(k int) int { return k * p.Mass() }
+	}
+	d, _ := units.Lookup(code)
+	if code == units.TRNS {
+		return func(int) int { return 0 }
+	}
+	return func(k int) int { return d.Mass(tl, k).Ceil() }
+}
+
+// lessUnits takes qty of the unit with the given code and tech level off
+// list, and drops the entry if none are left.
+func lessUnits(list []Unit, code string, tl, qty int) []Unit {
+	var out []Unit
+	for _, u := range list {
+		if u.Type == code && u.TechLevel == tl {
+			n := min(qty, u.Qty)
+			u.Qty -= n
+			qty -= n
+		}
+		if u.Qty > 0 {
+			out = append(out, u)
+		}
+	}
+	return out
 }
 
 // inUse reports whether c has any assembled unit with the given code.
@@ -293,7 +342,9 @@ func inUse(c *Colony, code string) bool {
 // since are missed: the entity gets the ones there are, and waits if there
 // are none at all.
 func (c *Colony) RunSetups() []Colony {
-	helpers, shuttled := c.FreeCWRK(), 0
+	// The CWRK that the colony's add-ons shuttled this turn are busy.
+	prior := c.Construction.Setup / EMUPerCWRK
+	helpers, shuttled := max(0, c.FreeCWRK()-prior), 0
 	budgets := map[int]int{}
 	none := func(int) int { return 0 }
 	var done []Colony
@@ -304,6 +355,7 @@ func (c *Colony) RunSetups() []Colony {
 		s := &jobs[i]
 		s.Crew, s.Waiting = 0, ""
 		s.Hauled = c.Supply(s)
+		s.Turns++
 		if !s.Built {
 			s.Waiting = "structure"
 			keep = append(keep, *s)
@@ -347,17 +399,25 @@ func (c *Colony) RunSetups() []Colony {
 		keep = append(keep, *s)
 	}
 	c.Setups = keep
-	c.Construction.Setup = (c.Reserved(units.CWRK, 0) + shuttled) * EMUPerCWRK
+	c.Construction.Setup = (c.Reserved(units.CWRK, 0) + shuttled + prior) * EMUPerCWRK
 	return done
 }
 
 // CancelSetup drops the colony's set up of the entity with the given ID, and
 // reports whether it had one. What the set up had reserved is the colony's
-// to use again; the work done on it is lost.
+// to use again, and so is what add-ons had delivered to the job site, which
+// goes into its storage whatever the room; the work done is lost.
 func (c *Colony) CancelSetup(id int) bool {
 	at := slices.IndexFunc(c.Setups, func(s Setup) bool { return s.Entity.ID == id })
 	if at < 0 {
 		return false
+	}
+	for _, u := range c.Setups[at].Delivered {
+		if d, _ := units.Lookup(u.Type); c.HasDepot() && d.DepotAllowed() {
+			c.Depot = addUnits(c.Depot, u.Type, u.TechLevel, u.Qty)
+		} else {
+			c.Cargo = addUnits(c.Cargo, u.Type, u.TechLevel, u.Qty)
+		}
 	}
 	c.Setups = slices.Delete(slices.Clone(c.Setups), at, at+1)
 	if len(c.Setups) == 0 {
@@ -411,4 +471,140 @@ func (c *Colony) completeSetup(s *Setup) bool {
 	c.Cadres.SPY -= k.SPY
 	s.Entity.Population, s.Entity.Cadres = p, k
 	return true
+}
+
+// AddOn is the help that a colony gives with a set up that another colony is
+// doing (manual F5.0): units that the set up is short of, and CWRK.
+type AddOn struct {
+	// To is the ID of the entity that is being set up.
+	To int `json:"to"`
+	// Want is what the colony has still to deliver, and BOM the part of it
+	// that it has reserved. People are listed as in Setup.
+	Want []Unit `json:"want"`
+	BOM  []Unit `json:"bom"`
+	// MaxCWRK is the most CWRK of the colony that may be shuttled to the job
+	// in a turn, or 0 for as many as it can use.
+	MaxCWRK int `json:"max_cwrk,omitzero"`
+	// Crew is the CWRK that were shuttled to the job in the prior turn,
+	// Hauled the MU that the TRNS carried to it then, and Waiting says why
+	// the add-on isn't done: "orbit" (the colony is somewhere else), "start"
+	// (the set up has only just started), "units", or "transport".
+	Crew    int    `json:"crew,omitzero"`
+	Hauled  int    `json:"hauled,omitzero"`
+	Waiting string `json:"waiting,omitzero"`
+}
+
+// Pledge adds to the add-on a, which must be one of the colony's own, up to
+// qty of the unit with the given code and tech level for the set up s, which
+// another colony is doing, and returns how many: as many as s is short of
+// and no add-on has pledged. The colony reserves what it has of them (see
+// ReserveAddOn).
+func (c *Colony) Pledge(a *AddOn, s *Setup, code string, tl, qty int) int {
+	n := 0
+	for _, u := range s.Short() {
+		if u.Type == code && u.TechLevel == tl {
+			n = max(0, min(qty, u.Qty-count(code, tl, s.Pledged)))
+		}
+	}
+	if n > 0 {
+		a.Want = addUnits(a.Want, code, tl, n)
+		s.Pledged = addUnits(s.Pledged, code, tl, n)
+		c.ReserveAddOn(a)
+	}
+	return n
+}
+
+// ReserveAddOn reserves, for the add-on a, which must be one of the colony's
+// own, what a still wants and the colony can spare, in the order listed.
+func (c *Colony) ReserveAddOn(a *AddOn) {
+	for _, u := range a.Want {
+		n := min(u.Qty-count(u.Type, u.TechLevel, a.BOM), c.spare(u.Type, u.TechLevel))
+		if n > 0 {
+			a.BOM = addUnits(a.BOM, u.Type, u.TechLevel, n)
+		}
+	}
+}
+
+// RunAddOn does a turn of the add-on a, which must be one of the colony's
+// own, for the set up s of the colony builder, and reports whether the
+// add-on is done: it has delivered everything. StartTransport must have been
+// called this turn, and builder.RunSetups must come after.
+//
+// The colony reserves what it can of what is wanted. Then its TRNS carry
+// what is reserved to the job site, as much as they can still carry this
+// turn (see Transfer; a population unit is 1 MU): units leave the colony and
+// wait at the site (s.Delivered), and people join the builder, which reserves
+// them for the set up. Nothing is delivered in the set up's first turn.
+// If the structure is up, the colony's free CWRK, as many as the work can
+// use and the add-on allows, are shuttled to the job like the builder's
+// (SetupShuttleMU each), and do nothing else in the turn; their EMU is added
+// to Construction.Setup.
+//
+// If the colony is not at the builder's planet, nothing happens: what is
+// reserved stays reserved.
+func (c *Colony) RunAddOn(a *AddOn, builder *Colony, s *Setup) bool {
+	a.Crew, a.Hauled, a.Waiting = 0, 0, ""
+	if c.PlanetID != builder.PlanetID {
+		a.Waiting = "orbit"
+		return false
+	}
+	c.ReserveAddOn(a)
+	if s.Turns < 1 {
+		a.Waiting = "start"
+		return false
+	}
+	none := func(int) int { return 0 }
+	for _, u := range slices.Clone(a.BOM) {
+		code, tl := u.Type, u.TechLevel
+		mass := unitMass(code, tl)
+		n := c.loadLimit(u.Qty, mass, none, none)
+		if n <= 0 {
+			continue
+		}
+		if p, ok := peopleOf(code); ok {
+			moved := Population{UEM: p.UEM * n, USK: p.USK * n, PRO: p.PRO * n, SLD: p.SLD * n}
+			c.Population = c.Population.Less(moved)
+			builder.Population = builder.Population.Less(Population{UEM: -moved.UEM, USK: -moved.USK, PRO: -moved.PRO, SLD: -moved.SLD})
+			switch code {
+			case units.CWRK:
+				c.Cadres.CWRK -= n
+				builder.Cadres.CWRK += n
+			case units.SPY:
+				c.Cadres.SPY -= n
+				builder.Cadres.SPY += n
+			}
+			s.BOM = addUnits(s.BOM, code, tl, n)
+		} else {
+			c.takeStored(code, tl, n)
+			s.Delivered = addUnits(s.Delivered, code, tl, n)
+		}
+		c.load(mass(n))
+		a.Hauled += mass(n)
+		a.BOM = lessUnits(a.BOM, code, tl, n)
+		a.Want = lessUnits(a.Want, code, tl, n)
+		s.Pledged = lessUnits(s.Pledged, code, tl, n)
+	}
+	if !s.structureShort() {
+		s.Built = true
+	}
+	if need := max(0, s.Need-s.EMU); s.Built && need > 0 {
+		crew := min(c.FreeCWRK()-c.Construction.Setup/EMUPerCWRK, (need+EMUPerCWRK-1)/EMUPerCWRK)
+		if a.MaxCWRK > 0 {
+			crew = min(crew, a.MaxCWRK)
+		}
+		crew = c.loadLimit(crew, func(k int) int { return k * SetupShuttleMU }, none, none)
+		c.load(crew * SetupShuttleMU)
+		a.Crew = crew
+		c.Construction.Setup += crew * EMUPerCWRK
+		s.EMU += min(need, crew*EMUPerCWRK)
+	}
+	switch {
+	case len(a.Want) == 0:
+		return true
+	case len(a.BOM) > 0:
+		a.Waiting = "transport"
+	default:
+		a.Waiting = "units"
+	}
+	return false
 }

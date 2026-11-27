@@ -96,6 +96,9 @@ type Colony struct {
 	// Setups are the new entities that the colony is setting up, oldest
 	// first.
 	Setups []Setup `json:"setups,omitempty"`
+	// AddOns are the set ups of other colonies that the colony is helping
+	// with, oldest first.
+	AddOns []AddOn `json:"add_ons,omitempty"`
 	// Rations is the percentage of the food its population needs that the
 	// colony hands out, MinRations..MaxRations, by default DefaultRations.
 	Rations int `json:"rations"`

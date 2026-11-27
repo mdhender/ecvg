@@ -170,3 +170,44 @@ func TestParseCancelSetup(t *testing.T) {
 		}
 	}
 }
+
+func TestParseAddOn(t *testing.T) {
+	unit := func(code string, tl, qty int) game.Unit { return game.Unit{Type: code, TechLevel: tl, Qty: qty} }
+	for _, tc := range []struct {
+		text string
+		want orders.Order
+		err  error
+	}{
+		{text: "Add-On to 205 from 38 using 20 CWKR\n1,400 STRS\n12 LFSU-1\n5 FACT-1\n3 pro-2\n2 CWRK\nEND",
+			want: orders.AddOn{To: 205, From: 38, MaxCWRK: 20, Items: []game.Unit{
+				unit("STRS", 0, 1400), unit("LFSU", 1, 12), unit("FACT", 1, 5), unit("PRO", 0, 3), unit("CWRK", 0, 2)}}},
+		{text: "add-on to 205 from 38; 5 MINE-1; end", want: orders.AddOn{To: 205, From: 38, Items: []game.Unit{unit("MINE", 1, 5)}}},
+		{text: "add-on to 205 from 38; 5 FACT-1 stowed; end", err: orders.ErrInvalidOrder},
+		{text: "add-on to 205 from 38; 5 FACT-1 producing CNGD; end", err: orders.ErrInvalidOrder},
+		{text: "add-on to 205 from 38 using 2 CWRK each; 5 FACT-1; end", err: orders.ErrInvalidOrder},
+		{text: "add-on 205 from 38; 5 FACT-1; end", err: orders.ErrInvalidOrder},
+		{text: "add-on to x from 38; 5 FACT-1; end", err: orders.ErrInvalidEntityID},
+		{text: "add-on to 205 from 38; 5 WIDGET; end", err: orders.ErrInvalidUnit},
+		{text: "add-on to 205 from 38; end", err: orders.ErrInvalidOrder},
+		{text: "add-on to 205 from 38; 5 FACT-1", err: orders.ErrNoEnd},
+		{text: "cancel add-on to 205 from 38", want: orders.CancelAddOn{To: 205, From: 38}},
+		{text: "cancel add-on to 205", err: orders.ErrInvalidOrder},
+		{text: "cancel add-on to 205 from x", err: orders.ErrInvalidEntityID},
+	} {
+		lines, err := orders.Parse(strings.NewReader(tc.text))
+		if err != nil || len(lines) != 1 {
+			t.Fatalf("%q: %v, %d lines", tc.text, err, len(lines))
+		}
+		l := lines[0]
+		if !errors.Is(l.Err, tc.err) || (tc.err == nil && l.Err != nil) || !reflect.DeepEqual(l.Order, tc.want) {
+			t.Errorf("%q: %+v, %v; want %+v, %v", tc.text, l.Order, l.Err, tc.want, tc.err)
+			continue
+		}
+		if tc.err == nil {
+			again, err := orders.Parse(strings.NewReader(l.Order.String()))
+			if err != nil || len(again) != 1 || !reflect.DeepEqual(again[0].Order, tc.want) {
+				t.Errorf("String() = %q, which parses to %+v (%v)", l.Order.String(), again, err)
+			}
+		}
+	}
+}

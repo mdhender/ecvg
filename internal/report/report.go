@@ -234,12 +234,43 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 					return strings.Join(names, ", ")
 				}
 				p("    RESERVED: %s", list(s.BOM))
+				if len(s.Delivered) > 0 {
+					p("    DELIVERED BY ADD-ONS: %s", list(s.Delivered))
+				}
 				if short := s.Short(); len(short) > 0 {
 					p("    SHORT: %s", list(short))
+				}
+				if len(s.Pledged) > 0 {
+					p("    PLEDGED BY ADD-ONS: %s", list(s.Pledged))
 				}
 				if s.Hauled > 0 {
 					p("    LATE SUPPLIES: the TRNS carried %s MU for it last turn", commas(s.Hauled))
 				}
+			}
+		}
+		if len(c.AddOns) > 0 {
+			p("")
+			p("ADD-ONS")
+			for _, a := range c.AddOns {
+				list := func(us []game.Unit) string {
+					var names []string
+					for _, u := range us {
+						names = append(names, commas(u.Qty)+" "+unitName(u.Type, u.TechLevel))
+					}
+					if len(names) == 0 {
+						return "nothing"
+					}
+					return strings.Join(names, ", ")
+				}
+				p("  To entity %d: the TRNS carried %s MU to it last turn; %s CWRK shuttled to it", a.To, commas(a.Hauled), commas(a.Crew))
+				switch a.Waiting {
+				case "orbit":
+					p("    FROZEN: the entity is not at the planet of the set up")
+				case "start":
+					p("    WAITING: deliveries start the turn after the set up does")
+				}
+				p("    STILL TO DELIVER: %s", list(a.Want))
+				p("    RESERVED: %s", list(a.BOM))
 			}
 		}
 		if len(c.Assembly) > 0 || c.Construction.Used > 0 {

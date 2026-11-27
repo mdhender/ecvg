@@ -4,6 +4,7 @@
 package orders
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -106,12 +107,16 @@ const setupItemUsage = `want one of:
   Quantity MINE-n working DepositNo
   Quantity PopulationUnit         (UEM, USK, PRO, SLD, CWRK, or SPY)`
 
-// setupBlock is a setup order as it is read, line by line.
+// setupBlock is a setup order, or an add-on order, as it is read, line by
+// line.
 type setupBlock struct {
 	// no is the number of the order's first line.
 	no    int
 	texts []string
 	order Setup
+	// addOn is set if it is an add-on order, which is read into add.
+	addOn bool
+	add   AddOn
 	// err is the first thing found wrong with the order.
 	err error
 }
@@ -126,10 +131,17 @@ func (b *setupBlock) fail(err error) {
 // line returns the order as a Line.
 func (b *setupBlock) line() Line {
 	l := Line{No: b.no, Text: strings.Join(b.texts, "; "), Err: b.err}
-	if l.Err == nil && len(b.order.Items) == 0 {
-		l.Err = fmt.Errorf("%w: the order lists no units: %s", ErrInvalidOrder, setupUsage)
+	usage, items := setupUsage, len(b.order.Items)
+	if b.addOn {
+		usage, items = addOnUsage, len(b.add.Items)
 	}
-	if l.Err == nil {
+	switch {
+	case l.Err == nil && items == 0:
+		l.Err = fmt.Errorf("%w: the order lists no units: %s", ErrInvalidOrder, usage)
+	case l.Err != nil:
+	case b.addOn:
+		l.Order = b.add
+	default:
 		l.Order = b.order
 	}
 	return l
@@ -144,6 +156,10 @@ func startsItem(t Token) bool {
 // header parses the order's first line.
 func (b *setupBlock) header(tokens []Token) {
 	b.texts = append(b.texts, joinTokens(tokens))
+	if b.addOn {
+		b.addOnHeader(tokens)
+		return
+	}
 	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, setupUsage)
 	o := &b.order
 	o.Qty = 1
@@ -198,8 +214,21 @@ func (b *setupBlock) header(tokens []Token) {
 func (b *setupBlock) item(no int, tokens []Token) {
 	b.texts = append(b.texts, joinTokens(tokens))
 	item, err := parseSetupItem(tokens)
+	switch {
+	case err == nil && b.addOn && len(tokens) != 2:
+		err = fmt.Errorf("%w: %s", ErrInvalidOrder, addOnUsage)
+	case err != nil && b.addOn && len(tokens) == 2 && errors.Is(err, ErrInvalidOrder):
+		// The set up says what its FACT and MINE units do; the add-on
+		// only supplies them.
+		item, err = SetupItem{}, nil
+		item.Unit, err = quantityOf(tokens[0], tokens[1], "")
+	}
 	if err != nil {
 		b.fail(fmt.Errorf("line %d: %w", no, err))
+		return
+	}
+	if b.addOn {
+		b.add.Items = append(b.add.Items, item.Unit)
 		return
 	}
 	b.order.Items = append(b.order.Items, item)
@@ -284,4 +313,88 @@ func parseCancelSetup(tokens []Token) (Order, error) {
 		return nil, err
 	}
 	return CancelSetup{EntityID: id}, nil
+}
+
+// AddOn is the order that has an entity help with a set up that another
+// entity is doing (manual S5.4). It is written like a setup order:
+//
+//	add-on to EntityID from EntityID [using Quantity CWRK]
+//	Quantity Unit
+//	end
+//
+// The lines list the units, or the people, that the entity From supplies for
+// the entity To, which is being set up.
+type AddOn struct {
+	// To is the ID of the entity that is being set up, and From the ID of
+	// the entity that helps.
+	To, From int
+	// Items are the units to supply, in the order listed. A Type may be a
+	// population unit (UEM, USK, PRO, SLD) or a cadre (CWRK, SPY).
+	Items []game.Unit
+	// MaxCWRK is the most CWRK of the entity From that may help with the
+	// assembly in a turn, or 0 if the order sets no cap.
+	MaxCWRK int
+}
+
+func (o AddOn) String() string {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "add-on to %d from %d%s", o.To, o.From, using(o.MaxCWRK))
+	for _, u := range o.Items {
+		fmt.Fprintf(&sb, "; %d %s", u.Qty, unitName(u))
+	}
+	sb.WriteString("; end")
+	return sb.String()
+}
+
+const addOnUsage = `want:
+  add-on to EntityID from EntityID [using Quantity CWRK]
+  Quantity Unit                   (a line for each kind of unit, at least one)
+  end`
+
+// addOnHeader parses the first line of an add-on order.
+func (b *setupBlock) addOnHeader(tokens []Token) {
+	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, addOnUsage)
+	o := &b.add
+	maxCWRK, rest, err := usingClause(tokens)
+	if err != nil {
+		b.fail(err)
+		return
+	}
+	o.MaxCWRK = maxCWRK
+	if len(rest) != 5 || !rest[1].Is("to") || !rest[3].Is("from") {
+		b.fail(usage)
+		return
+	}
+	if o.To, err = entityID(rest[2]); err != nil {
+		b.fail(err)
+		return
+	}
+	if o.From, err = entityID(rest[4]); err != nil {
+		b.fail(err)
+	}
+}
+
+// CancelAddOn is the order "cancel add-on to EntityID from EntityID": the
+// entity From stops helping with the set up of the entity To.
+type CancelAddOn struct {
+	To, From int
+}
+
+func (o CancelAddOn) String() string {
+	return fmt.Sprintf("cancel add-on to %d from %d", o.To, o.From)
+}
+
+func parseCancelAddOn(tokens []Token) (Order, error) {
+	if len(tokens) != 6 || !tokens[2].Is("to") || !tokens[4].Is("from") {
+		return nil, fmt.Errorf("%w: want: cancel add-on to EntityID from EntityID", ErrInvalidOrder)
+	}
+	to, err := entityID(tokens[3])
+	if err != nil {
+		return nil, err
+	}
+	from, err := entityID(tokens[5])
+	if err != nil {
+		return nil, err
+	}
+	return CancelAddOn{To: to, From: from}, nil
 }

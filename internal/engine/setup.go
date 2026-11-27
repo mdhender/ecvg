@@ -34,6 +34,15 @@ const (
 	// ErrNoSuchSetup is the error for cancelling a set up that the empire
 	// isn't doing.
 	ErrNoSuchSetup = cerrs.Error("the empire is not setting up that entity")
+	// ErrNoSuchAddOn is the error for cancelling an add-on that the entity
+	// isn't doing.
+	ErrNoSuchAddOn = cerrs.Error("the entity has no add-on to that entity")
+	// ErrOwnSetup is the error for an add-on by the entity that is doing the
+	// set up.
+	ErrOwnSetup = cerrs.Error("the entity is doing that set up itself")
+	// ErrNothingWanted is the error for an add-on that lists nothing that
+	// the set up is short of.
+	ErrNothingWanted = cerrs.Error("the set up is not short of anything the order lists")
 	// ErrShipFactory is the error for a set up of a factory group in a ship.
 	ErrShipFactory = cerrs.Error("ships do not have functioning factories: list the FACT units as stowed")
 )
@@ -252,21 +261,178 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 
 // CancelSetup carries out a cancel setup order, given by the empire with ID
 // empireID: the set up of the entity with ID o.EntityID is dropped, and what
-// was reserved for it is released (game.Colony.CancelSetup). It fails, with
-// ErrNoSuchSetup, if no entity of the empire is setting up that entity.
+// was reserved for it is released (game.Colony.CancelSetup), and so is what
+// add-ons to it had reserved. It fails, with ErrNoSuchSetup, if no entity of
+// the empire is setting up that entity.
 func CancelSetup(d *game.Data, empireID int, o orders.CancelSetup) error {
 	for i := range d.Colonies {
 		if c := &d.Colonies[i]; c.EmpireID == empireID && c.CancelSetup(o.EntityID) {
+			dropAddOns(d, o.EntityID)
 			return nil
 		}
 	}
 	return fmt.Errorf("entity %d: %w", o.EntityID, ErrNoSuchSetup)
 }
 
-// Setups is the set up phase of a turn: every entity does a turn of work on
-// the entities it is setting up (game.Colony.RunSetups), and the ones that
-// are done join the game.
+// dropAddOns removes every add-on to the entity with the given ID.
+func dropAddOns(d *game.Data, id int) {
+	for i := range d.Colonies {
+		c := &d.Colonies[i]
+		c.AddOns = slices.DeleteFunc(slices.Clone(c.AddOns), func(a game.AddOn) bool { return a.To == id })
+		if len(c.AddOns) == 0 {
+			c.AddOns = nil
+		}
+	}
+}
+
+// findSetup returns the colony of d that is setting up the entity with the
+// given ID, and the set up, or nil if there is none.
+func findSetup(d *game.Data, id int) (*game.Colony, *game.Setup) {
+	for i := range d.Colonies {
+		c := &d.Colonies[i]
+		for k := range c.Setups {
+			if c.Setups[k].Entity.ID == id {
+				return c, &c.Setups[k]
+			}
+		}
+	}
+	return nil, nil
+}
+
+// AddOn carries out an add-on order, given by the empire with ID empireID:
+// the entity From helps with the set up of the entity To, which another
+// entity of the empire is doing at the same planet (manual F5.0, S5.4). Each
+// line is cut down to what the set up is short of and no add-on has pledged
+// (game.Colony.Pledge); From reserves what it has of that, and the rest when
+// it can, and delivers it in the Setups phase, from the turn after the set
+// up started (game.Colony.RunAddOn). The add-on lasts until it has delivered
+// everything, or is cancelled, or the set up is.
+//
+// Nothing changes if it fails:
+//
+//   - ErrNotControlled: the empire has no entity From.
+//   - ErrNoSuchSetup: no entity of the empire is setting up the entity To.
+//   - ErrOwnSetup: From is doing the set up itself.
+//   - ErrNotSameOrbit: From is not at the planet of the set up.
+//   - ErrNothingWanted: the set up is short of nothing that the order lists.
+func AddOn(d *game.Data, empireID int, o orders.AddOn) error {
+	fromAt := slices.IndexFunc(d.Colonies, func(c game.Colony) bool { return c.ID == o.From && c.EmpireID == empireID })
+	if fromAt < 0 {
+		return fmt.Errorf("entity %d: %w", o.From, ErrNotControlled)
+	}
+	from := &d.Colonies[fromAt]
+	builder, s := findSetup(d, o.To)
+	switch {
+	case s == nil || builder.EmpireID != empireID:
+		return fmt.Errorf("entity %d: %w", o.To, ErrNoSuchSetup)
+	case builder == from:
+		return fmt.Errorf("entity %d: %w", o.From, ErrOwnSetup)
+	case builder.PlanetID != from.PlanetID:
+		return fmt.Errorf("entities %d and %d: %w", o.From, builder.ID, ErrNotSameOrbit)
+	}
+	wanted := false
+	for _, u := range o.Items {
+		for _, short := range s.Short() {
+			if short.Type == u.Type && short.TechLevel == u.TechLevel && short.Qty > countUnits(s.Pledged, u.Type, u.TechLevel) {
+				wanted = true
+			}
+		}
+	}
+	if !wanted {
+		return ErrNothingWanted
+	}
+	from.AddOns = append(slices.Clone(from.AddOns), game.AddOn{To: o.To, MaxCWRK: o.MaxCWRK})
+	a := &from.AddOns[len(from.AddOns)-1]
+	for _, u := range o.Items {
+		from.Pledge(a, s, u.Type, u.TechLevel, u.Qty)
+	}
+	return nil
+}
+
+// countUnits returns the quantity of the unit with the given code and tech
+// level in list.
+func countUnits(list []game.Unit, code string, tl int) int {
+	n := 0
+	for _, u := range list {
+		if u.Type == code && u.TechLevel == tl {
+			n += u.Qty
+		}
+	}
+	return n
+}
+
+// CancelAddOn carries out a cancel add-on order, given by the empire with ID
+// empireID: the entity From stops helping with the set up of the entity To.
+// What it had reserved is released, and what it had still to deliver is the
+// set up's own entity's to supply again; what it delivered stays. It fails
+// with ErrNotControlled, or with ErrNoSuchAddOn if From has no such add-on.
+func CancelAddOn(d *game.Data, empireID int, o orders.CancelAddOn) error {
+	fromAt := slices.IndexFunc(d.Colonies, func(c game.Colony) bool { return c.ID == o.From && c.EmpireID == empireID })
+	if fromAt < 0 {
+		return fmt.Errorf("entity %d: %w", o.From, ErrNotControlled)
+	}
+	from := &d.Colonies[fromAt]
+	_, s := findSetup(d, o.To)
+	found := false
+	var keep []game.AddOn
+	for _, a := range from.AddOns {
+		if a.To != o.To {
+			keep = append(keep, a)
+			continue
+		}
+		found = true
+		if s != nil {
+			for _, u := range a.Want {
+				s.Pledged = lessPledged(s.Pledged, u)
+			}
+		}
+	}
+	if !found {
+		return fmt.Errorf("entity %d: %w", o.To, ErrNoSuchAddOn)
+	}
+	from.AddOns = keep
+	return nil
+}
+
+// lessPledged takes the units u off list, and drops the entry if none are
+// left.
+func lessPledged(list []game.Unit, u game.Unit) []game.Unit {
+	var out []game.Unit
+	for _, p := range list {
+		if p.Type == u.Type && p.TechLevel == u.TechLevel {
+			p.Qty -= u.Qty
+		}
+		if p.Qty > 0 {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// Setups is the set up phase of a turn. First every entity does a turn of
+// its add-ons, oldest first (game.Colony.RunAddOn); an add-on that has
+// delivered everything, or whose set up is gone, is dropped. Then every
+// entity does a turn of work on the entities it is setting up
+// (game.Colony.RunSetups), and the ones that are done join the game.
 func Setups(d *game.Data) {
+	for i := range d.Colonies {
+		d.Colonies[i].Construction.Setup = 0
+	}
+	for i := range d.Colonies {
+		c := &d.Colonies[i]
+		var keep []game.AddOn
+		for k := range c.AddOns {
+			a := &c.AddOns[k]
+			builder, s := findSetup(d, a.To)
+			if s == nil || c.RunAddOn(a, builder, s) {
+				// Nothing is reserved for it any more.
+				a.BOM, a.Want = nil, nil
+				continue
+			}
+			keep = append(keep, *a)
+		}
+		c.AddOns = keep
+	}
 	var done []game.Colony
 	for i := range d.Colonies {
 		done = append(done, d.Colonies[i].RunSetups()...)

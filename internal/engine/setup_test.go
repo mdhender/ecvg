@@ -380,3 +380,180 @@ func TestSetupRejected(t *testing.T) {
 		})
 	}
 }
+
+// helpers is founders with a ship (5) of empire 1 at the home colony's
+// planet: 50 SDRV-1, a little STRN, FOOD and FUEL, one TRNS-1, which carries
+// 200 MU a turn, and 10 CWRK.
+func helpers() game.Data {
+	d := founders()
+	d.Colonies = append(d.Colonies, game.Colony{
+		ID: 5, EmpireID: 1, PlanetID: 1, No: 2, Type: game.CSHP, TechLevel: 1,
+		Population: game.Population{UEM: 50, USK: 20, PRO: 100},
+		Cadres:     game.Cadres{CWRK: 10},
+		Cargo: []game.Unit{
+			{Type: "SDRV", TechLevel: 1, Qty: 50}, {Type: "STRN", Qty: 10}, {Type: "FOOD", Qty: 10},
+			{Type: "FUEL", Qty: 10}, {Type: "TRNS", TechLevel: 1, Qty: 1},
+		},
+	})
+	return d
+}
+
+func TestAddOn(t *testing.T) {
+	d := helpers()
+	d.Colonies[0].Depot[3].Qty = 5 // SDRV-1
+	d.Colonies[0].Population.UEM = 10
+	d.Colonies[0].Cadres.CWRK = 1
+	// The set up is short 16 SDRV-1 and 20 UEM. The add-on pledges 10 of the
+	// SDRV and, of its 25 UEM, the 20 that are wanted; nobody wants its FOOD.
+	errs := apply(t, &d, "setup CSHP from 1; 10,000 STRN; 21 SDRV-1; 30 UEM; end\nadd-on to 6 from 5\n10 SDRV-1\n25 UEM\n5 FOOD\nend")
+	if errs[0] != nil || errs[1] != nil {
+		t.Fatalf("errors %v", errs)
+	}
+	type unit = game.Unit
+	pledged := []unit{{Type: "SDRV", TechLevel: 1, Qty: 10}, {Type: "UEM", Qty: 20}}
+	ship := &d.Colonies[2]
+	if a := ship.AddOns; len(a) != 1 || a[0].To != 6 || !reflect.DeepEqual(a[0].Want, pledged) || !reflect.DeepEqual(a[0].BOM, pledged) {
+		t.Fatalf("add-ons %+v", a)
+	}
+	if ship.Claimed("SDRV", 1) != 10 || ship.Stock("FOOD") != 10 {
+		t.Errorf("the ship has %d SDRV-1 claimed and %d FOOD to use", ship.Claimed("SDRV", 1), ship.Stock("FOOD"))
+	}
+
+	// Nothing is delivered in the set up's first turn.
+	engine.Setups(&d)
+	job := &d.Colonies[0].Setups[0]
+	if a := d.Colonies[2].AddOns[0]; a.Waiting != "start" || a.Hauled != 0 || !reflect.DeepEqual(job.Pledged, pledged) || len(job.Delivered) != 0 {
+		t.Fatalf("add-on %+v, set up %+v", a, job)
+	}
+
+	// The TRNS-1 carries 8 SDRV-1 a turn. The set up's own entity does not
+	// supply what is pledged.
+	d.Colonies[0].Depot[3].Qty += 6
+	apply(t, &d, "")
+	engine.Setups(&d)
+	job, ship = &d.Colonies[0].Setups[0], &d.Colonies[2]
+	if a := ship.AddOns[0]; a.Waiting != "transport" || a.Hauled != 200 || ship.Stored("SDRV", 1) != 42 || ship.Transport.Used != 200 {
+		t.Errorf("add-on %+v; the ship has %d SDRV-1", a, ship.Stored("SDRV", 1))
+	}
+	if !reflect.DeepEqual(job.Delivered, []unit{{Type: "SDRV", TechLevel: 1, Qty: 8}}) ||
+		!reflect.DeepEqual(job.Pledged, []unit{{Type: "SDRV", TechLevel: 1, Qty: 2}, {Type: "UEM", Qty: 20}}) {
+		t.Errorf("delivered %+v, pledged %+v", job.Delivered, job.Pledged)
+	}
+	if d.Colonies[0].Reserved("SDRV", 1) != 11 || job.Hauled != 150 {
+		t.Errorf("home has %d SDRV-1 reserved and carried %d MU for them, want 11 and 150", d.Colonies[0].Reserved("SDRV", 1), job.Hauled)
+	}
+
+	// The rest arrives, the people join the builder until the ship is done,
+	// and the add-on is over.
+	apply(t, &d, "")
+	engine.Setups(&d)
+	if len(d.Colonies) != 4 || len(d.Colonies[0].Setups) != 0 || len(d.Colonies[2].AddOns) != 0 {
+		t.Fatalf("%d colonies, %d set ups, %d add-ons; want 4, 0, 0", len(d.Colonies), len(d.Colonies[0].Setups), len(d.Colonies[2].AddOns))
+	}
+	if c := d.Colonies[3]; c.ID != 6 || c.InUse("SDRV", 1) != 21 || c.Population.UEM != 30 {
+		t.Errorf("new ship %+v", c)
+	}
+	if home, ship := d.Colonies[0], d.Colonies[2]; home.Population.UEM != 0 || home.Stored("SDRV", 1) != 0 ||
+		ship.Population.UEM != 30 || ship.Stored("SDRV", 1) != 40 || ship.Transport.Used != 70 {
+		t.Errorf("home %+v\nship %+v", home, ship)
+	}
+}
+
+func TestAddOnCrew(t *testing.T) {
+	d := helpers()
+	d.Colonies[0].Depot[1].Qty = 9_999 // STRN
+	d.Colonies[0].Cadres.CWRK = 0
+	errs := apply(t, &d, "setup CSHP from 1; 10,000 STRN; 21 SDRV-1; 5 UEM; end\nadd-on to 6 from 5 using 1 CWRK; 1 STRN; end")
+	if errs[0] != nil || errs[1] != nil {
+		t.Fatalf("errors %v", errs)
+	}
+	engine.Setups(&d)
+	if s := d.Colonies[0].Setups[0]; s.Built || s.Waiting != "structure" {
+		t.Fatalf("set up %+v", s)
+	}
+	// The last STRN arrives, and the ship's CWRK does the 500 EMU of work.
+	apply(t, &d, "")
+	engine.Setups(&d)
+	if len(d.Colonies) != 4 || len(d.Colonies[2].AddOns) != 0 {
+		t.Fatalf("%d colonies and %d add-ons, want 4 and 0", len(d.Colonies), len(d.Colonies[2].AddOns))
+	}
+	if ship := d.Colonies[2]; ship.Transport.Used != 5 || ship.Construction.Setup != 500 || ship.Stored("STRN", 0) != 9 {
+		t.Errorf("the ship carried %d MU, did %d EMU, and has %d STRN", ship.Transport.Used, ship.Construction.Setup, ship.Stored("STRN", 0))
+	}
+}
+
+func TestAddOnEnds(t *testing.T) {
+	const text = "setup CSHP from 1; 10,000 STRN; 21 SDRV-1; 5 UEM; end\nadd-on to 6 from 5; 16 SDRV-1; end"
+	start := func(t *testing.T) game.Data {
+		d := helpers()
+		d.Colonies[0].Depot[3].Qty = 5 // SDRV-1
+		if errs := apply(t, &d, text); errs[0] != nil || errs[1] != nil {
+			t.Fatalf("errors %v", errs)
+		}
+		engine.Setups(&d)
+		apply(t, &d, "")
+		engine.Setups(&d) // 8 SDRV-1 are delivered
+		return d
+	}
+	t.Run("cancelled", func(t *testing.T) {
+		d := start(t)
+		errs := apply(t, &d, "cancel add-on to 9 from 5\ncancel add-on to 6 from 5")
+		if !errors.Is(errs[0], engine.ErrNoSuchAddOn) || errs[1] != nil {
+			t.Fatalf("errors %v", errs)
+		}
+		ship, job := d.Colonies[2], d.Colonies[0].Setups[0]
+		if len(ship.AddOns) != 0 || ship.Claimed("SDRV", 1) != 0 || len(job.Pledged) != 0 || len(job.Delivered) != 1 {
+			t.Errorf("ship %+v\nset up %+v", ship, job)
+		}
+	})
+	t.Run("the set up is cancelled", func(t *testing.T) {
+		d := start(t)
+		if errs := apply(t, &d, "cancel setup 6"); errs[0] != nil {
+			t.Fatal(errs[0])
+		}
+		// What was delivered is the builder's.
+		if home, ship := d.Colonies[0], d.Colonies[2]; len(ship.AddOns) != 0 || ship.Stored("SDRV", 1) != 42 || home.Stored("SDRV", 1) != 13 {
+			t.Errorf("home has %d SDRV-1, the ship %d and %d add-ons", home.Stored("SDRV", 1), ship.Stored("SDRV", 1), len(ship.AddOns))
+		}
+	})
+	t.Run("an entity that leaves keeps its reservation", func(t *testing.T) {
+		d := start(t)
+		d.Colonies[2].PlanetID = 2
+		apply(t, &d, "")
+		engine.Setups(&d)
+		if ship := d.Colonies[2]; len(ship.AddOns) != 1 || ship.AddOns[0].Waiting != "orbit" || ship.Claimed("SDRV", 1) != 8 || ship.Transport.Used != 0 {
+			t.Errorf("ship %+v", ship)
+		}
+	})
+}
+
+func TestAddOnRejected(t *testing.T) {
+	const setup = "setup CSHP from 1; 10,000 STRN; 21 SDRV-1; 5 UEM; end\n"
+	for _, tc := range []struct {
+		name, text string
+		edit       func(*game.Data)
+		err        error
+	}{
+		{name: "not the empire's entity", text: "add-on to 6 from 2; 5 SDRV-1; end", err: engine.ErrNotControlled},
+		{name: "no such set up", text: "add-on to 9 from 5; 5 SDRV-1; end", err: engine.ErrNoSuchSetup},
+		{name: "the builder itself", text: "add-on to 6 from 1; 5 SDRV-1; end", err: engine.ErrOwnSetup},
+		{name: "somewhere else", text: "add-on to 6 from 5; 5 SDRV-1; end", err: engine.ErrNotSameOrbit,
+			edit: func(d *game.Data) { d.Colonies[2].PlanetID = 2 }},
+		{name: "nothing the set up is short of", text: "add-on to 6 from 5; 5 FOOD; 5 STRN; end", err: engine.ErrNothingWanted},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := helpers()
+			d.Colonies[0].Depot[3].Qty = 5 // SDRV-1
+			if tc.edit != nil {
+				tc.edit(&d)
+			}
+			errs := apply(t, &d, setup+tc.text)
+			if errs[0] != nil || !errors.Is(errs[1], tc.err) {
+				t.Fatalf("errors %v, want nil and %v", errs, tc.err)
+			}
+			if len(d.Colonies[2].AddOns) != 0 || len(d.Colonies[0].Setups[0].Pledged) != 0 {
+				t.Errorf("the rejected order changed something")
+			}
+		})
+	}
+}

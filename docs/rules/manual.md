@@ -1644,6 +1644,7 @@ What is reserved can not be used, transferred, drafted, or assembled by the esta
 The reserved population does no work.
 The new S/C is complete when the whole bill of material has been reserved and all the assembly work is done ([F4.6](#rule-F4.6)).
 Then the bill of material is moved to it at once, and it is a S/C like any other.
+The establishing S/C may not leave its location until the set up is complete or cancelled.
 A set up may take more than one turn, and a set up that is not complete may be cancelled ([S5.3](#rule-S5.3)): what was reserved is released, and the work done is lost.
 No other order is necessary for the initial establishment, but ADN and TFR orders, on later turns, may increase the size of the S/C.
 
@@ -1671,7 +1672,7 @@ CWRK that the TRNS can not carry do not work on the set up that turn.
 TRNS listed in the set up order are reserved like everything else, but being TRNS, they still carry for the establishing S/C until the new S/C is complete.
 CWRK listed in the set up order need no TRNS.
 The bill of material itself needs none, as long as it is supplied on time.
-If the establishing S/C is short of anything listed, it supplies the rest on later turns, as it gets it.
+If the establishing S/C is short of anything listed, it supplies the rest on later turns, as it gets it, unless another S/C undertakes to supply it with an add-on order ([F5.0](#rule-F5.0)).
 While the structure is still going up, that costs nothing more.
 Once the structure is complete, anything still short is late, and the establishing S/C's TRNS must carry it, with the fuel and operators that takes ([J4.2](#rule-J4.2)); what they can not carry waits for another turn.
 The new S/C is not complete until all of it has arrived.
@@ -1707,51 +1708,66 @@ If an open colony or enclosed surface colony is being set-up, it will be on the 
 <a id="rule-F5.1"></a>
 ### F5.1 Description
 
-An add-on order (ADN) adds units onto an existing S/C, using the TRNS's, CWRK's, and materials from another S/C.
-The S/C doing the ADN does not have to be the establishing S/C.
-There is no limit to the size of an ADN.
+An add-on order ([S5.4](#rule-S5.4)) has a second S/C help with a set up that another S/C is doing ([F4.0](#rule-F4.0)), using its own materials, TRNS's, and CWRK's.
+It supplies units that the set up is short of; it does not make the new S/C any larger than the set up order made it.
+An add-on can not be made to a S/C that is complete: such a S/C is enlarged with transfer and assemble orders.
 
 <a id="rule-F5.2"></a>
 ### F5.2 ADN Restrictions
 
-An existing S/C may ADN to any other type or number of ships and colonies, so long as the restrictions listed below are met.
+Any number of S/C's may add-on to a set up, and a S/C may add-on to any number of set ups, so long as the restrictions listed below are met.
+The establishing S/C can not add-on to its own set up.
 
 <a id="rule-F5.2.1"></a>
-#### F5.2.1 ADN Abortions
+#### F5.2.1 What an Add-On Supplies
 
-Portions of an ADN, or all of an ADN, may fail due to a shortage of CWRK, fuel for the TRNS's, TRNS's, or STRN (or STRL or STRS) to hold all the additional units ([F3.2.1](#rule-F3.2.1)).
+Each line of an add-on order is cut down to what the set up is still short of ([F4.7](#rule-F4.7)) and no other add-on has undertaken to supply.
+What is left is pledged to the set up: the establishing S/C no longer supplies it, and the new S/C is not complete until the add-on has delivered it, or the add-on is cancelled.
+An order that lists nothing the set up is short of fails.
 
 <a id="rule-F5.3"></a>
 ### F5.3 How ADN Orders Work
 
-A player wishing to ADN to a S/C writes an ADN order to an existing S/C, telling it to add certain items to an existing S/C.
-The computer will cause construction worker units and transports to do the transferring of items in the ADN order.
-All the materials needed to do the ADN come from the adding-on S/C's POP, NON, and UNA.
+The adding-on S/C reserves what it has pledged, as quickly as it can: what it has when the order is processed, and the rest on later turns, as it gets it.
+All of it comes from the adding-on S/C's POP, NON, and UNA, and what is reserved can not be used for anything else ([F4.5](#rule-F4.5)).
+Its TRNS then carry what is reserved to the job site ([F5.5](#rule-F5.5)).
+Units that have been delivered wait at the job site, and belong to no S/C until the new S/C is complete.
+Population that has been delivered joins the establishing S/C, which reserves it for the set up and supports it until the new S/C is complete.
+The add-on lasts until it has delivered everything it pledged, or until it is cancelled ([S5.4](#rule-S5.4)).
+It also ends if the set up is cancelled: then what was reserved is released, and what had been delivered goes into the establishing S/C's storage.
+When an add-on is cancelled, what it delivered stays with the set up, and the establishing S/C must again supply the rest.
 
 <a id="rule-F5.4"></a>
 ### F5.4 Construction Workers and Add-Ons
 
-The rules regarding CWRK's and set ups apply to add-ons, too.
-See [F4.6](#rule-F4.6)<!-- was 7.4.6 -->.
+While an add-on lasts, CWRK of the adding-on S/C help with the assembly work of the set up, as many as the work can use, or no more than the number the add-on order allows.
+The rules for the crew of the establishing S/C apply to them, too ([F4.6](#rule-F4.6)): they are shuttled to the job by the adding-on S/C's TRNS, they do no other work that turn, and they do nothing until the structure is complete.
 
 <a id="rule-F5.5"></a>
 ### F5.5 Transports and Add-Ons
 
-The rules regarding TRNS's and set-ups apply to add-ons, too.
-See [F4.7](#rule-F4.7)<!-- was 7.4.7 -->.
+An add-on always pays for its transport: everything it delivers is carried by the TRNS of the adding-on S/C, with the fuel and operators that takes ([J4.2](#rule-J4.2)).
+What they can not carry in a turn waits for another turn.
+An add-on delivers nothing in the turn the set up was ordered; its deliveries start the turn after.
 
 <a id="rule-F5.6"></a>
 ### F5.6 Assemblies and Add-Ons
 
-All rules regarding assemblies and set-ups apply to ADN's too, (see [F4.8](#rule-F4.8)<!-- was 7.4.8 -->) with the addition that factories in an ADN can also be ordered to be added-on to an existing factory group.
+The set up order says what becomes of each unit in the new S/C ([F4.8](#rule-F4.8)): whether it is assembled or stowed, and which group it joins.
+An add-on order only supplies the units, and does not say.
 
 <a id="rule-F5.7"></a>
 ### F5.7 Add-On Locations
 
-The S/C doing the ADN must be at the same location (or orbit) as the S/C being added-on-to.
+The S/C doing the ADN must be at the same location (or orbit) as the S/C doing the set up.
+If it leaves, the add-on is still in effect, but frozen: nothing is delivered, and what is reserved for it stays reserved and can not be used for any other purpose, until it returns or the add-on is cancelled.
+The establishing S/C itself may not leave until its set up is complete or cancelled.
 
 <a id="rule-F5.8"></a>
 ### F5.8 Special Rules
+
+For now a player may add-on only to his own set ups.
+The rules below, for add-ons between players, are not in effect yet.
 
 A Ruler can not ADN to S/C belonging to another Ruler's regent, only to one belonging to his own Regent.
 A Regent can only ADN to S/C's belonging to his Ruler or another Regent of his Ruler.
@@ -1759,7 +1775,7 @@ The receiving Ruler or Regent does not have to write an order allowing the ADN.
 A Ruler can ADN to a S/C belonging to himself or to a Regent (neither case requires an allow add-on order).
 A Ruler not only can ADN and allow an add-on to his own S/C's and those of his Regents, he also can with other Rulers of the same race.
 They must write an allow add-on order ([S5.2](#rule-S5.2)) or the order will fail.
-An allow add-on is a standing order: it is good until it is cancelled with a cancel add-on order, and the printout for a S/C lists the add-ons that are still allowed to it.
+An allow add-on is a standing order: it is good until it is cancelled with a disallow add-on order, and the printout for a S/C lists the add-ons that are still allowed to it.
 A player can not ADN to a S/C of another race, and an allow add-on order does not change that.
 
 <a id="rule-F6.0"></a>
@@ -3394,7 +3410,7 @@ The pages should be numbered if there is more than one.
 ## S2.0 General Rules on Writing Orders
 
 A player returns the orders for a turn as one plain text file.
-Each order is written on one line, and an order can not run on to a second line, except for the few whose rules say they take more than one ([S5.2](#rule-S5.2), [S5.3](#rule-S5.3)).
+Each order is written on one line, and an order can not run on to a second line, except for the few whose rules say they take more than one ([S5.2](#rule-S5.2), [S5.3](#rule-S5.3), [S5.4](#rule-S5.4)).
 In those orders a `;` may be written in place of the end of a line.
 Blank lines are ignored, and a line may be as long as the order needs.
 
@@ -3780,12 +3796,12 @@ end
 
 - The S/C to be added-on to does not belong to the player.
 
-#### Cancel Add-On
+#### Disallow Add-On
 
 Cancels what an allow add-on order allowed.
 
 ```text
-cancel add-on to EntityID from ListOfEntityIDs
+disallow add-on to EntityID from ListOfEntityIDs
 ```
 
 | Value           | Meaning                                                                         |
@@ -3794,7 +3810,7 @@ cancel add-on to EntityID from ListOfEntityIDs
 | ListOfEntityIDs | The S/C's that are no longer allowed to add-on to it ([S2.5](#rule-S2.5)).      |
 
 ```text
-cancel add-on to 205 from [38, 39]   # S/C's 38 and 39 may no longer add-on to S/C 205
+disallow add-on to 205 from [38, 39] # S/C's 38 and 39 may no longer add-on to S/C 205
 ```
 
 <a id="rule-S5.3"></a>
@@ -3924,42 +3940,82 @@ cancel setup 31   # the set up of S/C 31 is abandoned
 - Rejected when the player has no S/C that is setting up that S/C.
 
 <a id="rule-S5.4"></a>
-### S5.4 Add-On Orders (ADN)
+### S5.4 Add-On
 
-- Format:
-  ```text
-  S/C ID#, "ADN", [S/C ID#'s being added-on to].
-  Quantity, item.
-  1, END.
-  ```
-- Example:
-  ```text
-  38, ADN, [205].
-  1,400,000, STRS.
-  12, LFSU-1.
-  10,000, FACT-1.
-  6,000, FACT-1, FACT-2.
-  1,000, FACT-1, 3.
-  1, END.
-  ```
-- Notes: The ADN order has colony 38 ADN to colony 205.
-  As in the STP order, the items are listed in the order of their importance, with the STRS listed first, and only one quantity and one type of unit is allowed per line.
-  Add-on orders always finish with **1, END**, never with any other quantity.
-  The 10,000 FACT-1 will go into storage, the 6,000 FACT-1 will be assembled and begin manufacturing FACT-2, and the 1,000 FACT-1 will be added to FACT group #3 already in colony 205.
-  A single S/C is still written as a list ([S2.5](#rule-S2.5)), and `[*]` can not be used in an ADN order.
+Has a S/C help with a set up that another of the player's S/C's is doing ([F5.0](#rule-F5.0)).
+It replaces the 1980 ADN order.
 
-- Example:
-  ```text
-  38, ADN, [205, 206, 207, 208, 209, 210].
-  1,400,000, STRS.
-  12, LFSU-1.
-  300, PRO-2.
-  1, END.
-  ```
-- Notes: This ADN order allows the listed items to be added-on to ships 205, 206, 207, 208, 209, and 210.
-  Each ship listed receives the full quantity of every item; the quantities are not shared among them.
-  If there are not enough units to supply every ship, the ships are supplied in the order listed, each receiving what is left of each item, and the ships after them receive less or nothing.
-  A S/C listed more than once receives the items once for each time it is listed.
+**Syntax**
+
+```text
+add-on to EntityID from EntityID [using Quantity CWRK]
+Quantity Unit
+Quantity PopulationUnit
+end
+```
+
+| Value          | Meaning                                                                                              |
+|----------------|------------------------------------------------------------------------------------------------------|
+| EntityID       | After `to`, the S/C that is being set up, from the printout of the establishing S/C. After `from`, the adding-on S/C; it must belong to the player. |
+| Quantity       | After `using`, the most CWRK of the adding-on S/C that may help. On the other lines, how many of the unit to supply ([S2.1](#rule-S2.1)). |
+| Unit           | The unit, with its TL if it has one ([S2.4](#rule-S2.4)).                                             |
+| PopulationUnit | UEM, USK, PRO, SLD, CWRK, or SPY, with or without a race number ([S2.4](#rule-S2.4)).                 |
+
+**Examples**
+
+```text
+add-on to 31 from 38 using 20 CWRK   # S/C 38 helps with the set up of S/C 31
+1,400,000 STRS
+12 LFSU-1
+6,000 FACT-1
+300 PRO
+end
+
+add-on to 31 from 40; 500 FUEL; end
+```
+
+**Rules**
+
+- This order takes more than one line, like the set up order ([S5.3](#rule-S5.3)): the first line, then one line for each kind of unit, then a line with the word `end`.
+  A `;` may be written in place of the end of a line.
+- Each line is cut down to what the set up is still short of and no other add-on has pledged ([F5.2.1](#rule-F5.2.1)).
+  The establishing S/C stops supplying what is pledged.
+- The lines do not say `stowed`, `producing`, or `working`: the set up order has said what becomes of the units.
+- The adding-on S/C reserves what it pledged as quickly as it can, and its TRNS carry it to the job, starting the turn after the set up was ordered ([F5.5](#rule-F5.5)).
+  It always pays for the transport.
+- `using` limits the CWRK of the adding-on S/C that are shuttled to the job each turn; without it, as many go as the work can use ([F5.4](#rule-F5.4)).
+- The order lasts until everything pledged has been delivered, or it is cancelled, or the set up is.
+  The new S/C is not complete while an add-on to it has anything left to deliver.
+- If the adding-on S/C leaves the orbit, the order is still in effect: what it reserved is frozen, and can not be used for any other purpose ([F5.7](#rule-F5.7)).
+
+**Rejected when**
+
+- The adding-on S/C does not belong to the player.
+- No S/C of the player is setting up the S/C named, or the adding-on S/C is the one setting it up.
+- The adding-on S/C is not at the same location as the S/C doing the set up ([F5.7](#rule-F5.7)).
+- The set up is short of nothing the order lists.
+- A line is not written as shown, or the `end` line is missing.
+  The whole order is rejected, not just the line.
+
+#### Cancel Add-On
+
+Ends an add-on that has not delivered everything.
+
+```text
+cancel add-on to EntityID from EntityID
+```
+
+| Value    | Meaning                                                                    |
+|----------|----------------------------------------------------------------------------|
+| EntityID | As in the add-on order: the S/C being set up, and then the adding-on S/C.  |
+
+```text
+cancel add-on to 31 from 38   # S/C 38 stops helping with the set up of S/C 31
+```
+
+- What the adding-on S/C had reserved is released to it.
+- What it had delivered stays with the set up; the establishing S/C must supply the rest.
+- Rejected when the adding-on S/C does not belong to the player, or has no add-on to that S/C.
 
 <a id="rule-S5.5"></a>
 ### S5.5 Junk Orders (JNK)

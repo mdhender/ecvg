@@ -302,6 +302,21 @@ func TestEmpire(t *testing.T) {
 			},
 		},
 		{
+			name:     "add-ons",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				d.Colonies[0].AddOns = []game.AddOn{{
+					To:   9,
+					Want: []game.Unit{{Type: "SDRV", TechLevel: 1, Qty: 8}, {Type: "UEM", Qty: 20}},
+					BOM:  []game.Unit{{Type: "SDRV", TechLevel: 1, Qty: 8}},
+					Crew: 2, Hauled: 200, Waiting: "transport",
+				}}
+			},
+			want: []string{
+				"ADD-ONS\n  To entity 9: the TRNS carried 200 MU to it last turn; 2 CWRK shuttled to it\n    STILL TO DELIVER: 8 SDRV-1, 20 UEM\n    RESERVED: 8 SDRV-1\n",
+			},
+		},
+		{
 			name:     "transfers",
 			empireID: 1,
 			edit: func(d *game.Data) {

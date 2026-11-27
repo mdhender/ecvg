@@ -330,7 +330,7 @@ const maxLineLength = 1 << 20
 
 // Parse reads orders from r. It returns a Line for every order: for most
 // that is a line that is not blank or only a comment, and for an order that
-// takes more than one line (setup) it is the order's first line, with the
+// takes more than one line (setup, add-on) it is the order's first line, with the
 // text of all its lines joined by "; ". A line that is not a valid order has
 // its Err set. The error it returns is one from reading r.
 func Parse(r io.Reader) ([]Line, error) {
@@ -351,7 +351,7 @@ func Parse(r io.Reader) ([]Line, error) {
 			continue
 		}
 		for len(tokens) > 0 {
-			if block == nil && !tokens[0].Is("setup") {
+			if block == nil && !tokens[0].Is("setup") && !tokens[0].Is("add-on") {
 				// An ordinary order is the whole line, or what is left of it.
 				line := Line{No: no, Text: text}
 				line.Order, line.Err = parseOrder(tokens)
@@ -373,7 +373,7 @@ func Parse(r io.Reader) ([]Line, error) {
 			}
 			switch {
 			case block == nil:
-				block = &setupBlock{no: no}
+				block = &setupBlock{no: no, addOn: seg[0].Is("add-on")}
 				block.header(seg)
 			case seg[0].Is("end"):
 				if len(seg) != 1 {
@@ -444,6 +444,8 @@ func parseOrder(tokens []Token) (Order, error) {
 		return parseUnitWork(tokens, game.WorkScrap)
 	case len(tokens) >= 2 && tokens[0].Is("cancel") && tokens[1].Is("setup"):
 		return parseCancelSetup(tokens)
+	case len(tokens) >= 2 && tokens[0].Is("cancel") && tokens[1].Is("add-on"):
+		return parseCancelAddOn(tokens)
 	case tokens[0].Is("end"):
 		return nil, fmt.Errorf("%w: end without a setup order before it", ErrInvalidOrder)
 	}
