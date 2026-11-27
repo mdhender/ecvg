@@ -2073,8 +2073,9 @@ Rebels also increase if a foreign nation has his "E" spies incite loyal populati
 <a id="rule-G2.8"></a>
 ### G2.8 Trainee Increases
 
-Trainees increase when the player writes a DRF order for a quantity of TRNE to be trained as PRO's.
+Trainees increase when the player writes a draft order ([S12.1](#rule-S12.1)) for a quantity of TRNE to be trained as PRO's.
 This number is deducted from the USK and added to the existing trainee units.
+Each 100 TRNE in the S/C, or part of 100, requires one PRO to train them ([G1.8](#rule-G1.8)), so the S/C drafts no more TRNE than it has PRO to train.
 5% of all TRNE graduate each *turn* as professionals.
 
 <a id="rule-G3.0"></a>
@@ -3209,6 +3210,44 @@ The population units that make it up stay in the S/C's POP and are counted there
 
 # S. Orders
 
+The orders the game accepts are listed here, each with the rule that describes it.
+[S2.0](#rule-S2.0) explains how an order is written and how to read its syntax.
+
+| Order                  | Syntax | Rule |
+|------------------------|--------|------|
+| Assemble               | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1)\* |
+| Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n [producing Unit]`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.1](#rule-S6.1)\* |
+| Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.1](#rule-S6.1)\* |
+| Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.1](#rule-S6.1)\* |
+| Disassemble            | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2)\* |
+| Scrap                  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3)\* |
+| Set idle               | `set idle for GroupKind group GroupNo of EntityID to PercentageAmount` | [S8.1](#rule-S8.1)\*, [S8.3](#rule-S8.3)\*, [S8.5](#rule-S8.5)\*, [S8.6](#rule-S8.6)\* |
+| Draft                  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
+| Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2)\* |
+| Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4)\* |
+
+Any assemble, disassemble, or scrap order may end with `using Quantity CWRK`.
+
+\* The rule has not been rewritten yet, and still shows the order in its 1980 format.
+
+The orders below have not been rewritten, and are not accepted yet ([S2.0](#rule-S2.0)).
+They are listed by their 1980 codes.
+
+| Orders | Codes |
+|--------|-------|
+| [S4.0](#rule-S4.0) Combat Orders | [TMV](#rule-S4.1), [CLS](#rule-S4.2), [RUN](#rule-S4.3), [PME](#rule-S4.4), [PMM](#rule-S4.5), [AME](#rule-S4.6), [AMM](#rule-S4.7), [INV](#rule-S4.8), [RAD](#rule-S4.9), [DTS](#rule-S4.10), [OTS](#rule-S4.11), [WTD](#rule-S4.12) |
+| [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [STP](#rule-S5.3), [ADN](#rule-S5.4), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
+| [S7.0](#rule-S7.0) Transfer Orders | [TFR](#rule-S7.1), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
+| [S8.0](#rule-S8.0) Production Orders | [BCH](#rule-S8.1), [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
+| [S9.0](#rule-S9.0) Market Orders | [BUY](#rule-S9.1), [SEL](#rule-S9.2) |
+| [S10.0](#rule-S10.0) Exploration Orders | [PRB](#rule-S10.1), [SUR](#rule-S10.2) |
+| [S11.0](#rule-S11.0) Espionage Orders | [SPM](#rule-S11.1) |
+| [S12.0](#rule-S12.0) Population Orders | [PAY](#rule-S12.3) |
+| [S13.0](#rule-S13.0) Naming and News Orders | [NAM](#rule-S13.1), [NOM](#rule-S13.2), [NAP](#rule-S13.3), [NSR](#rule-S13.4) |
+| [S14.0](#rule-S14.0) Movement Orders | [MOV](#rule-S14.1), [JMP](#rule-S14.2) |
+
+In BCH and MCH, shutting a group down and starting it up are done with the set idle order.
+
 <a id="rule-S1.0"></a>
 ## S1.0 How the Turn Sheet Should Look
 
@@ -3241,10 +3280,19 @@ An order does not end in a period, and commas are not used to separate its parts
 Orders are written with the words shown in their formats, such as `assemble` or `set rations`, and not with the three letter codes of the Glossary.
 Units are written with their codes ([A7.0](#rule-A7.0)), such as `FUEL` or `FACT-4`, and never spelled out.
 
-In a format, a word in small letters is written as shown, and a name that starts with a capital, such as Quantity, stands for a value the player supplies.
-EntityID is the ID number of a S/C.
-A part of a format inside brackets may be left out.
-For example:
+Each order has a section of its own in this chapter, and the sections are all laid out the same way:
+
+- **Syntax** shows how the order is written, with a line for each form it has.
+  A word in small letters is written as shown.
+  A name that starts with a capital, such as Quantity, stands for a value the player supplies.
+  A part inside brackets may be left out.
+- The table under the syntax says what each value may be.
+  EntityID is always the ID number of a S/C.
+- **Examples** are orders as a player would write them, with a comment ([S2.7](#rule-S2.7)) on what each one does.
+- **Rules** say when the order is carried out and what it does.
+- **Rejected when** lists the reasons the order is refused.
+
+For example, the syntax:
 
     draft Quantity UnitOrCadre from EntityID
 
@@ -4140,6 +4188,16 @@ draft 5,000 CWRK from 99      # cadres are drafted too
 
 **Rules**
 
+- Each one drafted takes people from the S/C's population:
+
+  | UnitOrCadre | Takes                                                                    |
+  |-------------|--------------------------------------------------------------------------|
+  | SLD         | 1 USK, which becomes a SLD.                                              |
+  | TRNE        | 1 USK, and 1 PRO to train each 100 TRNE in the S/C, or part of 100.      |
+  | CWRK        | 1 PRO and 1 USK.                                                         |
+  | SPY         | 1 PRO and 1 SLD.                                                         |
+
+  People that a cadre already holds can not be drafted again.
 - If the S/C does not have the people for the whole quantity, it drafts as many as it can.
   The printout shows the quantity asked for and the quantity drafted.
 - Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), after production.
