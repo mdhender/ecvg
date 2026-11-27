@@ -349,7 +349,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code | Term                              | Definition                                         |
 |------|-----------------------------------|----------------------------------------------------|
 | AAN  | Allow Add-on                      | This order allows a S/C to increase another S/C.   |
-| ACP  | Accept                            | This order accepts a gift S/C from another player. |
+| ACP  | Accept                            | This order agrees to a gift S/C from another player. |
 | ADN  | Add-on                            | This order adds units to an existing S/C.          |
 | AME  | After-maneuver energy-weapon fire | See Combat ([D6.1.3](#rule-D6.1.3)<!-- was 15 -->).                                   |
 | AMM  | After-maneuver missile fire       | See Combat ([D6.1.4](#rule-D6.1.4)<!-- was 15 -->).                                   |
@@ -492,7 +492,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | POP\* | Population unit                 | Consists of 100 people.                                                   |
 | PRB   | Probe                           | This order gathers data about a star system and nearer stars.             |
 | PRO   | Professional unit               | Population unit consisting of 100 highly skilled people.                  |
-| PTC   | Permission to colonize          | This order permits a S/C set up on a planet controlled by another player. |
+| PTC   | Permission to colonize          | This order permits another player to set up a colony on a planet ([S5.1](#rule-S5.1)). |
 | PUP   | Pick-up                         | This order has transports pickup items from another S/C.                  |
 
 ### Q
@@ -624,9 +624,11 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.2"></a>
 ### B3.2 Pre Set-Up Stage
 
-1. <a id="rule-B3.2.1"></a>AAN orders processed (see [S5.2](#rule-S5.2)<!-- was 17.4.14 -->)
-2. <a id="rule-B3.2.2"></a>PTC orders processed (see [S5.1](#rule-S5.1)<!-- was 17.4.13 -->)
-3. <a id="rule-B3.2.3"></a>ACP orders processed (see [S5.7](#rule-S5.7)<!-- was 17.4.19 -->)
+The orders of this stage only give consent to an order that another player writes; the order consented to is carried out in a later stage of the same turn.
+
+1. <a id="rule-B3.2.1"></a>AAN orders processed (see [S5.2](#rule-S5.2)<!-- was 17.4.14 -->), for the ADN orders of the Set-Up stage ([B3.3.2](#rule-B3.3.2))
+2. <a id="rule-B3.2.2"></a>Grant permission to colonize orders processed (see [S5.1](#rule-S5.1)<!-- was 17.4.13 -->), for the STP orders of the Set-Up stage ([B3.3.1](#rule-B3.3.1))
+3. <a id="rule-B3.2.3"></a>ACP orders processed (see [S5.7](#rule-S5.7)<!-- was 17.4.19 -->), for the GIV orders of the Dis-Assembly stage ([B3.4.5](#rule-B3.4.5)); not in the game, as there are no Regents ([B4.1](#rule-B4.1))
 
 <a id="rule-B3.3"></a>
 ### B3.3 Set-Up Stage
@@ -641,7 +643,7 @@ All the orders for one stage are processed before any of the orders for the next
 2. <a id="rule-B3.4.2"></a>Scrap orders processed (see [S6.3](#rule-S6.3)<!-- was 17.4.23 -->)
 3. <a id="rule-B3.4.3"></a>JNK orders processed (see [S5.5](#rule-S5.5)<!-- was 17.4.17 -->)
 4. <a id="rule-B3.4.4"></a>MRG orders processed (see [S5.8](#rule-S5.8)<!-- was 17.4.20 -->)
-5. <a id="rule-B3.4.5"></a>GIV orders processed (see [S5.6](#rule-S5.6)<!-- was 17.4.18 -->)
+5. <a id="rule-B3.4.5"></a>GIV orders processed (see [S5.6](#rule-S5.6)<!-- was 17.4.18 -->); not in the game, as there are no Regents ([B4.1](#rule-B4.1))
 6. <a id="rule-B3.4.6"></a>COM orders processed (see [S8.2](#rule-S8.2)<!-- was 17.4.21 -->)
 7. <a id="rule-B3.4.7"></a>DEP orders processed (see [S8.4](#rule-S8.4)<!-- was 17.4.22 -->)
 
@@ -766,6 +768,8 @@ All the orders for one stage are processed before any of the orders for the next
 
 <a id="rule-B4.1"></a>
 ### B4.1 Regents
+
+> Not in the game: there are no Regents, so every rule about them is out of use, and so are the GIV and ACP orders ([F7.0](#rule-F7.0)), which only a Ruler and his Regents can use.
 
 Regents are players who run one or more S/C's for a single Ruler.
 Any number of S/C's may be managed by a single Regent.
@@ -1600,9 +1604,11 @@ Conversely, a Regent may not set up the same kind of colony that his Ruler has i
 <a id="rule-F4.3.3"></a>
 #### F4.3.3 Permission to Colonize
 
-A player may not set up a colony on a planet controlled by another player, unless he has communicated with the other player asking his permission to colonize, and the controller has agreed and has written a permission to colonize order (PTC).
-There is no limit to the number of players that may establish colonies at a location, as long as PTC is granted, and as long as the limit of one of each type of colony per location per player is observed.
-When a player has received PTC on a planet, he does not need it to set up more colonies there.
+A player may not set up a colony on a planet controlled by another player, unless he has communicated with the other player asking his permission to colonize, and the controller has agreed and has written a grant permission to colonize order ([S5.1](#rule-S5.1)).
+Permission is given to the player, not to one of his S/C's; any of his S/C's may do the set up.
+It lasts until it is used, which is when the player establishes a colony on the planet, or until the player who gave it no longer controls any colony on the planet.
+There is no limit to the number of players that may establish colonies at a location, as long as permission is granted, and as long as the limit of one of each type of colony per location per player is observed.
+A player who has a colony on a planet does not need permission to set up more colonies there.
 
 <a id="rule-F4.3.4"></a>
 #### F4.3.4 Failures to Set Up
@@ -1742,6 +1748,8 @@ The receiving Ruler or Regent does not have to write an order allowing the ADN.
 A Ruler can ADN to a S/C belonging to himself or to a Regent (neither case requires an allow add-on order).
 A Ruler not only can ADN and allow an add-on to his own S/C's and those of his Regents, he also can with other Rulers of the same race.
 They must write an allow add-on order (AAN) or the order will fail.
+An AAN is a standing order: it is good until it is cancelled, and the printout for a S/C lists the S/C's that are allowed to add-on to it ([S5.2](#rule-S5.2)).
+A player can not ADN to a S/C of another race, and an AAN order does not change that.
 
 <a id="rule-F6.0"></a>
 ## F6.0 Junking
@@ -1756,11 +1764,14 @@ When a S/C has been junked, it ceases to exist.
 <a id="rule-F7.0"></a>
 ## F7.0 Gifts
 
+> Not in the game: giving is allowed only between a Ruler and his Regents, and there are no Regents ([B4.1](#rule-B4.1)).
+
 A gift order (GIV) gives away S/C's - *only* S/C's, not any other item.
 Rulers can not GIV to another Ruler's regents, only his own.
 A regent can GIV only to his Ruler or to another Regent of his Ruler.
 Giving is allowed only between Ruler and Regent.
 The receiver must write an ACP order - this applies to Regents, as well.
+The ACP order only agrees to the gift; the S/C changes hands when the GIV order is processed ([B3.4.5](#rule-B3.4.5)).
 Finally, under no circumstances may a player give away his home colony.
 He may, however, give away someone else's home colony that he has conquered.
 
@@ -1777,12 +1788,12 @@ Neither CWRK's nor TRNS's are necessary to perform a MRG order.
 
 Each planet is controlled directly by a colony, (indirectly by a player; this means that if the controlling colony is overthrown, the control of that world will be terminated immediately).
 A player, wishing to set-up a colony on a planet that is controlled by another player, must first contact the controller via diplomatic message, asking his permission to colonize the planet.
-If the controller agrees, he issues a permission to colonize (PTC) order.
+If the controller agrees, he writes a grant permission to colonize order ([S5.1](#rule-S5.1)).
 If the planet is not controlled, the player may set up a colony there with a STP order, and then on the following turn write an order for control of the planet (CON).
 The colony set-up may be an orbiting colony, an enclosed surface colony, or an open colony.
 A player may give up control of a planet by writing an uncontrol (UNC) order.
 A player with a colony on a world where control has been given up may take control by writing a CON order.
-Once a player has received permission to colonize from the controller of the planet, he may set up other colonies on the planet without further permission to colonize orders.
+Once a player has used the permission and has a colony on the planet, he may set up other colonies on the planet without further permission ([F4.3.3](#rule-F4.3.3)).
 **HOME PLANETS MAY NOT BE CONTROLLED.**
 Controlling planets is the object of the game (see [B5.0](#rule-B5.0)<!-- was chapter 22 -->, Victory Conditions).
 The player controlling a planet may name it.
@@ -3328,8 +3339,8 @@ The orders the game accepts are listed here, each with the rule that describes i
 
 Any assemble, disassemble, or scrap order may end with `using Quantity CWRK` ([S6.0](#rule-S6.0)).
 
-The orders below have not been rewritten, and are not accepted yet ([S2.0](#rule-S2.0)).
-They are listed by their 1980 codes.
+The orders below are not accepted yet ([S2.0](#rule-S2.0)).
+They are listed by their 1980 codes, and all but PTC, which is now grant permission to colonize, are still in their 1980 formats.
 
 | Orders | Codes |
 |--------|-------|
@@ -3398,6 +3409,7 @@ is written as:
 
 Every order names the S/C it is addressed to, in the place its format shows.
 That S/C must belong to the player writing the order.
+Grant permission to colonize ([S5.1](#rule-S5.1)) is the exception: it is addressed to no S/C.
 
 An order that is not written as its format shows, or that the player may not give, is rejected, and the player's other orders are still carried out.
 The next printout lists every order received, and gives the reason for each one that was rejected.
@@ -3657,11 +3669,42 @@ will have more STRL for sale next turn. Signed.
 ## S5.0 Ship and Colony Orders
 
 <a id="rule-S5.1"></a>
-### S5.1 Permission to Colonize Orders (PTC)
+### S5.1 Grant Permission to Colonize
 
-- Format: Colony ID#, "PTC", ship ID requesting permission.
-- Example: 308, PTC, 479.
-- Notes: The PTC order, written by 308, the controller of the planet, gives permission to ship 479 to set up a colony there.
+> Not accepted yet: this order has been rewritten, but the game does not carry it out.
+
+Gives another player permission to set up a colony on a planet where the player has a colony ([F4.3.3](#rule-F4.3.3), [F9.0](#rule-F9.0)).
+It replaces the 1980 PTC order.
+
+**Syntax**
+
+```text
+grant EmpireID permission to colonize Coordinates
+```
+
+| Value       | Meaning                                                                                                                    |
+|-------------|----------------------------------------------------------------------------------------------------------------------------|
+| EmpireID    | The ID number of the player who receives the permission.                                                                   |
+| Coordinates | The planet, by its orbit, (x,y,z,N,O), written with no spaces as shown on the printout ([A3.0](#rule-A3.0), [A2.3](#rule-A2.3)). |
+
+**Examples**
+
+```text
+grant 54 permission to colonize (-1,-16,-6,2,3)   # player 54 may set up a colony on the planet in orbit 3 of star 2
+```
+
+**Rules**
+
+- The order is processed in the Pre Set-Up stage ([B3.2.2](#rule-B3.2.2)), before any set up order, so the permission can be used on the turn it is granted.
+- The permission is given to the player, not to one of his S/C's; any of his S/C's may do the set up.
+- The permission lasts until it is used: it is used up when the player establishes a colony on the planet.
+- The permission is lost if the player who gave it no longer controls any colony on the planet.
+
+**Rejected when**
+
+- The player has not made contact with the receiving player before writing the order.
+- Coordinates is not a planet on which the player has established a colony, and still has one.
+- EmpireID is not a player in the game.
 
 <a id="rule-S5.2"></a>
 ### S5.2 Allow Add-On Orders (AAN)
@@ -3676,6 +3719,9 @@ will have more STRL for sale next turn. Signed.
   The second allows S/C's 38, 39, 42, 46, 48, and 49 to add-on items to S/C 205.
   A S/C listed more than once is allowed only once; the repeat is not an error.
   `[*]` can not be used in an AAN order.
+  The AAN is a standing order: the S/C's it lists stay allowed, turn after turn, until the player cancels it.
+  The printout for a S/C lists the S/C's that are allowed to add-on to it.
+  It is needed only between Rulers of the same race ([F5.8](#rule-F5.8)); it does not let a player of another race ADN.
 
 <a id="rule-S5.3"></a>
 ### S5.3 Set Up Orders (STP)
@@ -3766,7 +3812,8 @@ will have more STRL for sale next turn. Signed.
 
 - Format: S/C being given, "GIV", *player ID#* receiving.
 - Example: 37, GIV, 54.
-- Notes: The GIV order causes colony 37 to be given to player 54.
+- Notes: Not in the game, as there are no Regents ([B4.1](#rule-B4.1), [F7.0](#rule-F7.0)).
+  The GIV order causes colony 37 to be given to player 54.
   This applies only to S/C's.
   An S/C can't be given to a foreign player.
 
@@ -3775,7 +3822,9 @@ will have more STRL for sale next turn. Signed.
 
 - Format: S/C being received, ACP.
 - Example: 37, ACP.
-- Notes: The ACP order causes S/C 37 to be received by the player writing the order (he does not write his own player number); he takes control of the S/C.
+- Notes: Not in the game, as there are no Regents ([B4.1](#rule-B4.1), [F7.0](#rule-F7.0)).
+  The ACP order agrees to receive S/C 37, which another player is giving to the player writing the order (he does not write his own player number).
+  It is processed before the GIV order ([B3.2.3](#rule-B3.2.3)); he takes control of the S/C when the GIV order is processed ([B3.4.5](#rule-B3.4.5)).
 
 <a id="rule-S5.8"></a>
 ### S5.8 Merge Orders (MRG)
