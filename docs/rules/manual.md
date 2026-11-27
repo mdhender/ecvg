@@ -2399,7 +2399,7 @@ Since all deposits are located on planets, no MINE's can function on ships or or
 MINE's may be held in storage, however.
 
 <a id="rule-H2.5"></a>
-### H2.5 MCH, DEP, and Disassemble Orders
+### H2.5 MCH, DEP, and DAS Orders
 
 When a player no longer needs a mine group, he disassembles it with a disassemble order ([S6.2](#rule-S6.2)), and the mine units go automatically into storage.
 This is explained fully in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
@@ -3364,6 +3364,8 @@ The code is the one the order goes by in the Glossary ([A7.0](#rule-A7.0)) and t
 
 | Order                  | Code | Syntax | Rule |
 |------------------------|------|--------|------|
+| Set up                 | STP  | `setup [Quantity] EntityType from EntityID [using Quantity CWRK [each]]`<br>then a line for each item, and `end`<br>`cancel setup EntityID` | [S5.3](#rule-S5.3) |
+| Add-on                 | ADN  | `add-on to EntityID from EntityID [using Quantity CWRK]`<br>then a line for each item, and `end`<br>`cancel add-on to EntityID from EntityID` | [S5.4](#rule-S5.4) |
 | Assemble               | ASM  | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1) |
 | Disassemble            | DAS  | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2) |
 | Scrap                  | SCR  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3) |
@@ -3389,7 +3391,7 @@ They are listed by their 1980 codes, and all but PTC and AAN, which are now gran
 | Orders | Codes |
 |--------|-------|
 | [S4.0](#rule-S4.0) Combat Orders | [TMV](#rule-S4.1), [CLS](#rule-S4.2), [RUN](#rule-S4.3), [PME](#rule-S4.4), [PMM](#rule-S4.5), [AME](#rule-S4.6), [AMM](#rule-S4.7), [INV](#rule-S4.8), [RAD](#rule-S4.9), [DTS](#rule-S4.10), [OTS](#rule-S4.11), [WTD](#rule-S4.12) |
-| [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [STP](#rule-S5.3), [ADN](#rule-S5.4), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
+| [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
 | [S7.0](#rule-S7.0) Transfer Orders | [multiple TFR](#rule-S7.1.2), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
 | [S8.0](#rule-S8.0) Production Orders | [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
 | [S9.0](#rule-S9.0) Market Orders | [BUY](#rule-S9.1), [SEL](#rule-S9.2) |
