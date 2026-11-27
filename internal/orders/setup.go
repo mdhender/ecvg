@@ -264,3 +264,24 @@ func parseSetupItem(tokens []Token) (SetupItem, error) {
 	}
 	return item, nil
 }
+
+// CancelSetup is the order "cancel setup EntityID": the set up of the entity
+// with ID EntityID, which is still being set up, is abandoned.
+type CancelSetup struct {
+	EntityID int
+}
+
+func (o CancelSetup) String() string {
+	return fmt.Sprintf("cancel setup %d", o.EntityID)
+}
+
+func parseCancelSetup(tokens []Token) (Order, error) {
+	if len(tokens) != 3 {
+		return nil, fmt.Errorf("%w: want: cancel setup EntityID", ErrInvalidOrder)
+	}
+	id, err := entityID(tokens[2])
+	if err != nil {
+		return nil, err
+	}
+	return CancelSetup{EntityID: id}, nil
+}

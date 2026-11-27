@@ -220,14 +220,26 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			for _, s := range c.Setups {
 				p("  Entity %d (%s): %s of %s EMU of assembly work done; %s CWRK shuttled to it last turn",
 					s.Entity.ID, s.Entity.Type, commas(s.EMU), commas(s.Need), commas(s.Crew))
-				if s.Waiting == "population" {
+				switch s.Waiting {
+				case "structure":
+					p("    WAITING: no assembly work is done until all of the structure is supplied")
+				case "population":
 					p("    WAITING: none of the people reserved for it are left")
 				}
-				var bom []string
-				for _, u := range s.BOM {
-					bom = append(bom, commas(u.Qty)+" "+unitName(u.Type, u.TechLevel))
+				list := func(us []game.Unit) string {
+					var names []string
+					for _, u := range us {
+						names = append(names, commas(u.Qty)+" "+unitName(u.Type, u.TechLevel))
+					}
+					return strings.Join(names, ", ")
 				}
-				p("    RESERVED: %s", strings.Join(bom, ", "))
+				p("    RESERVED: %s", list(s.BOM))
+				if short := s.Short(); len(short) > 0 {
+					p("    SHORT: %s", list(short))
+				}
+				if s.Hauled > 0 {
+					p("    LATE SUPPLIES: the TRNS carried %s MU for it last turn", commas(s.Hauled))
+				}
 			}
 		}
 		if len(c.Assembly) > 0 || c.Construction.Used > 0 {

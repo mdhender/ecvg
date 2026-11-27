@@ -4,6 +4,8 @@
 package game
 
 import (
+	"math"
+	"slices"
 	"sort"
 
 	"github.com/mdhender/ecvg/internal/units"
@@ -25,23 +27,55 @@ type Setup struct {
 	// Entity is the new entity as it will be when the work is done. It has
 	// its ID from the start.
 	Entity Colony `json:"entity"`
-	// BOM is the bill of material: what the colony has reserved for the
-	// entity, and hands over when the work is done. People are listed by
-	// their unit (UEM, USK, PRO, SLD) or their cadre (CWRK, SPY).
-	BOM []Unit `json:"bom"`
+	// Want is the bill of material: everything that goes into the entity,
+	// in the order it is supplied. BOM is the part of it that the colony has
+	// reserved so far, and hands over when the work is done. People are
+	// listed by their unit (UEM, USK, PRO, SLD) or their cadre (CWRK, SPY).
+	Want []Unit `json:"want"`
+	BOM  []Unit `json:"bom"`
+	// Built is set once all of the entity's structure has been supplied. No
+	// assembly work is done before that, and what is supplied after it must
+	// be carried by the colony's TRNS.
+	Built bool `json:"built,omitzero"`
 	// Need is the EMU of assembly work that the entity takes, and EMU the
 	// work done so far.
 	Need int `json:"need"`
 	EMU  int `json:"emu"`
-	// MaxCWRK is the most CWRK of the colony that may be shuttled to the job
-	// in a turn, or 0 for as many as it can use. Set ups with the same Batch,
+	// MaxCWRK is the most CWRK that may work on the job in a turn, the ones
+	// in the bill of material and the ones shuttled from the colony
+	// together, or 0 for as many as it can use. Set ups with the same Batch,
 	// if it isn't 0, share that crew: they are built one after another.
 	MaxCWRK int `json:"max_cwrk,omitzero"`
 	Batch   int `json:"batch,omitzero"`
-	// Crew is the CWRK that were shuttled to the job in the prior turn, and
-	// Waiting says why the job isn't done: "work" or "population".
+	// Crew is the CWRK that were shuttled to the job in the prior turn,
+	// Hauled the MU of late supplies that the TRNS carried for it then, and
+	// Waiting says why the job isn't done: "structure", "units", "work", or
+	// "population".
 	Crew    int    `json:"crew,omitzero"`
+	Hauled  int    `json:"hauled,omitzero"`
 	Waiting string `json:"waiting,omitzero"`
+}
+
+// Short returns what the set up still wants and the colony hasn't reserved.
+func (s Setup) Short() []Unit {
+	var short []Unit
+	for _, u := range s.Want {
+		if n := u.Qty - count(u.Type, u.TechLevel, s.BOM); n > 0 {
+			short = append(short, Unit{Type: u.Type, TechLevel: u.TechLevel, Qty: n})
+		}
+	}
+	return short
+}
+
+// structureShort reports whether any of the set up's structure is still to
+// be supplied.
+func (s Setup) structureShort() bool {
+	for _, u := range s.Short() {
+		if d, _ := units.Lookup(u.Type); d.Encloses() > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // SetupItem is one kind of unit that a set up installs in the new entity.
@@ -76,17 +110,15 @@ func (c *Colony) FreeSPY() int  { return max(0, c.Cadres.SPY-c.Reserved(units.SP
 
 // PlanSetup adds the units of one line of a setup order to the set up s,
 // which must be one of the colony's own, and returns how many it added. It
-// reserves them in the colony (see Reserved) and puts them in s.Entity as
-// they will be when the work is done. It takes what there is (manual F4.0):
+// puts them in s.Entity as they will be when the work is done, adds them to
+// the bill of material, s.Want, and reserves the ones the colony has (see
+// Supply).
 //
-//   - What the colony has: units in its storage that nothing has claimed or
-//     reserved, never assembled ones; or people that no cadre holds and no
-//     set up has reserved; or, for CWRK and SPY, the cadre, whose members go
-//     along (a CWRK is a PRO and a USK, a SPY a PRO and an SLD).
-//   - The room in the new entity (manual F3.2.1), if it is enclosed: units
-//     take their assembled volume if they are assembled there and their
-//     stowed volume if not, and people 1 VU each. Assembled structure takes
-//     none, and makes the room for what is listed after it.
+// The line is cut down to the room in the new entity (manual F3.2.1), if it
+// is enclosed: units take their assembled volume if they are assembled there
+// and their stowed volume if not, and people 1 VU each. Assembled structure
+// takes none, and makes the room for what is listed after it. It is not cut
+// down to what the colony has: the set up waits for the rest.
 //
 // A unit that requires assembly is assembled in the new entity, and joins
 // the item's group, unless the item is stowed. Structure, life support, and
@@ -98,21 +130,8 @@ func (c *Colony) PlanSetup(s *Setup, it SetupItem) int {
 	d, _ := units.Lookup(code)
 	to := &s.Entity
 	if d.Population() {
-		var p Population
-		switch code {
-		case units.UEM:
-			p.UEM, n = 1, min(n, c.Population.UEM-c.Reserved(units.UEM, 0))
-		case units.USK:
-			p.USK, n = 1, min(n, c.FreeUSK())
-		case units.PRO:
-			p.PRO, n = 1, min(n, c.FreePRO())
-		case units.SLD:
-			p.SLD, n = 1, min(n, c.FreeSLD())
-		case units.CWRK:
-			p.PRO, p.USK, n = 1, 1, min(n, c.FreeCWRK())
-		case units.SPY:
-			p.PRO, p.SLD, n = 1, 1, min(n, c.FreeSPY())
-		default:
+		p, ok := peopleOf(code)
+		if !ok {
 			return 0
 		}
 		if to.Type.Enclosed() {
@@ -128,40 +147,120 @@ func (c *Colony) PlanSetup(s *Setup, it SetupItem) int {
 		case units.SPY:
 			to.Cadres.SPY += n
 		}
-		s.BOM = addUnits(s.BOM, code, 0, n)
-		return n
-	}
-	n = min(n, c.Stored(code, tl)-c.Claimed(code, tl))
-	assemble := d.RequiresAssembly && !it.Stowed
-	switch {
-	case assemble && (d.Encloses() > 0 || !to.Type.Enclosed()):
-		// Structure needs no room, and neither does anything in the open.
-	case assemble:
-		free := to.SpaceFree()
-		n = sort.Search(max(0, n), func(k int) bool { return d.Volume(tl, k+1).Cmp(free) > 0 })
-	default:
-		n = to.Room(code, tl, n)
-	}
-	if n = max(0, n); n == 0 {
-		return 0
-	}
-	if assemble {
-		// What goes up with the entity takes no work.
-		work := n
-		switch {
-		case d.Encloses() > 0 || code == units.LFSU:
-			work = 0
-		case code == units.SDRV && !inUse(to, units.SDRV):
-			work = n - 1
-		}
-		s.Need += workEMU(WorkAssemble, d, tl, work)
-		to.Operational = addUnits(to.Operational, code, tl, n)
-		to.addToGroup(it.Kind, it.GroupNo, tl, n)
+		tl = 0
 	} else {
-		to.Cargo = addUnits(to.Cargo, code, tl, n)
+		assemble := d.RequiresAssembly && !it.Stowed
+		switch {
+		case assemble && (d.Encloses() > 0 || !to.Type.Enclosed()):
+			// Structure needs no room, and neither does anything in the open.
+		case assemble:
+			free := to.SpaceFree()
+			n = sort.Search(n, func(k int) bool { return d.Volume(tl, k+1).Cmp(free) > 0 })
+		default:
+			n = to.Room(code, tl, n)
+		}
+		if n = max(0, n); n == 0 {
+			return 0
+		}
+		if assemble {
+			// What goes up with the entity takes no work.
+			work := n
+			switch {
+			case d.Encloses() > 0 || code == units.LFSU:
+				work = 0
+			case code == units.SDRV && !inUse(to, units.SDRV):
+				work = n - 1
+			}
+			s.Need += workEMU(WorkAssemble, d, tl, work)
+			to.Operational = addUnits(to.Operational, code, tl, n)
+			to.addToGroup(it.Kind, it.GroupNo, tl, n)
+		} else {
+			to.Cargo = addUnits(to.Cargo, code, tl, n)
+		}
 	}
-	s.BOM = addUnits(s.BOM, code, tl, n)
+	s.Want = addUnits(s.Want, code, tl, n)
 	return n
+}
+
+// peopleOf returns the people that make up one unit with the given code: a
+// population unit, or a cadre that a set up can take.
+func peopleOf(code string) (Population, bool) {
+	switch code {
+	case units.UEM:
+		return Population{UEM: 1}, true
+	case units.USK:
+		return Population{USK: 1}, true
+	case units.PRO:
+		return Population{PRO: 1}, true
+	case units.SLD:
+		return Population{SLD: 1}, true
+	case units.CWRK:
+		return Population{PRO: 1, USK: 1}, true
+	case units.SPY:
+		return Population{PRO: 1, SLD: 1}, true
+	}
+	return Population{}, false
+}
+
+// Supply reserves, for the set up s, which must be one of the colony's own,
+// what s still wants and the colony can spare, in the order of the bill of
+// material: units in its storage that nothing has claimed or reserved, never
+// assembled ones; people that no cadre holds and no set up has reserved; and,
+// for CWRK and SPY, the cadre, whose members go along. It returns the MU of
+// it that the colony's TRNS carried.
+//
+// While the entity's structure is going up, supplies need no TRNS. Once all
+// of the structure has been supplied (s.Built), what was short is late: the
+// colony's TRNS must carry it, and only what they can still carry this turn
+// is reserved (see Transfer; a population unit is 1 MU).
+func (c *Colony) Supply(s *Setup) int {
+	late, hauled := s.Built, 0
+	none := func(int) int { return 0 }
+	for _, u := range s.Short() {
+		code, tl, n := u.Type, u.TechLevel, u.Qty
+		d, _ := units.Lookup(code)
+		mass, fuelOut, proOut := none, none, none
+		if p, ok := peopleOf(code); ok {
+			switch code {
+			case units.UEM:
+				n = min(n, c.Population.UEM-c.Reserved(units.UEM, 0))
+			case units.USK:
+				n = min(n, c.FreeUSK())
+			case units.PRO:
+				n, proOut = min(n, c.FreePRO()-c.Transport.Crew), func(k int) int { return k }
+			case units.SLD:
+				n = min(n, c.FreeSLD())
+			case units.CWRK:
+				n = min(n, c.FreeCWRK())
+			case units.SPY:
+				n = min(n, c.FreeSPY())
+			}
+			mass = func(k int) int { return k * p.Mass() }
+		} else {
+			n = min(n, c.Stored(code, tl)-c.Claimed(code, tl))
+			if code != units.TRNS { // TRNS move themselves
+				mass = func(k int) int { return d.Mass(tl, k).Ceil() }
+			}
+			if code == units.FUEL {
+				fuelOut = func(k int) int { return k }
+			}
+		}
+		if late {
+			n = c.loadLimit(n, mass, fuelOut, proOut)
+		}
+		if n = max(0, n); n == 0 {
+			continue
+		}
+		s.BOM = addUnits(s.BOM, code, tl, n)
+		if late {
+			c.load(mass(n))
+			hauled += mass(n)
+		}
+	}
+	if !s.structureShort() {
+		s.Built = true
+	}
+	return hauled
 }
 
 // inUse reports whether c has any assembled unit with the given code.
@@ -178,68 +277,93 @@ func inUse(c *Colony, code string) bool {
 // returns the entities that are done, which are no longer the colony's.
 // StartTransport must have been called this turn.
 //
-// The CWRK that a set up lists work on it, EMUPerCWRK each, and on nothing
-// else. The colony's other CWRK help: as many as the work can use, up to the
-// order's cap (which set ups of one Batch share, so they are built in turn),
-// are shuttled to the job, which takes SetupShuttleMU of the colony's TRNS
-// each, and the FUEL and crew for that; the ones the TRNS can't carry don't
-// work. A CWRK that is shuttled does nothing else in the turn. The EMU of all
-// of them is recorded in Construction.Setup, which Disassemble takes out of
-// the turn's pool.
+// First the colony supplies what the set up is short of (see Supply). Once
+// the structure is up, the CWRK work. The ones in the bill of material work
+// on their own set up, EMUPerCWRK each, and on nothing else. The colony's
+// other CWRK help: as many as the work can use are shuttled to the job, which
+// takes SetupShuttleMU of the colony's TRNS each, and the FUEL and crew for
+// that; the ones the TRNS can't carry don't work. A CWRK that is shuttled
+// does nothing else in the turn. The order's cap is on all the CWRK that
+// work on the set up, its own first; set ups of one Batch share it, so they
+// are built in turn. The EMU of all of them is recorded in
+// Construction.Setup, which Disassemble takes out of the turn's pool.
 //
-// When the work is done, the colony hands over what it reserved, people
-// last, and the entity is complete. People who have died since are missed:
-// the entity gets the ones there are, and waits if there are none at all.
+// When everything has been supplied and the work is done, the colony hands
+// over what it reserved, and the entity is complete. People who have died
+// since are missed: the entity gets the ones there are, and waits if there
+// are none at all.
 func (c *Colony) RunSetups() []Colony {
 	helpers, shuttled := c.FreeCWRK(), 0
 	budgets := map[int]int{}
 	none := func(int) int { return 0 }
 	var done []Colony
-	jobs := c.Setups[:0:0]
-	for _, s := range c.Setups {
+	jobs := slices.Clone(c.Setups)
+	c.Setups = jobs
+	var keep []Setup
+	for i := range jobs {
+		s := &jobs[i]
 		s.Crew, s.Waiting = 0, ""
-		need := max(0, s.Need-s.EMU)
-		own := min(need, min(count(units.CWRK, 0, s.BOM), max(0, c.Cadres.CWRK))*EMUPerCWRK)
-		need -= own
-		crew := min(helpers, (need+EMUPerCWRK-1)/EMUPerCWRK)
-		if s.MaxCWRK > 0 {
-			left, ok := budgets[s.Batch]
-			if !ok || s.Batch == 0 {
-				left = s.MaxCWRK
-			}
-			crew = min(crew, left)
+		s.Hauled = c.Supply(s)
+		if !s.Built {
+			s.Waiting = "structure"
+			keep = append(keep, *s)
+			continue
 		}
+		need := max(0, s.Need-s.EMU)
+		// The CWRK the order's cap still allows.
+		allowed := math.MaxInt
+		if s.MaxCWRK > 0 {
+			allowed = s.MaxCWRK
+			if left, ok := budgets[s.Batch]; ok && s.Batch != 0 {
+				allowed = left
+			}
+		}
+		own := min(count(units.CWRK, 0, s.BOM), max(0, c.Cadres.CWRK), allowed, (need+EMUPerCWRK-1)/EMUPerCWRK)
+		work := min(need, own*EMUPerCWRK)
+		need -= work
+		crew := min(helpers, allowed-own, (need+EMUPerCWRK-1)/EMUPerCWRK)
 		crew = c.loadLimit(crew, func(k int) int { return k * SetupShuttleMU }, none, none)
 		c.load(crew * SetupShuttleMU)
 		if s.MaxCWRK > 0 && s.Batch != 0 {
-			left, ok := budgets[s.Batch]
-			if !ok {
-				left = s.MaxCWRK
-			}
-			budgets[s.Batch] = left - crew
+			budgets[s.Batch] = allowed - own - crew
 		}
 		helpers -= crew
 		shuttled += crew
 		s.Crew = crew
-		s.EMU += own + min(need, crew*EMUPerCWRK)
-		if s.EMU < s.Need {
+		s.EMU += work + min(need, crew*EMUPerCWRK)
+		switch {
+		case len(s.Short()) > 0:
+			s.Waiting = "units"
+		case s.EMU < s.Need:
 			s.Waiting = "work"
-			jobs = append(jobs, s)
-			continue
-		}
-		if !c.completeSetup(&s) {
+		case !c.completeSetup(s):
 			s.Waiting = "population"
-			jobs = append(jobs, s)
+		default:
+			done = append(done, s.Entity)
+			// The reservation is gone: the next set up may have its units.
+			s.BOM, s.Want = nil, nil
 			continue
 		}
-		done = append(done, s.Entity)
+		keep = append(keep, *s)
 	}
-	c.Setups = jobs
-	if len(jobs) == 0 {
-		c.Setups = nil
-	}
+	c.Setups = keep
 	c.Construction.Setup = (c.Reserved(units.CWRK, 0) + shuttled) * EMUPerCWRK
 	return done
+}
+
+// CancelSetup drops the colony's set up of the entity with the given ID, and
+// reports whether it had one. What the set up had reserved is the colony's
+// to use again; the work done on it is lost.
+func (c *Colony) CancelSetup(id int) bool {
+	at := slices.IndexFunc(c.Setups, func(s Setup) bool { return s.Entity.ID == id })
+	if at < 0 {
+		return false
+	}
+	c.Setups = slices.Delete(slices.Clone(c.Setups), at, at+1)
+	if len(c.Setups) == 0 {
+		c.Setups = nil
+	}
+	return true
 }
 
 // completeSetup hands what the set up s reserved over to its entity. It

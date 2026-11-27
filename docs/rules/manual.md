@@ -1617,8 +1617,8 @@ A player who has a colony on a planet does not need permission to set up more co
 
 All set-up orders, whether for ships or colonies, will abort if no population are included in the set up order.
 A ship set up will also abort if no SDRV are included.
-Portions of a set up may be left out due to a shortage of the units listed, or of STRN, STRL, or STRS (there must be enough enclosure capacity to hold the units being set up, [F3.2.1](#rule-F3.2.1)).
-A shortage of construction workers, transports, or fuel (for the transports) makes the set up take longer ([F4.6](#rule-F4.6)).
+Portions of a set up are left out if the order lists too little STRN, STRL, or STRS (there must be enough enclosure capacity to hold the units being set up, [F3.2.1](#rule-F3.2.1)).
+A shortage of the units listed, or of construction workers, transports, or fuel (for the transports), makes the set up take longer ([F4.6](#rule-F4.6), [F4.7](#rule-F4.7)).
 The S/C's otherwise have no size limitations, and players may build them as they choose.
 
 <a id="rule-F4.3.5"></a>
@@ -1639,10 +1639,12 @@ The section entitled Personnel Requirements/Unit on the Unit Characteristics Sum
 When a player wishes to set up a new S/C, he writes a set up order ([S5.3](#rule-S5.3)) for an existing S/C, specifying the type of S/C it is to set up, and which units will be used in constructing it.
 The units listed are the bill of material for the new S/C.
 When the order is processed, the establishing S/C reserves the whole bill of material from its storage and its population.
+If it does not have all of it, it reserves what it has, and the rest as soon as it has it ([F4.7](#rule-F4.7)).
 What is reserved can not be used, transferred, drafted, or assembled by the establishing S/C, but it still belongs to it: it takes up space there, and the population reserved still lives there, and is fed, paid, and given life support by the establishing S/C, until the new S/C is complete.
 The reserved population does no work.
-When the new S/C is complete, the whole bill of material is moved to it at once, and it is a S/C like any other.
-A set up may take more than one turn ([F4.6](#rule-F4.6)).
+The new S/C is complete when the whole bill of material has been reserved and all the assembly work is done ([F4.6](#rule-F4.6)).
+Then the bill of material is moved to it at once, and it is a S/C like any other.
+A set up may take more than one turn, and a set up that is not complete may be cancelled ([S5.3](#rule-S5.3)): what was reserved is released, and the work done is lost.
 No other order is necessary for the initial establishment, but ADN and TFR orders, on later turns, may increase the size of the S/C.
 
 <a id="rule-F4.6"></a>
@@ -1650,9 +1652,11 @@ No other order is necessary for the initial establishment, but ADN and TFR order
 
 Unassembled items (UNA) in a set up order are assembled in the new S/C, unless the order says they are to be stowed.
 The initial construction assembles all the structure (STRN, STRL, STRS), all the LFSU, and one SDRV; these take no work.
+The structure must be complete first: no other assembly is done until all the structure in the order has been supplied.
 Everything else is assembled by construction worker units (CWRK): 1 CWRK assembles 500 mass units of UNA in a turn.
 All CWRK listed in the set up order work on it, and on nothing else, and remain in the new S/C when it is complete.
-They are helped by a crew of CWRK from the establishing S/C: as many as the work can use, or no more than the number the order allows.
+They are helped by a crew of CWRK from the establishing S/C: as many as the work can use.
+If the order limits the crew, the CWRK listed in the order count towards the limit: with a limit of 200 and 50 CWRK listed, no more than 150 come from the establishing S/C.
 The crew is shuttled to the job site and back each turn, which takes TRNS ([F4.7](#rule-F4.7)), and a CWRK in the crew does no other work that turn.
 The crew returns to the establishing S/C when the work is done.
 The work goes on, turn after turn, until all of it is done; then the new S/C is complete.
@@ -1666,7 +1670,11 @@ Each CWRK in the crew takes twice its mass in transport capacity, for the trips 
 CWRK that the TRNS can not carry do not work on the set up that turn.
 TRNS listed in the set up order are reserved like everything else, but being TRNS, they still carry for the establishing S/C until the new S/C is complete.
 CWRK listed in the set up order need no TRNS.
-The bill of material itself needs none.
+The bill of material itself needs none, as long as it is supplied on time.
+If the establishing S/C is short of anything listed, it supplies the rest on later turns, as it gets it.
+While the structure is still going up, that costs nothing more.
+Once the structure is complete, anything still short is late, and the establishing S/C's TRNS must carry it, with the fuel and operators that takes ([J4.2](#rule-J4.2)); what they can not carry waits for another turn.
+The new S/C is not complete until all of it has arrived.
 
 <a id="rule-F4.8"></a>
 ### F4.8 Assemblies and Set-Ups
@@ -1676,7 +1684,8 @@ Storage consists of non-assembly items (NON) and unassembled items (UNA).
 POP listed are taken from the establishing S/C's population groups.
 Items are never taken from the establishing S/C's assembled items.
 The items are reserved in the order they are listed, except that POP are always taken last.
-Each line of the order is cut down to what the establishing S/C has, and to what the new S/C will have room for ([F3.2.1](#rule-F3.2.1)): so the structure should be listed first, and the rest in the order of its importance.
+Each line of the order is cut down to what the new S/C will have room for ([F3.2.1](#rule-F3.2.1)), with all the structure listed before it in place: so the structure should be listed first, and the rest in the order of its importance.
+What the establishing S/C is short of is not left out; the set up waits for it ([F4.7](#rule-F4.7)).
 Since POP come last, they get the room that the other items leave.
 In the new S/C, everything is either in use or in its storage; nothing goes to an external depot, not even in an open colony.
 NON go to storage.
@@ -3827,9 +3836,9 @@ setup 6 CSHP from 29 using 50 CWRK each   # colony 29 sets up 6 identical ships 
 1,000 FUEL
 end
 
-setup CENC from 29 using 200 CWRK  # a crew of up to 200 of colony 29's CWRK
+setup CENC from 29 using 200 CWRK  # up to 200 CWRK work on it
 400,000 STRN
-50 CWRK                            # these work on it too, and stay in the new colony
+50 CWRK                            # these are 50 of the 200, and stay in the new colony
 2,000 PRO
 6,000 USK
 500 LFSU-2                         # supports 2,000 population units
@@ -3849,20 +3858,22 @@ setup CORB from 29; 8,000 STRN; 100 PRO; 20 LFSU-1; end
   A `;` may be written in place of the end of a line.
 - When the order is processed, the establishing S/C reserves the units, in the order listed, but population last ([F4.8](#rule-F4.8)).
   So list the structure first, and the rest in the order of its importance.
-- The order takes what there is.
-  Each line is cut down to what the establishing S/C has in storage that is not already claimed or reserved, and to what the new S/C will have room for ([F3.2](#rule-F3.2)).
+- Each line is cut down to what the new S/C will have room for ([F3.2](#rule-F3.2)).
   Population gets the room that the other lines leave.
+- If the establishing S/C does not have everything listed, it reserves what it has in storage that is not already claimed or reserved, and tries again every turn for the rest.
+  Once the structure is complete, what is still short must be carried by its TRNS when it is supplied ([F4.7](#rule-F4.7)).
+  The new S/C is not complete until everything has been supplied.
 - What is reserved stays in the establishing S/C, which keeps and supports it, until the new S/C is complete ([F4.5](#rule-F4.5)).
   It can not be used for anything else.
 - A unit that requires assembly is assembled in the new S/C, unless its line ends with `stowed`, which puts it in storage.
   Units that do not require assembly always go to storage.
   Nothing goes to an external depot.
 - All the structure, all the LFSU, and one SDRV are assembled without work.
-  The rest is assembled by CWRK, 500 mass units each a turn, for as many turns as it takes ([F4.6](#rule-F4.6)).
-  The new S/C is complete when all of it is done; if there is none to do, that is the turn of the order.
+  The rest is assembled by CWRK, 500 mass units each a turn, for as many turns as it takes ([F4.6](#rule-F4.6)), starting when all the structure has been supplied.
+  The new S/C is complete when everything is supplied and all the work is done; if nothing is short and there is no work to do, that is the turn of the order.
 - CWRK listed in the order work on it, and stay in the new S/C.
   A crew of the establishing S/C's other CWRK helps, and returns when the work is done.
-  `using` limits the size of the crew; without it the crew is as large as the work can use.
+  `using` limits the CWRK that work on the set up, the ones listed in the order included; without it the crew is as large as the work can use.
 - The crew is shuttled to the job each turn by the establishing S/C's TRNS, 4 mass units for each CWRK ([F4.7](#rule-F4.7)).
   CWRK the TRNS can not carry do not work that turn.
 - A quantity of ships is built one after another by the one crew.
@@ -3874,7 +3885,6 @@ setup CORB from 29; 8,000 STRN; 100 PRO; 20 LFSU-1; end
 - A CWRK or SPY line moves the cadre with its people.
   People are never stowed.
 - The new S/C's ID number is on the next printout ([F4.2](#rule-F4.2)), with the work done on it and what is reserved for it; orders can not be addressed to it until it is complete.
-- A ship that would fail to set up ([F4.3.4](#rule-F4.3.4)) is not started, and neither are the ships after it.
 - The new S/C has the TL of the establishing S/C.
 - **Warning:** installing more population than the new S/C has life support for will result in the deaths of population units ([G6.2](#rule-G6.2)).
   LFSU need FUEL, unless they are solar powered ([G6.1](#rule-G6.1)).
@@ -3886,13 +3896,32 @@ setup CORB from 29; 8,000 STRN; 100 PRO; 20 LFSU-1; end
 - The player already has a colony of that type at the location, or 99 ships there ([F4.3.1](#rule-F4.3.1)).
 - A COPN is to be set up on a planet that is not habitable.
 - Another player has a colony on the planet and the player has none: permission to colonize ([S5.1](#rule-S5.1)) is not accepted yet.
-- No population could be installed, or, for a ship, no SDRV ([F4.3.4](#rule-F4.3.4)).
-  For a quantity of ships, this rejects the order only if it is the first ship.
+- The order lists no population that the new S/C has room for, or, for a ship, no SDRV ([F4.3.4](#rule-F4.3.4)).
 - A line lists RSCH, a unit that does not exist, or a population unit other than the ones above.
 - A line asks for a group the new S/C can not have: a factory group in a ship, mines or FARM-1 off the surface, laboratories in a ship, a deposit that does not exist or is already being worked, more FARM-1 than the planet allows, or more than 25 factory groups.
 - A line is not written as shown, or the `end` line is missing.
   The whole order is rejected, not just the line.
 - Setting up a S/C for another player ([F4.3.5](#rule-F4.3.5)) is not accepted yet.
+
+#### Cancel Set Up
+
+Abandons a set up that is not complete.
+
+```text
+cancel setup EntityID
+```
+
+| Value    | Meaning                                                                                   |
+|----------|-------------------------------------------------------------------------------------------|
+| EntityID | The ID number of the S/C being set up, from the printout of the establishing S/C.         |
+
+```text
+cancel setup 31   # the set up of S/C 31 is abandoned
+```
+
+- Everything reserved for the new S/C is released to the establishing S/C, which never gave it up.
+- The work done on the set up is lost.
+- Rejected when the player has no S/C that is setting up that S/C.
 
 <a id="rule-S5.4"></a>
 ### S5.4 Add-On Orders (ADN)

@@ -27,9 +27,13 @@ const (
 	// where other empires have colonies and the empire has none.
 	ErrNeedsPermission = cerrs.Error("another empire has a colony on the planet, and permission to colonize is not accepted yet")
 	// ErrNoPopulation and ErrNoSpaceDrive are the errors for a set up that
-	// gets no population, or a ship that gets no SDRV, into the new entity.
-	ErrNoPopulation = cerrs.Error("no population could be set up in the new entity")
-	ErrNoSpaceDrive = cerrs.Error("no SDRV could be set up in the new ship")
+	// lists no population, or for a ship no SDRV, that the new entity has
+	// room for.
+	ErrNoPopulation = cerrs.Error("the order lists no population that the new entity has room for")
+	ErrNoSpaceDrive = cerrs.Error("the order lists no SDRV that the new ship has room for")
+	// ErrNoSuchSetup is the error for cancelling a set up that the empire
+	// isn't doing.
+	ErrNoSuchSetup = cerrs.Error("the empire is not setting up that entity")
 	// ErrShipFactory is the error for a set up of a factory group in a ship.
 	ErrShipFactory = cerrs.Error("ships do not have functioning factories: list the FACT units as stowed")
 )
@@ -37,16 +41,14 @@ const (
 // Setup carries out a setup order, given by the empire with ID empireID: the
 // entity From starts to set up new entities of the order's type at its own
 // location (manual F4.0, S5.3). Each is a game.Setup of From, which gets the
-// next entity ID, the tech level of From, and the units of the order's lines:
-// they are reserved in From, in the order listed but people last, each line
-// cut down to what From has and the new entity has room for (see
-// game.Colony.PlanSetup). The work is done in the Setups phase, starting this
-// turn.
+// next entity ID, the tech level of From, and the units of the order's lines,
+// in the order listed but people last, each line cut down to what the new
+// entity has room for (game.Colony.PlanSetup). From reserves what it has of
+// them, and the rest when it can (game.Colony.Supply). The work is done in
+// the Setups phase, starting this turn.
 //
-// An order for several ships plans them one after another. One that gets no
-// population, or no SDRV, is not started, and neither are the ones after it;
-// the order fails only if that is the first. The ships share the order's cap
-// on CWRK, and so are built in turn, unless the cap is for each of them.
+// The ships of an order for several share the order's cap on CWRK, and so
+// are built in turn, unless the cap is for each of them.
 //
 // Nothing changes if it fails:
 //
@@ -58,7 +60,8 @@ const (
 //   - ErrShipFactory, ErrTooManyGroups, game.ErrFarmSite, ErrFarmCap,
 //     game.ErrMineSite, ErrNoSuchDeposit, ErrDepositClaimed,
 //     game.ErrLabSite: the new entity can't have the group a line asks for.
-//   - ErrNoPopulation, ErrNoSpaceDrive: nothing came of the first entity.
+//   - ErrNoPopulation, ErrNoSpaceDrive: the entity would have no population,
+//     or the ship no SDRV.
 func Setup(d *game.Data, empireID int, o orders.Setup) error {
 	fromAt := slices.IndexFunc(d.Colonies, func(c game.Colony) bool { return c.ID == o.From && c.EmpireID == empireID })
 	if fromAt < 0 {
@@ -230,6 +233,7 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 			from.PlanSetup(s, item)
 		}
 		dropEmptyGroups(&s.Entity)
+		from.Supply(s)
 
 		var err error
 		switch {
@@ -239,14 +243,24 @@ func Setup(d *game.Data, empireID int, o orders.Setup) error {
 			err = ErrNoSpaceDrive
 		}
 		if err != nil {
-			if k == 0 {
-				return err
-			}
-			break
+			return err
 		}
 		d.Colonies[fromAt] = from
 	}
 	return nil
+}
+
+// CancelSetup carries out a cancel setup order, given by the empire with ID
+// empireID: the set up of the entity with ID o.EntityID is dropped, and what
+// was reserved for it is released (game.Colony.CancelSetup). It fails, with
+// ErrNoSuchSetup, if no entity of the empire is setting up that entity.
+func CancelSetup(d *game.Data, empireID int, o orders.CancelSetup) error {
+	for i := range d.Colonies {
+		if c := &d.Colonies[i]; c.EmpireID == empireID && c.CancelSetup(o.EntityID) {
+			return nil
+		}
+	}
+	return fmt.Errorf("entity %d: %w", o.EntityID, ErrNoSuchSetup)
 }
 
 // Setups is the set up phase of a turn: every entity does a turn of work on

@@ -442,6 +442,8 @@ func parseOrder(tokens []Token) (Order, error) {
 		return parseUnitWork(tokens, game.WorkDisassemble)
 	case tokens[0].Is("scrap"):
 		return parseUnitWork(tokens, game.WorkScrap)
+	case len(tokens) >= 2 && tokens[0].Is("cancel") && tokens[1].Is("setup"):
+		return parseCancelSetup(tokens)
 	case tokens[0].Is("end"):
 		return nil, fmt.Errorf("%w: end without a setup order before it", ErrInvalidOrder)
 	}

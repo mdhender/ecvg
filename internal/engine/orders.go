@@ -117,6 +117,8 @@ func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.O
 		return Transfer(d, empireID, o)
 	case orders.Setup:
 		return Setup(d, empireID, o)
+	case orders.CancelSetup:
+		return CancelSetup(d, empireID, o)
 	case orders.AssembleTechLevel:
 		return AssembleTechLevel(d, empireID, o)
 	case orders.UnitWork:

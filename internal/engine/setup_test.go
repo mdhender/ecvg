@@ -150,8 +150,8 @@ func TestSetupOverTurns(t *testing.T) {
 
 func TestSetupColonyWithGroups(t *testing.T) {
 	d := founders()
-	text := "setup CENC from 1\n100,000 STRN\n500 PRO\n1500 USK\n" +
-		"10 FACT-1 producing CNGD\n10 FACT-1 stowed\n5 MINE-1 working 2\n5 FARM-6\n5 FARM-6\n3 LAB-1\n40 MTL\n4 SPY\nend"
+	text := "setup CENC from 1\n100,000 STRN\n500 PRO\n900 USK\n" +
+		"10 FACT-1 producing CNGD\n10 FACT-1 stowed\n5 MINE-1 working 2\n5 FARM-6\n5 FARM-6\n3 LAB-1\n40 MTL\nend"
 	if errs := apply(t, &d, text); errs[0] != nil {
 		t.Fatal(errs[0])
 	}
@@ -186,10 +186,6 @@ func TestSetupColonyWithGroups(t *testing.T) {
 	// Nothing goes to a depot.
 	if len(c.Depot) != 0 || len(c.DepotOperational) != 0 || c.Stock("MTL") != 40 {
 		t.Errorf("depot %+v and %+v, with %d MTL", c.Depot, c.DepotOperational, c.Stock("MTL"))
-	}
-	// The colony has no spies, so none go.
-	if c.Cadres != (game.Cadres{}) {
-		t.Errorf("cadres %+v", c.Cadres)
 	}
 }
 
@@ -244,18 +240,78 @@ func TestSetupCrews(t *testing.T) {
 			t.Errorf("%d colonies, want 3", len(d.Colonies))
 		}
 	})
-	t.Run("ships are started until one fails", func(t *testing.T) {
+	t.Run("the order's CWRK count towards the crew", func(t *testing.T) {
 		d := founders()
-		d.Colonies[0].Depot[3].Qty = 2 // SDRV-1
-		if errs := apply(t, &d, "setup 5 CSHP from 1; 1,000 STRN; 1 UEM; 1 SDRV-1 stowed; end"); errs[0] != nil {
+		// 60 of the 61 SDRV-1 take 1,500 EMU. The ship's 2 CWRK are the
+		// whole crew of 2, so nobody is shuttled.
+		apply(t, &d, "setup CSHP from 1 using 2 CWRK; 2 CWRK; 20,000 STRN; 61 SDRV-1; end")
+		engine.Setups(&d)
+		home := d.Colonies[0]
+		if s := home.Setups; len(s) != 1 || s[0].EMU != 1000 || s[0].Crew != 0 || s[0].Waiting != "work" || home.Transport.Used != 0 {
+			t.Errorf("set ups %+v, with %d MU carried", s, home.Transport.Used)
+		}
+	})
+	t.Run("a shortage is made up later, and then the TRNS carry it", func(t *testing.T) {
+		d := founders()
+		d.Colonies[0].Depot[3].Qty = 5 // SDRV-1
+		if errs := apply(t, &d, "setup 2 CSHP from 1"+lines); errs[0] != nil {
 			t.Fatal(errs[0])
 		}
 		engine.Setups(&d)
-		if len(d.Colonies) != 4 || d.Colonies[3].ID != 4 || d.Colonies[3].No != 3 {
-			t.Errorf("%d colonies, want 4: there were only 2 SDRV", len(d.Colonies))
+		// The first ship has the 5 SDRV; the work on both is done.
+		home := d.Colonies[0]
+		if len(d.Colonies) != 2 || len(home.Setups) != 2 {
+			t.Fatalf("%d colonies and %d set ups, want 2 and 2", len(d.Colonies), len(home.Setups))
 		}
-		if got := d.Colonies[0].Stored("STRN", 0); got != 998_000 {
-			t.Errorf("home has %d STRN, want 998,000: the third ship took nothing", got)
+		for i, s := range home.Setups {
+			if !s.Built || s.EMU != 500 || s.Waiting != "units" {
+				t.Errorf("set up %d: %+v", i, s)
+			}
+		}
+		if short := home.Setups[0].Short(); !reflect.DeepEqual(short, []game.Unit{{Type: "SDRV", TechLevel: 1, Qty: 16}}) {
+			t.Errorf("the first ship is short %+v", short)
+		}
+		// 20 more: the first ship gets its 16, which are 400 MU for the TRNS.
+		d.Colonies[0].Depot[3].Qty += 20
+		apply(t, &d, "")
+		engine.Setups(&d)
+		home = d.Colonies[0]
+		if len(d.Colonies) != 3 || len(home.Setups) != 1 || home.Transport.Used != 500 {
+			t.Fatalf("%d colonies, %d set ups, %d MU carried; want 3, 1, and 500", len(d.Colonies), len(home.Setups), home.Transport.Used)
+		}
+		if s := home.Setups[0]; s.Hauled != 100 || home.Reserved("SDRV", 1) != 4 || d.Colonies[2].InUse("SDRV", 1) != 21 {
+			t.Errorf("set up %+v", s)
+		}
+	})
+	t.Run("nothing is assembled until the structure is up", func(t *testing.T) {
+		d := founders()
+		d.Colonies[0].Depot[1].Qty = 5000 // STRN
+		apply(t, &d, "setup CSHP from 1"+lines)
+		engine.Setups(&d)
+		if s := d.Colonies[0].Setups; len(s) != 1 || s[0].Built || s[0].EMU != 0 || s[0].Crew != 0 || s[0].Waiting != "structure" {
+			t.Fatalf("set ups %+v", s)
+		}
+		// Supplies are not late while the structure is going up.
+		d.Colonies[0].Depot[1].Qty += 5000
+		apply(t, &d, "")
+		engine.Setups(&d)
+		if len(d.Colonies) != 3 || d.Colonies[0].Transport.Used != 4 {
+			t.Errorf("%d colonies and %d MU carried, want 3 and 4", len(d.Colonies), d.Colonies[0].Transport.Used)
+		}
+	})
+	t.Run("a set up can be cancelled", func(t *testing.T) {
+		d := founders()
+		errs := apply(t, &d, "setup CSHP from 1 using 1 CWRK; 100 PRO; 10,000 STRN; 31 SDRV-1; end\ncancel setup 9\ncancel setup 3")
+		if errs[0] != nil || !errors.Is(errs[1], engine.ErrNoSuchSetup) || errs[2] != nil {
+			t.Fatalf("errors %v", errs)
+		}
+		home := d.Colonies[0]
+		if len(home.Setups) != 0 || home.FreePRO() != 900 || home.Claimed("STRN", 0) != 0 {
+			t.Errorf("home %+v", home)
+		}
+		engine.Setups(&d)
+		if len(d.Colonies) != 2 {
+			t.Errorf("%d colonies, want 2", len(d.Colonies))
 		}
 	})
 	t.Run("the people who are left go", func(t *testing.T) {

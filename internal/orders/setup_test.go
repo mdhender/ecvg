@@ -149,3 +149,24 @@ func TestParseSetupAmongOrders(t *testing.T) {
 		t.Errorf("Parse =\n%+v\nwant\n%+v", got, want)
 	}
 }
+
+func TestParseCancelSetup(t *testing.T) {
+	for _, tc := range []struct {
+		text string
+		want orders.Order
+		err  error
+	}{
+		{text: "Cancel Setup 31", want: orders.CancelSetup{EntityID: 31}},
+		{text: "cancel setup", err: orders.ErrInvalidOrder},
+		{text: "cancel setup x", err: orders.ErrInvalidEntityID},
+		{text: "cancel setup 31 now", err: orders.ErrInvalidOrder},
+	} {
+		lines, err := orders.Parse(strings.NewReader(tc.text))
+		if err != nil || len(lines) != 1 {
+			t.Fatalf("%q: %v, %d lines", tc.text, err, len(lines))
+		}
+		if l := lines[0]; !errors.Is(l.Err, tc.err) || (tc.err == nil && l.Err != nil) || !reflect.DeepEqual(l.Order, tc.want) {
+			t.Errorf("%q: %+v, %v; want %+v, %v", tc.text, l.Order, l.Err, tc.want, tc.err)
+		}
+	}
+}
