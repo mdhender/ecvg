@@ -88,14 +88,15 @@ func TestDisassemble(t *testing.T) {
 		},
 	}
 	work(&c)
-	// The LFSU take 80 EMU and go back to cargo. The other 420 EMU are for
-	// 420 STRC-1, but each one stowed takes space and makes none: only 133
-	// fit, leaving 867 that make 173 VU for 40 + 133 VU of cargo.
-	if a := c.Assembly; a[0].Assembled != 10 || a[0].Unit.Qty != 0 || a[1].Assembled != 133 || a[1].EMU != 287 || a[1].Waiting != "room" {
+	// The LFSU take 80 EMU, and 9 go back to cargo: 1 in 10 is lost. The
+	// other 420 EMU are for 420 STRC-1, but each one stowed takes space and
+	// makes none: only 148 fit, 14 of them lost, leaving 852 that make 170
+	// VU for 36 + 134 VU of cargo.
+	if a := c.Assembly; a[0].Assembled != 10 || a[0].Destroyed != 1 || a[0].Unit.Qty != 0 || a[1].Assembled != 148 || a[1].Destroyed != 14 || a[1].EMU != 272 || a[1].Waiting != "room" {
 		t.Errorf("work %+v", a)
 	}
-	wantOp := []unit{{Type: "STRC", TechLevel: 1, Qty: 867}, {Type: "LFSU", TechLevel: 1}}
-	wantCargo := []unit{{Type: "LFSU", TechLevel: 1, Qty: 10}, {Type: "STRC", TechLevel: 1, Qty: 133}}
+	wantOp := []unit{{Type: "STRC", TechLevel: 1, Qty: 852}, {Type: "LFSU", TechLevel: 1}}
+	wantCargo := []unit{{Type: "LFSU", TechLevel: 1, Qty: 9}, {Type: "STRC", TechLevel: 1, Qty: 134}}
 	if !reflect.DeepEqual(c.Operational, wantOp) || !reflect.DeepEqual(c.Cargo, wantCargo) || c.SpaceFree() != 0 {
 		t.Errorf("operational %+v, cargo %+v, free %d", c.Operational, c.Cargo, c.SpaceFree())
 	}
@@ -109,7 +110,7 @@ func TestDisassemble(t *testing.T) {
 			Assembly:         []game.Assembly{{Action: game.WorkDisassemble, Unit: auto(20)}},
 		}
 		work(&c)
-		if a := c.Assembly[0]; a.Assembled != 10 || a.Waiting != "units" || !reflect.DeepEqual(c.Depot, []unit{auto(10)}) || len(c.Cargo) != 0 {
+		if a := c.Assembly[0]; a.Assembled != 10 || a.Destroyed != 1 || a.Waiting != "units" || !reflect.DeepEqual(c.Depot, []unit{auto(9)}) || len(c.Cargo) != 0 {
 			t.Errorf("work %+v, depot %+v, cargo %+v", a, c.Depot, c.Cargo)
 		}
 	})
@@ -132,7 +133,7 @@ func TestDisassemblyComesFirst(t *testing.T) {
 		},
 	}
 	c.Disassemble()
-	if a := c.Assembly; a[0].EMU != 0 || a[1].Assembled != 10 || c.Stored("AUTO", 10) != 20 || c.Construction != (game.Construction{Pool: 500, Used: 400}) {
+	if a := c.Assembly; a[0].EMU != 0 || a[1].Assembled != 10 || c.Stored("AUTO", 10) != 19 || c.Construction != (game.Construction{Pool: 500, Used: 400}) {
 		t.Fatalf("after disassembly: work %+v, depot %+v, construction %+v", a, c.Depot, c.Construction)
 	}
 	c.Assemble()
@@ -151,17 +152,18 @@ func TestScrap(t *testing.T) {
 		mtl, nmtl, lost int
 	}{
 		// An HDRV-1 is built from 25 MTL and 20 NMTL.
-		{name: "95% is recovered", colony: game.CENC, structure: 20000, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 2375, nmtl: 1900},
-		// 10 STRC-1 are built from 7 MTL and 3 NMTL: 3 of them give 1.995
+		{name: "70% is recovered", colony: game.CENC, structure: 20000, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
+		// 10 STRC-1 are built from 7 MTL and 3 NMTL: 3 of them give 1.47
 		// and 0.855.
 		{name: "the totals are rounded down", colony: game.CENC, structure: 20000, scrap: unit{Type: "STRC", TechLevel: 1, Qty: 3}, mtl: 1, nmtl: 0},
-		{name: "what there is no room for is lost", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 2375, nmtl: 1900, lost: 4275},
-		{name: "a depot has room", colony: game.COPN, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 2375, nmtl: 1900},
+		{name: "what there is no room for is lost", colony: game.CENC, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400, lost: 3150},
+		{name: "a depot has room", colony: game.COPN, scrap: unit{Type: "HDRV", TechLevel: 1, Qty: 100}, mtl: 1750, nmtl: 1400},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := game.Colony{
 				Type:        tc.colony,
-				Cadres:      game.Cadres{CWRK: 10},
+				// 100 HDRV-1 are 4,500 MU, which 15 CWRK scrap at 300 MU each.
+				Cadres:      game.Cadres{CWRK: 15},
 				Operational: []unit{{Type: "STRC", TechLevel: 1, Qty: tc.structure}, {Type: tc.scrap.Type, TechLevel: tc.scrap.TechLevel, Qty: 7}},
 				Cargo:       []unit{tc.scrap},
 				Assembly:    []game.Assembly{{Action: game.WorkScrap, Unit: tc.scrap}},

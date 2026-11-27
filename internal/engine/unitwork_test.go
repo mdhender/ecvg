@@ -108,18 +108,18 @@ func TestUnitWorkOrders(t *testing.T) {
 // Scrap is done by the CWRK in the Assembly phase, like assembly.
 func TestScrapInATurn(t *testing.T) {
 	d := shipyard()
-	// 1 of the 2 CWRK does 500 EMU: 16 MINE-10 at 30 MU each. A MINE-10 is
-	// built from 15 MTL and 15 NMTL, and 95% of 240 is 228.
+	// 1 of the 2 CWRK scraps 300 MU: 10 MINE-10 at 30 MU each. A MINE-10 is
+	// built from 15 MTL and 15 NMTL, and 70% of 150 is 105.
 	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "scrap 60 MINE-10 on 1 using 1 CWRK")}); err != nil {
 		t.Fatal(err)
 	}
 	c := d.Colonies[0]
-	want := game.Assembly{Action: game.WorkScrap, Unit: game.Unit{Type: "MINE", TechLevel: 10, Qty: 44}, EMU: 20, MaxCWRK: 1, Assembled: 16, MTL: 228, NMTL: 228}
+	want := game.Assembly{Action: game.WorkScrap, Unit: game.Unit{Type: "MINE", TechLevel: 10, Qty: 50}, MaxCWRK: 1, Assembled: 10, MTL: 105, NMTL: 105}
 	if c.Assembly[0] != want || c.Construction != (game.Construction{Pool: 1000, Used: 500}) {
 		t.Errorf("work %+v, construction %+v", c.Assembly, c.Construction)
 	}
 	// An open-air colony keeps its resources in its depot.
-	if c.Stored("MINE", 10) != 84 || count(c.Depot, "MTL") != 228 || count(c.Depot, "NMTL") != 228 {
+	if c.Stored("MINE", 10) != 90 || count(c.Depot, "MTL") != 105 || count(c.Depot, "NMTL") != 105 {
 		t.Errorf("cargo %+v, depot %+v", c.Cargo, c.Depot)
 	}
 }

@@ -218,6 +218,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 					p("  %s%s %s %s last turn; %s still to %s, with %s EMU done toward them%s",
 						what, commas(a.Assembled), name, done, commas(a.Unit.Qty), a.Action.Verb(), commas(a.EMU), limit)
 				}
+				if a.Destroyed > 0 {
+					p("      LOST: %s of them, in taking them down", commas(a.Destroyed))
+				}
 				if a.Action == game.WorkScrap && a.Assembled > 0 {
 					p("      RECOVERED: %s MTL and %s NMTL", commas(a.MTL), commas(a.NMTL))
 					if a.Lost > 0 {

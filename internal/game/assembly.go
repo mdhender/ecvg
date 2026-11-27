@@ -36,8 +36,37 @@ func (w Work) Verb() string {
 }
 
 // ScrapPercent is the percentage of the MTL and NMTL that went into a unit
-// that scrapping it recovers, rounded down.
-const ScrapPercent = 95
+// that scrapping it recovers, rounded down: scrapping loses 30% (manual
+// F11.0).
+const ScrapPercent = 70
+
+// ScrapMUPerCWRK is the mass one CWRK scraps in a turn. It is less than the
+// EMUPerCWRK it assembles or disassembles, so a MU of scrap takes more than
+// an EMU of work.
+const ScrapMUPerCWRK = 300
+
+// DisassemblyLossPercent is the percentage of the units an order disassembles
+// that are lost, rounded down (manual F10.3).
+const DisassemblyLossPercent = 10
+
+// workEMU returns the work it takes to assemble, disassemble, or scrap qty of
+// a unit, in EMU: its mass, or for scrap its mass at ScrapMUPerCWRK a CWRK,
+// rounded up.
+func workEMU(w Work, d units.Def, tl, qty int) int {
+	mass := d.Mass(tl, qty)
+	if w == WorkScrap {
+		return (mass*EMUPerCWRK + ScrapMUPerCWRK - 1) / ScrapMUPerCWRK
+	}
+	return mass
+}
+
+// disassemblyLoss returns how many of the next n units an order disassembles
+// are lost, when it has already disassembled done of them. The loss is
+// DisassemblyLossPercent of the order's units so far, rounded down, so it is
+// the same however many turns the work takes.
+func disassemblyLoss(done, n int) int {
+	return (done+n)*DisassemblyLossPercent/100 - done*DisassemblyLossPercent/100
+}
 
 // Assembly is a piece of work for a colony's CWRK: assembling units, into one
 // of the colony's groups or on their own, disassembling them, or scrapping
@@ -51,8 +80,12 @@ type Assembly struct {
 	// Unit is the units still to do. They stay where they are until then.
 	Unit Unit `json:"unit"`
 	// EMU is the work done toward them. A unit is done when the work reaches
-	// its mass, so a partly done unit keeps its EMU between turns.
+	// what it takes (its mass, and more to scrap it), so a partly done unit
+	// keeps its EMU between turns.
 	EMU int `json:"emu"`
+	// Done is the number of units the work has disassembled so far, which
+	// sets how many of the next are lost.
+	Done int `json:"done,omitzero"`
 	// MaxCWRK is the most CWRK the order lets work on it in a turn, or 0 for
 	// as many as it can use. SharesCap says that the work is of the same
 	// order as the work before it, and the cap is on them together.
@@ -62,6 +95,9 @@ type Assembly struct {
 	// says why units that had the work done weren't: "room" or "units".
 	Assembled int    `json:"assembled,omitzero"`
 	Waiting   string `json:"waiting,omitzero"`
+	// Destroyed is how many of the units disassembled in the prior turn were
+	// lost instead of reaching storage.
+	Destroyed int `json:"destroyed,omitzero"`
 	// MTL and NMTL are what scrapping recovered in the prior turn, and Lost
 	// is the part of it that the colony had no room to store.
 	MTL  int `json:"mtl,omitzero"`
@@ -141,7 +177,8 @@ func (c *Colony) working(w Work, code string, tl int) int {
 //
 //   - Disassembled units move out of use and back into storage: from the
 //     depot into the depot, and from the colony into its cargo, if the colony
-//     has room for them there; the rest wait.
+//     has room for them there; the rest wait. DisassemblyLossPercent of an
+//     order's units are lost on the way.
 //   - Scrapped units leave storage, and ScrapPercent percent of the MTL and
 //     NMTL that built them is stored; what there is no room for is lost.
 func (c *Colony) Disassemble() {
@@ -158,7 +195,7 @@ func (c *Colony) Disassemble() {
 			a.SharesCap = false
 		}
 		promote = false
-		a.Assembled, a.Waiting, a.MTL, a.NMTL, a.Lost = 0, "", 0, 0, 0
+		a.Assembled, a.Waiting, a.Destroyed, a.MTL, a.NMTL, a.Lost = 0, "", 0, 0, 0, 0
 		jobs = append(jobs, a)
 	}
 	c.Assembly = jobs
@@ -195,12 +232,12 @@ func (c *Colony) construct(phase func(Work) bool) {
 			continue
 		}
 		tl := a.Unit.TechLevel
-		take := max(0, min(left, budget, d.Mass(tl, a.Unit.Qty)-a.EMU))
+		take := max(0, min(left, budget, workEMU(a.Action, d, tl, a.Unit.Qty)-a.EMU))
 		a.EMU += take
 		left -= take
 		budget -= take
-		// The most units whose mass the work has reached.
-		n := sort.Search(a.Unit.Qty, func(k int) bool { return d.Mass(tl, k+1) > a.EMU })
+		// The most units that the work done is enough for.
+		n := sort.Search(a.Unit.Qty, func(k int) bool { return workEMU(a.Action, d, tl, k+1) > a.EMU })
 		have := c.Stored(a.Unit.Type, tl)
 		if a.Action == WorkDisassemble {
 			have = c.InUse(a.Unit.Type, tl)
@@ -208,7 +245,7 @@ func (c *Colony) construct(phase func(Work) bool) {
 		if have < n {
 			n, a.Waiting = have, "units"
 		}
-		if fit := c.fit(a.Action, d, tl, n); fit < n {
+		if fit := c.fit(a.Action, d, tl, n, a.Done); fit < n {
 			n, a.Waiting = fit, "room"
 		}
 		if n <= 0 {
@@ -216,14 +253,16 @@ func (c *Colony) construct(phase func(Work) bool) {
 		}
 		switch a.Action {
 		case WorkDisassemble:
-			c.dismantle(d, tl, n)
+			a.Destroyed = disassemblyLoss(a.Done, n)
+			c.dismantle(d, tl, n, a.Destroyed)
+			a.Done += n
 		case WorkScrap:
 			a.MTL, a.NMTL, a.Lost = c.scrap(d, tl, n)
 		default:
 			c.install(d, tl, n)
 			c.addToGroup(a.Kind, a.GroupNo, tl, n)
 		}
-		a.EMU -= d.Mass(tl, n)
+		a.EMU -= workEMU(a.Action, d, tl, n)
 		a.Unit.Qty -= n
 		a.Assembled = n
 	}
@@ -234,8 +273,9 @@ func (c *Colony) construct(phase func(Work) bool) {
 // disassemble. They fit if the colony is within its capacity afterwards, or
 // no further over it than it was. Both ways the space can go either way:
 // most units are bigger assembled, and structure takes space only when it is
-// stowed and makes space only when it is assembled.
-func (c *Colony) fit(w Work, d units.Def, tl, n int) int {
+// stowed and makes space only when it is assembled. Done is how many units
+// the work has disassembled already: the units it loses take no room.
+func (c *Colony) fit(w Work, d units.Def, tl, n, done int) int {
 	if w == WorkScrap || (w == WorkAssemble && c.HasDepot() && d.DepotAllowed()) {
 		return n
 	}
@@ -245,7 +285,7 @@ func (c *Colony) fit(w Work, d units.Def, tl, n int) int {
 		t.Operational, t.Cargo = slices.Clone(c.Operational), slices.Clone(c.Cargo)
 		t.DepotOperational, t.Depot = slices.Clone(c.DepotOperational), slices.Clone(c.Depot)
 		if w == WorkDisassemble {
-			t.dismantle(d, tl, k+1)
+			t.dismantle(d, tl, k+1, disassemblyLoss(done, k+1))
 		} else {
 			t.install(d, tl, k+1)
 		}
@@ -267,13 +307,16 @@ func (c *Colony) install(d units.Def, tl, qty int) {
 
 // dismantle moves qty units out of use and into storage: the ones in use in
 // the depot first, which go into the depot, and then the ones in the colony,
-// which go into its cargo.
-func (c *Colony) dismantle(d units.Def, tl, qty int) {
+// which go into its cargo. Lost of them don't reach storage; they come off
+// the ones bound for the depot first.
+func (c *Colony) dismantle(d units.Def, tl, qty, lost int) {
 	n := takeUnits(c.DepotOperational, d.Code, tl, qty)
-	if n > 0 {
-		c.Depot = addUnits(c.Depot, d.Code, tl, n)
+	kept := max(0, n-lost)
+	lost -= n - kept
+	if kept > 0 {
+		c.Depot = addUnits(c.Depot, d.Code, tl, kept)
 	}
-	if n = takeUnits(c.Operational, d.Code, tl, qty-n); n > 0 {
+	if n = takeUnits(c.Operational, d.Code, tl, qty-n) - lost; n > 0 {
 		c.Cargo = addUnits(c.Cargo, d.Code, tl, n)
 	}
 }

@@ -214,14 +214,14 @@ func TestEmpire(t *testing.T) {
 				c.Construction = game.Construction{Pool: 500000, Used: 30000}
 				c.Assembly = []game.Assembly{
 					{Unit: game.Unit{Type: "HDRV", TechLevel: 1, Qty: 4778}, EMU: 10, MaxCWRK: 20, Assembled: 222},
-					{Action: game.WorkDisassemble, Unit: game.Unit{Type: "STRC", TechLevel: 1, Qty: 867}, EMU: 287, Assembled: 133, Waiting: "room"},
+					{Action: game.WorkDisassemble, Unit: game.Unit{Type: "STRC", TechLevel: 1, Qty: 867}, EMU: 287, Assembled: 133, Destroyed: 13, Waiting: "room"},
 					{Action: game.WorkDisassemble, Unit: game.Unit{Type: "LFSU", TechLevel: 1, Qty: 5}, EMU: 40, Waiting: "units"},
 					{Action: game.WorkScrap, Unit: game.Unit{Type: "HDRV", TechLevel: 2}, Assembled: 100, MTL: 4750, NMTL: 3800, Lost: 50},
 				}
 			},
 			want: []string{
 				"  222 HDRV-1 assembled last turn; 4,778 still to assemble, with 10 EMU done toward them (using at most 20 CWRK)\n",
-				"  133 STRC-1 disassembled last turn; 867 still to disassemble, with 287 EMU done toward them\n      WAITING: no room in the entity for more of them disassembled\n",
+				"  133 STRC-1 disassembled last turn; 867 still to disassemble, with 287 EMU done toward them\n      LOST: 13 of them, in taking them down\n      WAITING: no room in the entity for more of them disassembled\n",
 				"  0 LFSU-1 disassembled last turn; 5 still to disassemble, with 40 EMU done toward them\n      WAITING: the units aren't assembled\n",
 				"  100 HDRV-2 scrapped last turn, and the work is done\n      RECOVERED: 4,750 MTL and 3,800 NMTL\n      LOST: 50 of that, which the entity had no room for\n",
 			},
