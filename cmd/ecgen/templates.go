@@ -274,11 +274,19 @@ func (t EmpireTemplate) Validate() error {
 				}
 			}
 		}
+		// Group numbers are shared by every kind of group of a colony.
+		groupNos := map[int]bool{}
 		groups := func(kind string, gs []game.Group) {
 			for j, g := range gs {
-				if g.No != j+1 {
-					bad("colony %d: %s group %d: no %d: want %d", i+1, kind, j+1, g.No, j+1)
+				switch {
+				case g.No < 1:
+					bad("colony %d: %s group %d: no %d: want 1 or more", i+1, kind, j+1, g.No)
+				case groupNos[g.No]:
+					bad("colony %d: %s group %d: no %d: another group of the colony has that number", i+1, kind, j+1, g.No)
+				case j > 0 && g.No < gs[j-1].No:
+					bad("colony %d: %s group %d: no %d: want the groups in order of their numbers", i+1, kind, j+1, g.No)
 				}
+				groupNos[g.No] = true
 				if len(g.Units) == 0 {
 					bad("colony %d: %s group %d: no units", i+1, kind, j+1)
 				}

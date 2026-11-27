@@ -168,29 +168,19 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		}
 	}
 
-	// Make the new group. It is junior to the entity's others of its kind.
+	// Make the new group. Its number is the entity's next, whatever the kind
+	// of group, so it is junior to all the entity's others.
 	no := o.GroupNo
 	if no == 0 {
+		no = c.NextGroupNo()
 		switch o.Kind {
 		case game.KindFarming:
-			for _, g := range c.FarmingGroups {
-				no = max(no, g.No)
-			}
-			no++
 			c.FarmingGroups = append(c.FarmingGroups, game.Group{No: no})
 			us = &c.FarmingGroups[len(c.FarmingGroups)-1].Units
 		case game.KindFactory:
-			for _, g := range c.FactoryGroups {
-				no = max(no, g.No)
-			}
-			no++
 			c.FactoryGroups = append(c.FactoryGroups, game.Group{No: no, Producing: o.Producing})
 			us = &c.FactoryGroups[len(c.FactoryGroups)-1].Units
 		case game.KindMining:
-			for _, g := range c.MiningGroups {
-				no = max(no, g.No)
-			}
-			no++
 			c.MiningGroups = append(c.MiningGroups, game.MiningGroup{No: no, DepositID: depositID})
 			us = &c.MiningGroups[len(c.MiningGroups)-1].Units
 		}

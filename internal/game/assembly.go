@@ -189,3 +189,20 @@ func (c *Colony) addToGroup(kind GroupKind, no, tl, qty int) {
 		}
 	}
 }
+
+// NextGroupNo gives out the number for a new group of the colony: one more
+// than the highest that any of its groups, of any kind, has had.
+func (c *Colony) NextGroupNo() int {
+	last := c.LastGroupNo
+	for _, g := range c.FarmingGroups {
+		last = max(last, g.No)
+	}
+	for _, g := range c.MiningGroups {
+		last = max(last, g.No)
+	}
+	for _, g := range c.FactoryGroups {
+		last = max(last, g.No)
+	}
+	c.LastGroupNo = last + 1
+	return c.LastGroupNo
+}

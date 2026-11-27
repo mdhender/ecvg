@@ -398,6 +398,7 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 					DepotOperational: slices.Clone(tc.DepotOperational),
 					FarmingGroups:    cloneGroups(tc.FarmingGroups),
 					FactoryGroups:    cloneGroups(tc.FactoryGroups),
+					LastGroupNo:      lastGroupNo(tc),
 					MiningGroups:     []game.MiningGroup{},
 				}
 				d.Colonies = append(d.Colonies, colony)
@@ -413,4 +414,15 @@ func cloneGroups(groups []game.Group) []game.Group {
 		out[i] = game.Group{No: g.No, Units: slices.Clone(g.Units)}
 	}
 	return out
+}
+
+// lastGroupNo returns the highest group number in the template colony.
+func lastGroupNo(tc TemplateColony) int {
+	last := 0
+	for _, gs := range [][]game.Group{tc.FarmingGroups, tc.FactoryGroups} {
+		for _, g := range gs {
+			last = max(last, g.No)
+		}
+	}
+	return last
 }

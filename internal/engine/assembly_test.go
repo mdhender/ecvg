@@ -66,8 +66,8 @@ func TestAssembleGroupOrders(t *testing.T) {
 			name: "a new mining group claims its deposit",
 			text: "assemble mining-group on 1 with 60 MINE-10 working 1",
 			check: func(t *testing.T, c []game.Colony) {
-				want := []game.MiningGroup{{No: 1, DepositID: 11, Units: []game.GroupUnits{{TechLevel: 10}}}}
-				work := []game.Assembly{{Kind: game.KindMining, GroupNo: 1, Unit: unit{Type: "MINE", TechLevel: 10, Qty: 60}}}
+				want := []game.MiningGroup{{No: 5, DepositID: 11, Units: []game.GroupUnits{{TechLevel: 10}}}}
+				work := []game.Assembly{{Kind: game.KindMining, GroupNo: 5, Unit: unit{Type: "MINE", TechLevel: 10, Qty: 60}}}
 				if !reflect.DeepEqual(c[0].MiningGroups, want) || !reflect.DeepEqual(c[0].Assembly, work) {
 					t.Errorf("groups %+v, work %+v", c[0].MiningGroups, c[0].Assembly)
 				}
@@ -75,16 +75,16 @@ func TestAssembleGroupOrders(t *testing.T) {
 		},
 		{
 			name: "adding to a group",
-			text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 1 on 1 add 40 MINE-10",
+			text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 40 MINE-10",
 			check: func(t *testing.T, c []game.Colony) {
 				if len(c[0].MiningGroups) != 1 || len(c[0].MiningGroups[0].Units) != 1 || len(c[0].Assembly) != 2 {
 					t.Errorf("groups %+v, work %+v", c[0].MiningGroups, c[0].Assembly)
 				}
 			},
 		},
-		{name: "units already being assembled can't be promised again", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 1 on 1 add 41 MINE-10", err: engine.ErrNotEnoughUnits},
+		{name: "units already being assembled can't be promised again", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 41 MINE-10", err: engine.ErrNotEnoughUnits},
 		{name: "not enough units", text: "assemble mining-group on 1 with 101 MINE-10 working 1", err: engine.ErrNotEnoughUnits},
-		{name: "a mining group is of one tech level", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 1 on 1 add 5 MINE-9", err: engine.ErrTechLevel},
+		{name: "a mining group is of one tech level", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 5 MINE-9", err: engine.ErrTechLevel},
 		{name: "a farming group is of one tech level", text: "assemble farming-group 4 on 1 add 5 FARM-1", err: engine.ErrTechLevel},
 		{name: "a deposit another empire works", text: "assemble mining-group on 1 with 60 MINE-10 working 2", err: engine.ErrDepositClaimed},
 		{name: "a deposit the empire works", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group on 1 with 10 MINE-9 working 1", err: engine.ErrDepositClaimed},
@@ -98,7 +98,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 			text: "assemble farming-group on 1 with 30 FARM-1\nassemble farming-group 5 on 1 add 20 FARM-1",
 			check: func(t *testing.T, c []game.Colony) {
 				// The new group is junior to group 4.
-				if g := c[0].FarmingGroups; len(g) != 2 || g[1].No != 5 || len(c[0].Assembly) != 2 {
+				if g := c[0].FarmingGroups; len(g) != 2 || g[1].No != 5 || len(c[0].Assembly) != 2 || c[0].LastGroupNo != 5 {
 					t.Errorf("groups %+v, work %+v", g, c[0].Assembly)
 				}
 			},
@@ -117,7 +117,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 			name: "a factory group mixes tech levels and has a goal",
 			text: "assemble factory-group on 1 with 10 FACT-1, 5 FACT-2 producing CNGD",
 			check: func(t *testing.T, c []game.Colony) {
-				want := []game.Group{{No: 1, Producing: unit{Type: "CNGD"}, Units: []game.GroupUnits{{TechLevel: 1}, {TechLevel: 2}}}}
+				want := []game.Group{{No: 5, Producing: unit{Type: "CNGD"}, Units: []game.GroupUnits{{TechLevel: 1}, {TechLevel: 2}}}}
 				if !reflect.DeepEqual(c[0].FactoryGroups, want) || len(c[0].Assembly) != 2 {
 					t.Errorf("groups %+v, work %+v", c[0].FactoryGroups, c[0].Assembly)
 				}
@@ -191,5 +191,21 @@ func TestAssemblyInTheSetupTurn(t *testing.T) {
 	// A FARM-10 is 26 MU: 1,000 EMU assemble 38 of them.
 	if c := d.Colonies[0]; c.FarmingGroups[0].Units[0].Qty != 48 || c.Harvest != (game.Harvest{}) {
 		t.Errorf("group %+v, harvest %+v", c.FarmingGroups[0].Units, c.Harvest)
+	}
+}
+
+// An entity's farming, mining, and factory groups share one run of group
+// numbers, which always goes up and never uses a number again.
+func TestGroupNumbersAreShared(t *testing.T) {
+	d := builders()
+	d.Colonies[0].LastGroupNo = 8 // groups 5 to 8 have come and gone
+	text := "assemble mining-group on 1 with 10 MINE-10 working 1\nassemble factory-group on 1 with 5 FACT-1\nassemble farming-group on 1 with 5 FARM-1\nassemble mining-group on 1 with 10 MINE-9 working 3"
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, text)})
+	if err != nil || len(result.Rejected) != 0 {
+		t.Fatalf("rejected %+v, %v", result.Rejected, err)
+	}
+	c := d.Colonies[0]
+	if c.MiningGroups[0].No != 9 || c.FactoryGroups[0].No != 10 || c.FarmingGroups[1].No != 11 || c.MiningGroups[1].No != 12 || c.LastGroupNo != 12 {
+		t.Errorf("mining %+v, factory %+v, farming %+v, last %d", c.MiningGroups, c.FactoryGroups, c.FarmingGroups, c.LastGroupNo)
 	}
 }

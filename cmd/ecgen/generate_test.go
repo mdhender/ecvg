@@ -244,6 +244,9 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 		{"unassembled kind of unit operational in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot_operational":[{"type":"FUEL","qty":1}]}]}`},
 		{"unknown unit in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot":[{"type":"ORE","qty":1}]}]}`},
 		{"farming group of two tech levels", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":1},{"qty":1,"tech_level":2}]}]}]}`},
+		{"two groups with one number", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":2}]}],"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}]}]}]}`},
+		{"group number 0", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":0,"units":[{"qty":1,"tech_level":2}]}]}]}`},
+		{"groups out of order", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":2,"units":[{"qty":1,"tech_level":2}]},{"no":1,"units":[{"qty":1,"tech_level":2}]}]}]}`},
 		{"empty group", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[]}]}]}`},
 	} {
 		t.Run("empire/"+tc.name, func(t *testing.T) {

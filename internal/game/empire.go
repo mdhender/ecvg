@@ -82,6 +82,11 @@ type Colony struct {
 	Disbanded []Drafted `json:"disbanded,omitempty"`
 	// Trained is what became of the TRNE cadre in the prior turn.
 	Trained Trained `json:"trained,omitzero"`
+	// LastGroupNo is the highest group number the colony has given out. Its
+	// farming, mining, and factory groups share one run of numbers, which
+	// only goes up: a number is never used again. The lower a group's
+	// number, the more senior it is.
+	LastGroupNo int `json:"last_group_no,omitzero"`
 	// Assembly is the colony's assembly work in progress, oldest first, and
 	// Construction what its CWRK did in the prior turn.
 	Assembly     []Assembly   `json:"assembly,omitempty"`
