@@ -537,9 +537,9 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | SPY      | Spy cadre                    | Cadre consisting of 1 PRO and 1 SLD.                          |
 | STP      | Set-up                       | This order establishes a ship or colony.                      |
 | STU      | Start-up                     | This order starts up all farms in a S/C, when shut down.      |
-| STUL     | Light structural units       | Enclose 5 times the volume of STUN per unit ([F3.1.1](#rule-F3.1.1)). |
-| STUN     | Structural units             | Standard walls, beams, etc. of a S/C.                         |
-| STUS     | Super-light structural units | Enclose 20 times the volume of STUN per unit ([F3.1.1](#rule-F3.1.1)). |
+| STRL     | Light structural units       | Enclose 5 times the volume of STRN per unit ([F3.1.1](#rule-F3.1.1)). |
+| STRN     | Structural units             | Standard walls, beams, etc. of a S/C.                         |
+| STRS     | Super-light structural units | Enclose 20 times the volume of STRN per unit ([F3.1.1](#rule-F3.1.1)). |
 | SUR      | Survey                       | This order searches a planet for resource deposits.           |
 | SYS      | Star system                  | Star system.                                                  |
 | SOL\*    | Standard of living           | Total CNGD paid ÷ by total POP, then ÷ by 4.                  |
@@ -1128,8 +1128,8 @@ The TL's used in computing AMSL and EWPN hits on MSSL's and troops is the *weigh
 * A colony can't fire on a ship unless it has an assembled SENS.
 * A colony can fire on another colony without a SENS.
 * Damage from bombardment against untargeted colonies and against ships is allocated randomly, by mass ([D6.2](#rule-D6.2)).
-* STUN, STUL,and STUS all absorb damage at the same rate.
-  (500 M.U. damaged will destroy 1,000 STUN or 1,000 STUL or 1,000 STUS).
+* STRN, STRL, and STRS all absorb damage at the same rate.
+  (500 M.U. damaged will destroy 1,000 STRN or 1,000 STRL or 1,000 STRS).
   *On ships, the number destroyed will be 10,000 instead.*
 * Ship maneuvers during combat take place on a 3-D grid around the planet, with the planet at (0,0,0).
   A point on the grid is given by its tactical coordinates, written (x,y,z) with no spaces, such as (1,-5,2).
@@ -1469,20 +1469,22 @@ All incoming ships arrive in orbit 0 of the star system.
 <a id="rule-F3.1"></a>
 ### F3.1 Definition
 
-Assembled STUN, STUL, or STUS provide enclosure capacity for a S/C's units and population, except NMTL and MTL in COPN's and CENC's.
+Assembled STRN, STRL, or STRS provide enclosure capacity for a S/C's units and population, except what a COPN or CENC keeps outside the colony ([F3.1.2](#rule-F3.1.2)).
 Required enclosure is the sum of the volume units (VU) required to enclose the population, stored items, and assembled items that require enclosure, using [R3.0](#rule-R3.0) and the assembly exceptions in [F10.7](#rule-F10.7).
-Assembled STUN, STUL, and STUS require zero VU of enclosure and do not add to the structural requirement ([R3.0](#rule-R3.0)).
-The required enclosure in VU times the structure ratio gives the structural requirement in STUN equivalents ([F3.1.1](#rule-F3.1.1)).
+Assembled STRN, STRL, and STRS require zero VU of enclosure and do not add to the structural requirement ([R3.0](#rule-R3.0)).
+The required enclosure in VU times the structure ratio gives the structural requirement in STRN equivalents ([F3.1.1](#rule-F3.1.1)).
 The S/C must have enough assembled structural units to meet this requirement, subject to [F3.2](#rule-F3.2).
-In COPN's and CENC's, NMTL and MTL are stored outside the colony.
+The population of a COPN counts toward its required enclosure like any other: it wants to be enclosed, but does not have to be ([F3.2](#rule-F3.2)).
+Mass and volume are kept exactly, fractions included, and are never rounded when capacity is checked.
+The printout rounds each figure up to a whole unit, so its totals may not appear to add up.
 
 <a id="rule-F3.1.1"></a>
 #### F3.1.1 Structure Ratio
 
-Each STUN, STUL, and STUS has a mass of 0.1 MU.
-One assembled STUL encloses 5 times the volume of one assembled STUN, and one assembled STUS encloses 20 times that volume.
-For enclosure, count each assembled STUN as 1 STUN equivalent, each STUL as 5, and each STUS as 20; different types may be combined.
-The structure ratio is the number of STUN equivalents required to enclose one volume unit:
+Each STRN, STRL, and STRS has a mass of 0.1 MU.
+One assembled STRL encloses 5 times the volume of one assembled STRN, and one assembled STRS encloses 20 times that volume.
+For enclosure, count each assembled STRN as 1 STRN equivalent, each STRL as 5, and each STRS as 20; different types may be combined.
+The structure ratio is the number of STRN equivalents required to enclose one volume unit:
 
 | S/C Type                       | Structure Ratio |
 |--------------------------------|-----------------|
@@ -1491,29 +1493,39 @@ The structure ratio is the number of STUN equivalents required to enclose one vo
 | Orbiting colonies (CORB)         | 8               |
 | Ships (CSHP)                     | 10              |
 
-Available enclosure capacity is the VU of enclosure supplied by the assembled structural units: the total assembled STUN equivalents divided by the structure ratio.
+Available enclosure capacity is the VU of enclosure supplied by the assembled structural units: the total assembled STRN equivalents divided by the structure ratio.
 The following table gives the volume units enclosed by 1 MU of assembled structure:
 
 | Structural Unit | Mass Per Unit (MU) | Units Per 1 MU | COPN | CENC | CORB | CSHP |
 |-----------------|--------------------|----------------|------|------|------|------|
-| STUN            | 0.1                | 10             | 10  | 2   | 1.25 | 1    |
-| STUL            | 0.1                | 10             | 50  | 10  | 6.25 | 5    |
-| STUS            | 0.1                | 10             | 200 | 40  | 25   | 20   |
+| STRN            | 0.1                | 10             | 10  | 2   | 1.25 | 1    |
+| STRL            | 0.1                | 10             | 50  | 10  | 6.25 | 5    |
+| STRS            | 0.1                | 10             | 200 | 40  | 25   | 20   |
 
 
 This means that structural requirements of a CSHP are determined by how much it carries.
-If a CSHP is to transport 100,000 volume units, it requires 1,000,000 STUN equivalents: 1,000,000 STUN, 200,000 STUL, 50,000 STUS, or a combination providing at least that many equivalents.
+If a CSHP is to transport 100,000 volume units, it requires 1,000,000 STRN equivalents: 1,000,000 STRN, 200,000 STRL, 50,000 STRS, or a combination providing at least that many equivalents.
 For the number of volume units per item see the UNIT CHARACTERISTICS SUMMARY in [R3.0](#rule-R3.0)<!-- was on the back cover -->.
+
+<a id="rule-F3.1.2"></a>
+#### F3.1.2 Depots
+
+A COPN has a depot: storage outside the colony, with no limit, whose contents require no enclosure and use none of the colony's enclosure capacity.
+The depot may hold stored items and assembled items, such as the colony's MINE's.
+Weapons (ACFT, AWPN, ESHD, EWPN, MLNC, and MRBT), FOOD, CNGD, LFSU, and prototypes may not be kept there, and neither may population; they must be in the colony itself.
+Everything a COPN mines goes to its depot ([H2.2](#rule-H2.2)).
+A CENC has no depot, but it stores its NMTL and MTL outside the colony, in an external depot that holds nothing else.
+CSHP's and CORB's keep everything inside.
 
 <a id="rule-F3.2"></a>
 ### F3.2 Enclosure Capacity Exceeded
 
 In open colonies, required enclosure may exceed available enclosure capacity.
 When this happens, POP are forced into the fields outside the colony to live.
-Twenty-five percent of the dispossessed POP's will turn rebel each turn.
+The dispossessed POP's experience a lower standard of living and tend to rebel: twenty-five percent of them will turn rebel each turn.
 In ships, orbiting colonies, and enclosed surface colonies, required enclosure exceeding available enclosure capacity prevents new items from entering the S/C.
 In the case of an excess of POP, LFSU would not be sufficient, and some would die.
-In ships, orbiting colonies, and enclosed surface colonies, available enclosure capacity limits incoming items ([F3.2.1](#rule-F3.2.1)), disassembly ([F3.2.2](#rule-F3.2.2)), and manufactured items entering storage ([F3.2.3](#rule-F3.2.3)).
+In ships, orbiting colonies, and enclosed surface colonies, available enclosure capacity limits incoming items ([F3.2.1](#rule-F3.2.1)), disassembly ([F3.2.2](#rule-F3.2.2)), manufactured items entering storage ([F3.2.3](#rule-F3.2.3)), and assembly ([F3.2.4](#rule-F3.2.4)).
 These limits do not apply to open colonies.
 
 <a id="rule-F3.2.1"></a>
@@ -1532,22 +1544,33 @@ Rejected units are returned to their source at once, as though they had never le
 They are not deducted from the source, are not added to the receiving S/C, use none of its capacity, and are not lost.
 Accepted units need not fill the remaining capacity: capacity too small for another whole unit of the entry stays available to later entries.
 
-For example, 10,000 unassembled STUN require 500 VU at 0.05 VU each.
-If a TFR of them reaches a S/C with 300 VU remaining, 6,000 STUN are accepted and 4,000 are rejected; the 4,000 stay in the sending S/C.
-With 0.025 VU remaining, one unassembled STUN is rejected; half a STUN is never accepted.
+For example, 10,000 unassembled STRN require 500 VU at 0.05 VU each.
+If a TFR of them reaches a S/C with 300 VU remaining, 6,000 STRN are accepted and 4,000 are rejected; the 4,000 stay in the sending S/C.
+With 0.025 VU remaining, one unassembled STRN is rejected; half a STRN is never accepted.
 With 1 VU remaining, an entry for one unassembled HDRV-10 (225 VU) is rejected, and a following entry for 50 CSUP (0.02 VU each, 1 VU in all) is accepted.
 
 <a id="rule-F3.2.2"></a>
 #### F3.2.2 Disassembly
 
-A CSHP, CORB, or CENC may not disassemble items if its resulting required enclosure would exceed its resulting available enclosure capacity.
-The resulting state counts the capacity lost with any disassembled structural units, and the enclosure required by the units that reach storage after the 10% disassembly loss ([F10.3](#rule-F10.3)).
-Items whose disassembly is refused stay assembled; none are lost, and none are added to storage.
+Disassembling anything but structural units never increases a S/C's required enclosure: an assembled item requires twice the enclosure it requires in storage ([F10.7](#rule-F10.7)), and 10% of the items are lost ([F10.3](#rule-F10.3)).
+The enclosure the assembled items required is given up before the enclosure they require in storage is counted, so such a disassembly is never limited, even in a S/C that is already over its enclosure capacity.
+Structural units are the exception: disassembling them takes away the enclosure capacity they provided, and in storage they require enclosure themselves.
+A CSHP, CORB, or CENC may disassemble STRN, STRL, or STRS only as far as its resulting required enclosure does not exceed its resulting available enclosure capacity.
+The resulting state counts the capacity lost with the disassembled structural units, and the enclosure required by the units that reach storage after the 10% disassembly loss.
+As many whole units are disassembled as that allows; the rest stay assembled until there is room, and none of them are lost or added to storage.
 
 <a id="rule-F3.2.3"></a>
 #### F3.2.3 Manufactured Items
 
 In a CORB or CENC, a manufactured item leaves the production pipeline for storage only if there is enough remaining enclosure capacity for it ([H3.0](#rule-H3.0)).
+
+<a id="rule-F3.2.4"></a>
+#### F3.2.4 Assembly
+
+An assembled item requires twice the enclosure it requires in storage ([F10.7](#rule-F10.7)), so assembling items increases a S/C's required enclosure.
+A CSHP, CORB, or CENC may assemble items only as far as its resulting required enclosure does not exceed its available enclosure capacity.
+As many whole units are assembled as fit; the rest stay in storage until there is room.
+Structural units are the exception: assembling STRN, STRL, or STRS only adds enclosure capacity and gives up the enclosure they required in storage, so it is never limited, even in a S/C that is already over its enclosure capacity.
 Items that do not fit remain in WIP and stall it; they do not enter storage.
 
 <a id="rule-F4.0"></a>
@@ -1595,7 +1618,7 @@ When a player has received PTC on a planet, he does not need it to set up more c
 
 All set-up orders, whether for ships or colonies, will abort if no population are included in the set up order.
 A ship set up will also abort if no SDRV are included.
-Portions of a STP, or all of it, may fail due to a shortage of construction workers, transports, fuel (for the transports), or due to a shortage of STUN, STUL, or STUS (there must be enough enclosure capacity to hold the units being STP, [F3.2.1](#rule-F3.2.1)).
+Portions of a STP, or all of it, may fail due to a shortage of construction workers, transports, fuel (for the transports), or due to a shortage of STRN, STRL, or STRS (there must be enough enclosure capacity to hold the units being STP, [F3.2.1](#rule-F3.2.1)).
 The S/C's otherwise have no size limitations, and players may build them as they choose.
 
 <a id="rule-F4.3.5"></a>
@@ -1630,7 +1653,7 @@ If there are not enough CWRK listed in the STP order for the required assemblies
 The helping CWRK return to the establishing S/C when they are done.
 If there are no CWRK listed in the STP order at all, all the work is done by CWRK of the establishing S/C, and they all return to it.
 If there are not enough CWRK in the establishing S/C either, as many items in the STP order are assembled as possible, **IN THE ORDER IN WHICH THEY ARE LISTED IN THE STP ORDER**.
-(A player should therefore list the STUN (or STUL or STUS) first, followed by the other units in the order of their importance).
+(A player should therefore list the STRN (or STRL or STRS) first, followed by the other units in the order of their importance).
 UNA that can not be assembled by the CWRK are simply left in the establishing S/C.
 
 <a id="rule-F4.7"></a>
@@ -1688,7 +1711,7 @@ An existing S/C may ADN to any other type or number of ships and colonies, so lo
 <a id="rule-F5.2.1"></a>
 #### F5.2.1 ADN Abortions
 
-Portions of an ADN, or all of an ADN, may fail due to a shortage of CWRK, fuel for the TRNS's, TRNS's, or STUN (or STUL or STUS) to hold all the additional units ([F3.2.1](#rule-F3.2.1)).
+Portions of an ADN, or all of an ADN, may fail due to a shortage of CWRK, fuel for the TRNS's, TRNS's, or STRN (or STRL or STRS) to hold all the additional units ([F3.2.1](#rule-F3.2.1)).
 
 <a id="rule-F5.3"></a>
 ### F5.3 How ADN Orders Work
@@ -1803,15 +1826,16 @@ The following items are assembly type items:
 * FARM
 * HDRV
 * LFSU
-* STUL
 * MINE
 * MLNC
 * SENS
 * SDRV
-* STUN
-* STUS
+* STRL
+* STRN
+* STRS
 
 An ASM order takes an unassembled item from storage, assembles it, and makes it work.
+In a CSHP, CORB, or CENC, there must be enough enclosure capacity for the item once it is assembled ([F3.2.4](#rule-F3.2.4)).
 
 <a id="rule-F10.3"></a>
 ### F10.3 Disassembling Assembled Items
@@ -1826,7 +1850,7 @@ For instance, if 5,000 EWPN-2 are dis-assembled then 500 will be lost and 4,500 
 There is no loss in disassembling population units.
 When determining the 10% loss, fractions are rounded down, but every dis-assembly order loses at least one unit.
 For instance, an order to dis-assemble 9 EWPN-2 loses 1 of them, and an order to dis-assemble a single unit loses it.
-In a CSHP, CORB, or CENC, a disassembly is refused if the result would exceed the S/C's enclosure capacity ([F3.2.2](#rule-F3.2.2)).
+In a CSHP, CORB, or CENC, STRN, STRL, and STRS are disassembled only as far as the result stays within the S/C's enclosure capacity; no other disassembly is limited by it ([F3.2.2](#rule-F3.2.2)).
 
 <a id="rule-F10.4"></a>
 ### F10.4 Non-Assembly Items
@@ -1868,7 +1892,7 @@ All spies assembled by a Regent will be under the control of his Ruler.
 <a id="rule-F10.7"></a>
 ### F10.7 Miscellaneous
 
-Assembled items require TWICE as many VU of enclosure as when unassembled, except STUN, STUL, and STUS, which require zero VU when assembled ([R3.0](#rule-R3.0)).
+Assembled items require TWICE as many VU of enclosure as when unassembled, except STRN, STRL, and STRS, which require zero VU when assembled ([R3.0](#rule-R3.0)).
 Also, assembled items do not leave the S/C.
 Only UNA or NON can be TFR'd or ADN'd to another S/C, or can be picked up by another S/C.
 So, assembled items must be dis-assembled first.
@@ -2424,7 +2448,7 @@ A FACT group may be changed from building one item to building another, but it m
 
 * In the case of switching from making an item to making research points, no retool order is needed (switching from research to an item *does* require a retool order.)
 
-* Also, in the case of switching from one type of structural unit (STUN, STUL, STUS) to another, no retool order is needed.
+* Also, in the case of switching from one type of structural unit (STRN, STRL, STRS) to another, no retool order is needed.
 * If the FACT units in a group are occupied with WIP, they will not retool, even though the BCH, RETL order is accepted and acknowledged on the printout.
   As the FACT are freed from WIP, they retool themselves.
 
@@ -2442,15 +2466,15 @@ A FACT group may not build any item of a higher TL than that of the S/C it is in
 RSCH and TL's are further explained in subject [J](#j-technology-and-research)<!-- was Chapter 10 -->, Technological Levels.
 
 <a id="rule-H3.8"></a>
-### H3.8 STUN, STUL, and STUS
+### H3.8 STRN, STRL, and STRS
 
-STUN are only built in CENC's and COPN's.
-STUN can not be built in CORB's.
-An attempt to do so will result in the computer changing the STUN to either STUL or STUS.
+STRN are only built in CENC's and COPN's.
+STRN can not be built in CORB's.
+An attempt to do so will result in the computer changing the STRN to either STRL or STRS.
 
-* CORB's TL 1-4 build STUL, so the computer would change the STUN to STUL.
-* CORB's TL5-10 build STUS, so the computer would change the STUN to STUS.
-* And if one tried to have a CORB-7, for instance, build STUL, the computer would automatically change the STUL to STUS.
+* CORB's TL 1-4 build STRL, so the computer would change the STRN to STRL.
+* CORB's TL5-10 build STRS, so the computer would change the STRN to STRS.
+* And if one tried to have a CORB-7, for instance, build STRL, the computer would automatically change the STRL to STRS.
 
 In other words, ordering a structural type with less enclosure capacity per unit than the appropriate type will cause the computer to correct it to the appropriate type.
 But ordering a type with *greater* enclosure capacity per unit than the appropriate type will cause the order to abort.
@@ -2521,9 +2545,9 @@ All units have a TL except for the following:
 * MTL
 * NMTL
 * CSUP
-* STUN
-* STUL
-* STUS
+* STRN
+* STRL
+* STRS
 
 *A unit's TL is part of the unit's name.*
 
@@ -2782,7 +2806,7 @@ The orbit probe also lists the tactical coordinates of the S/C's at the planet (
 <a id="rule-M2.2"></a>
 ### M2.2 S/C Probes
 
-A S/C probe lists the log base 10 of the mass of a S/C, its population, its assembled STUN, STUL, or STUS, and its structural requirements.
+A S/C probe lists the log base 10 of the mass of a S/C, its population, its assembled STRN, STRL, or STRS, and its structural requirements.
 Both the S/C doing the probing and the S/C being probed must be in the same orbit.
 
 <a id="rule-M2.3"></a>
@@ -3158,7 +3182,6 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 | FARM TL6-10    | 4+TL                  | 2+TL                  | 6+(2xTL)            | 1xTL              | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
 | HDRV          | 25xTL                 | 20xTL                 | 45xTL               | 40 x dist.        | 1045xTL MU lift              | none                        | 22.5xTL   | UNA       |
 | LFSU          | 3xTL                  | 5xTL                  | 8xTL                | 1xTL              | TL^2= POP supported          | none                        | 4xTL      | UNA       |
-| STUL          | 0.05                  | 0.05                  | 0.1                 | --                | 5 STUN equivalents           | --                          | 0.05      | UNA \*\*  |
 | MRBT          | 10+TL                 | 10+TL                 | 20+(2xTL)           | 0                 | TLx2= SLD replaced           | none                        | 20+(2xTL) | NON       |
 | MINE          | 5+TL                  | 5+TL                  | 10+(2xTL)           | 0.5xTL            | 25xTL MU/TN                  | 1 PRO + 3 USK               | 5+TL      | UNA       |
 | MLNC          | 15xTL                 | 10xTL                 | 25xTL               | 0                 | 1 MSSL/attack                 | none                        | 12.5xTL   | UNA       |
@@ -3167,8 +3190,9 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 | RSCH          | --                    | --                    | 0                   | --                | --                           | --                          | 0         |           |
 | SENS          | 1,000xTL              | 2,000xTL              | 3,000xTL            | 0.05xTL           | 1 probe/TL                   | none                        | 1500xTL   | UNA       |
 | SDRV          | 15xTL                 | 10xTL                 | 25xTL               | TL^2              | 1000xTL^2=thrust/TN          | none                        | 12.5xTL   | UNA       |
-| STUN          | 0.07                  | 0.03                  | 0.1                 | --                | 1 STUN equivalent            | --                          | 0.05      | UNA \*\*  |
-| STUS          | 0.02                  | 0.08                  | 0.1                 | --                | 20 STUN equivalents          | --                          | 0.05      | UNA \*\*  |
+| STRL          | 0.05                  | 0.05                  | 0.1                 | --                | 5 STRN equivalents           | --                          | 0.05      | UNA \*\*  |
+| STRN          | 0.07                  | 0.03                  | 0.1                 | --                | 1 STRN equivalent            | --                          | 0.05      | UNA \*\*  |
+| STRS          | 0.02                  | 0.08                  | 0.1                 | --                | 20 STRN equivalents          | --                          | 0.05      | UNA \*\*  |
 | TRNS          | 3xTL                  | 1xTL                  | 4xTL                | 0.1xTL^2          | 200xTL^2=MU                  | 1 PRO/10 TRNS               | 4xTL      | NON       |
 | TRNS/COMBAT   | 3xTL                  | 1xTL                  | 4xTL                | 0.01xTL^2         | 3xTL^2=MU/TN                 | 1 PRO/10 TRNS               | 4xTL      | NON       |
 | POP           | --                    | --                    | 1                   | --                | --                           | --                          | 1         |           |
@@ -3176,9 +3200,9 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 
 \* Farms and factories in orbiting colonies within the 5th orbit or less use 0 fuel.
 
-\*\* When assembled, UNA require twice their listed VU of enclosure, except STUN, STUL, and STUS, which require zero VU when assembled.
-Each unassembled STUN, STUL, or STUS requires the listed 0.05 VU of enclosure.
-The enclosure capacity provided by assembled structural units is given in STUN equivalents in the OUTPUT OR CAPACITY PER UNIT column, as defined in [F3.1.1](#rule-F3.1.1).
+\*\* When assembled, UNA require twice their listed VU of enclosure, except STRN, STRL, and STRS, which require zero VU when assembled.
+Each unassembled STRN, STRL, or STRS requires the listed 0.05 VU of enclosure.
+The enclosure capacity provided by assembled structural units is given in STRN equivalents in the OUTPUT OR CAPACITY PER UNIT column, as defined in [F3.1.1](#rule-F3.1.1).
 
 A cadre (CWRK, SPY, or TRNE) has no mass or volume of its own.
 The population units that make it up stay in the S/C's POP and are counted there, at 1 MU and 1 VU each; a CWRK or SPY is two of them.
@@ -3246,7 +3270,7 @@ And:
 All POP's, except for spies, *must* have their race number attached, as: CWRK-1 or SLD-3 or PRO-2.
 Spies are simply listed as SPY.
 Race numbers are NOT used in PAY orders, however.
-Non-population units, (except for consumable units which have four letters each, such as CNGD, NMTL, STUN, and except for TL) *must* have their TL numbers attached.
+Non-population units, (except for consumable units which have four letters each, such as CNGD, NMTL, STRN, and except for TL) *must* have their TL numbers attached.
 Examples: TRNS-1, SENS-4, ACFT-6, AUTO-8, FACT-5.
 
 <a id="rule-S2.5"></a>
@@ -3269,7 +3293,7 @@ EC #3        PLAYER NAME:  PRINCE JAMES      TURN #2          PAGE 1 of 3
 RACE #2      SIGNATURE:                      PLAYER ID #22    ACCT #0353
 
 
-22, DAS, 60,000, STUN.
+22, DAS, 60,000, STRN.
 22, TFR, 1E6, MSSL-1, [24].
 22, PUP, 2E6, NMTL, [24].
 22, TFR, 100,000, FUEL, [295].
@@ -3286,7 +3310,7 @@ RACE #2      SIGNATURE:                      PLAYER ID #22    ACCT #0353
 
 209, PAY, .4, PRO.
 22, NSR, Our mega-freighter, #209, The White Star, is departing for orbit 6; we
-will have more STUL for sale next turn. Signed.
+will have more STRL for sale next turn. Signed.
 22, NSR, Bad Bob, You have made a fatal mistake.  BE WARNED! Unsigned.
 ```
 
@@ -3472,7 +3496,7 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   29, STP, CSHP.
-  50,000, STUN.
+  50,000, STRN.
   5, PRO-2.
   1, SDRV-1.
   20, FOOD.
@@ -3485,7 +3509,7 @@ will have more STUL for sale next turn. Signed.
   ```
 - Notes: The STP order has colony 29 set up 6 identical ships.
   (There is never more than one colony of any type set up on any turn).
-  The items were listed in the order of their importance, with the STUN heading the list.
+  The items were listed in the order of their importance, with the STRN heading the list.
   Only one quantity and one type of unit is allowed per line.
   Note that the 5,000 FACT-1 will go into storage, but the 6,000 FACT-1 will be assembled and begin to make TRNS-1.
   In order to STP a S/C for another player, the receiving player's ID# is entered after "the type of S/C to be set up" on the first line of the order.
@@ -3503,7 +3527,7 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   38, ADN, [205].
-  1,400,000, STUS.
+  1,400,000, STRS.
   12, LFSU-1.
   10,000, FACT-1.
   6,000, FACT-1, FACT-2.
@@ -3511,7 +3535,7 @@ will have more STUL for sale next turn. Signed.
   1, END.
   ```
 - Notes: The ADN order has colony 38 ADN to colony 205.
-  As in the STP order, the items are listed in the order of their importance, with the STUS listed first, and only one quantity and one type of unit is allowed per line.
+  As in the STP order, the items are listed in the order of their importance, with the STRS listed first, and only one quantity and one type of unit is allowed per line.
   Add-on orders always finish with **1, END**, never with any other quantity.
   The 10,000 FACT-1 will go into storage, the 6,000 FACT-1 will be assembled and begin manufacturing FACT-2, and the 1,000 FACT-1 will be added to FACT group #3 already in colony 205.
   A single S/C is still written as a list ([S2.5](#rule-S2.5)), and `[*]` can not be used in an ADN order.
@@ -3519,7 +3543,7 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   38, ADN, [205, 206, 207, 208, 209, 210].
-  1,400,000, STUS.
+  1,400,000, STRS.
   12, LFSU-1.
   300, PRO-2.
   1, END.
@@ -3803,7 +3827,7 @@ A REC order cancelled this way is cancelled for every S/C in its list.
 - Example:
   ```text
   307, PUP, 3, M, [80, 81].
-  2E6, STUL.
+  2E6, STRL.
   800, FOOD.
   90, CWRK-2.
   ```
@@ -3836,12 +3860,12 @@ A REC order cancelled this way is cancelled for every S/C in its list.
 - Example:
   ```text
   75, APU, 2, M, [66, 67, 68, 69, 70, 71, 72, 73, 74].
-  300,500, STUS.
+  300,500, STRS.
   400, PRO-5.
   ```
 - Notes: The multiple APU order is optional.
   It can be used to have more than one item picked up by one or more S/C's.
-  In this case, it has S/C 75 allow 9 S/C's to each pick up 300,300 STUS and 400 PRO-5 from S/C 75.
+  In this case, it has S/C 75 allow 9 S/C's to each pick up 300,300 STRS and 400 PRO-5 from S/C 75.
   If the player wishes, he can write each APU order separately.
 
 <a id="rule-S7.4.3"></a>

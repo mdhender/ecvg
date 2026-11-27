@@ -48,8 +48,7 @@ const (
 	PeoplePerPopulationUnit = 100
 	// PopulationUnitMass is a population unit's mass, in MU.
 	PopulationUnitMass = 1
-	// PopulationUnitVolume is the space a population unit takes up on a ship
-	// or in an enclosed colony, in VU.
+	// PopulationUnitVolume is the enclosure a population unit requires, in VU.
 	PopulationUnitVolume = 1
 	// PopulationUnitLifeSupport is the life support a population unit needs on
 	// a ship or in an enclosed colony, in LU.
@@ -83,12 +82,10 @@ func (p Population) Mass() int {
 	return p.Units() * PopulationUnitMass
 }
 
-// Volume returns the space the population takes up in an entity of type t, in
-// VU: nothing unless the entity is enclosed.
-func (p Population) Volume(t EntityType) int {
-	if !t.Enclosed() {
-		return 0
-	}
+// Volume returns the enclosure the population requires, in VU. It is the
+// same in every type of entity: the population of an open-air colony wants
+// to be enclosed too, but doesn't have to be (manual F3.2).
+func (p Population) Volume() int {
 	return p.Units() * PopulationUnitVolume
 }
 

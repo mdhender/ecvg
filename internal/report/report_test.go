@@ -142,7 +142,8 @@ func TestEmpire(t *testing.T) {
 				"DEPOT, OPERATIONAL\n  Unit       TL            Qty\n  MINE       10        100,000\n",
 				"            1,000 FUEL RETURNED TO THE DEPOSIT: no room to store it",
 				// The sample colony has no structure.
-				"SPACE                  VU\n  Capacity              0\n  Used         15,409,970\n  Over by      15,409,970   an open-air colony may hold more than it encloses\n",
+				"  Space wanted: 1,200,000 VU\n",
+				"SPACE                  VU\n  Capacity              0\n  Used         16,609,970\n  Over by      16,609,970   an open-air colony may hold more than it encloses\n",
 				"  Group 1   ORDERED IDLE: 25% of its units\n  Group 1          100,000 units at TL 10 working deposit 2 (FUEL)\n" +
 					"                    25,000 of them were IDLE last turn: BY ORDER\n" +
 					"                    50,000 of them were IDLE last turn: NO STAFF\n" +
@@ -154,11 +155,11 @@ func TestEmpire(t *testing.T) {
 			empireID: 1,
 			edit: func(d *game.Data) {
 				c := &d.Colonies[0]
-				c.Operational = append(c.Operational, game.Unit{Type: "STRL", TechLevel: 10, Qty: 200000})
+				c.Operational = append(c.Operational, game.Unit{Type: "STRS", Qty: 1000000})
 				c.Harvest = game.Harvest{Units: 100000, Worked: 100000, Fuel: 1000000, Food: 4000000, Lost: 1000000}
 			},
 			want: []string{
-				"SPACE                  VU\n  Capacity     20,000,000\n  Used         15,409,970\n  Free          4,590,030\n",
+				"SPACE                  VU\n  Capacity     20,000,000\n  Used         16,609,970\n  Free          3,390,030\n",
 				"  1,000,000 FOOD LOST: no room to store it",
 			},
 			lack: []string{"OVER CAPACITY"},
@@ -214,14 +215,14 @@ func TestEmpire(t *testing.T) {
 				c.Construction = game.Construction{Pool: 500000, Used: 30000}
 				c.Assembly = []game.Assembly{
 					{Unit: game.Unit{Type: "HDRV", TechLevel: 1, Qty: 4778}, EMU: 10, MaxCWRK: 20, Assembled: 222},
-					{Action: game.WorkDisassemble, Unit: game.Unit{Type: "STRC", TechLevel: 1, Qty: 867}, EMU: 287, Assembled: 133, Destroyed: 13, Waiting: "room"},
+					{Action: game.WorkDisassemble, Unit: game.Unit{Type: "STRN", Qty: 867}, EMU: 287, Assembled: 133, Destroyed: 13, Waiting: "room"},
 					{Action: game.WorkDisassemble, Unit: game.Unit{Type: "LFSU", TechLevel: 1, Qty: 5}, EMU: 40, Waiting: "units"},
 					{Action: game.WorkScrap, Unit: game.Unit{Type: "HDRV", TechLevel: 2}, Assembled: 100, MTL: 4750, NMTL: 3800, Lost: 50},
 				}
 			},
 			want: []string{
 				"  222 HDRV-1 assembled last turn; 4,778 still to assemble, with 10 EMU done toward them (using at most 20 CWRK)\n",
-				"  133 STRC-1 disassembled last turn; 867 still to disassemble, with 287 EMU done toward them\n      LOST: 13 of them, in taking them down\n      WAITING: no room in the entity for more of them disassembled\n",
+				"  133 STRN disassembled last turn; 867 still to disassemble, with 287 EMU done toward them\n      LOST: 13 of them, in taking them down\n      WAITING: no room in the entity for more of them disassembled\n",
 				"  0 LFSU-1 disassembled last turn; 5 still to disassemble, with 40 EMU done toward them\n      WAITING: the units aren't assembled\n",
 				"  100 HDRV-2 scrapped last turn, and the work is done\n      RECOVERED: 4,750 MTL and 3,800 NMTL\n      LOST: 50 of that, which the entity had no room for\n",
 			},

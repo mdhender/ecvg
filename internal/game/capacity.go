@@ -9,62 +9,70 @@ import (
 	"github.com/mdhender/ecvg/internal/units"
 )
 
-// StructuralRequirement returns the number that divides the space a
-// structural unit creates in an entity of type t: a unit of tech level TL
-// creates TL^2 / StructuralRequirement VU.
-func (t EntityType) StructuralRequirement() int {
+// StructureRatio returns the number of STRN equivalents it takes to enclose
+// one VU in an entity of type t (manual F3.1.1).
+func (t EntityType) StructureRatio() int {
 	switch t {
 	case COPN:
 		return 1
 	case CENC:
 		return 5
+	case CORB:
+		return 8
 	}
-	return 10 // ships and orbital colonies
+	return 10 // ships
 }
 
-// Capacity returns the space the colony has, in VU: the sum of the space
-// created by its assembled, operational structural units (STRC and STRL),
-// rounded down. Structure in cargo or in the depot creates none.
-func (c *Colony) Capacity() int {
-	space := 0
+// StructureEquivalents returns the colony's assembled, operational structure
+// in STRN equivalents: 1 for each STRN, 5 for each STRL, and 20 for each
+// STRS. Structure in cargo or in the depot counts for nothing.
+func (c *Colony) StructureEquivalents() int {
+	n := 0
 	for _, u := range c.Operational {
-		if d, ok := units.Lookup(u.Type); ok && d.Class == units.Structural {
-			space += u.Qty * u.TechLevel * u.TechLevel
+		if d, ok := units.Lookup(u.Type); ok {
+			n += u.Qty * d.Encloses()
 		}
 	}
-	return space / c.Type.StructuralRequirement()
+	return n
 }
 
-// SpaceUsed returns the space taken up in the colony, in VU. Everything in
-// the entity counts: its population, if it is enclosed; its operational
-// units, at their assembled volume, except the structural units; and its
-// cargo, at its stowed volume. Each quantity is rounded up. What is in the
-// depot is outside the entity and takes none.
-func (c *Colony) SpaceUsed() int {
-	used := c.Population.Volume(c.Type)
+// Capacity returns the enclosure the colony has, in VU: its structure's STRN
+// equivalents divided by its structure ratio. It is exact.
+func (c *Colony) Capacity() units.Frac {
+	return units.NewFrac(c.StructureEquivalents(), c.Type.StructureRatio())
+}
+
+// SpaceUsed returns the enclosure the colony requires, in VU, exactly.
+// Everything in the entity counts: its population, which wants to be
+// enclosed even in an open-air colony; its operational units, at their
+// assembled volume, which is nothing for structure; and its cargo, at its
+// stowed volume. What is in the depot is outside the entity and takes none.
+func (c *Colony) SpaceUsed() units.Frac {
+	used := units.Whole(c.Population.Volume())
 	for _, u := range c.Operational {
-		if d, ok := units.Lookup(u.Type); ok && d.Class != units.Structural {
-			used += d.Volume(u.TechLevel, u.Qty)
+		if d, ok := units.Lookup(u.Type); ok {
+			used = used.Add(d.Volume(u.TechLevel, u.Qty))
 		}
 	}
 	for _, u := range c.Cargo {
 		if d, ok := units.Lookup(u.Type); ok {
-			used += d.StowedVolume(u.TechLevel, u.Qty)
+			used = used.Add(d.StowedVolume(u.TechLevel, u.Qty))
 		}
 	}
 	return used
 }
 
-// SpaceFree returns the space left in the colony, in VU. It is negative if
-// the colony holds more than it has capacity for.
-func (c *Colony) SpaceFree() int {
-	return c.Capacity() - c.SpaceUsed()
+// SpaceFree returns the enclosure left in the colony, in VU. It is negative
+// if the colony requires more than it has.
+func (c *Colony) SpaceFree() units.Frac {
+	return c.Capacity().Sub(c.SpaceUsed())
 }
 
 // Room returns the most of qty units with the given code and tech level that
 // the colony's cargo has space for. Capacity is checked every time something
-// is stored: an entity can't accept the excess, unless it is an open-air
-// surface colony, which may hold more than it encloses (manual F3.2).
+// is stored: an entity accepts only the whole units that fit, and an exact
+// fit is accepted (manual F3.2.1), unless it is an open-air surface colony,
+// which may hold more than it encloses (manual F3.2).
 func (c *Colony) Room(code string, tl, qty int) int {
 	d, ok := units.Lookup(code)
 	if !ok || qty <= 0 {
@@ -73,22 +81,13 @@ func (c *Colony) Room(code string, tl, qty int) int {
 	if !c.Type.Enclosed() {
 		return qty
 	}
-	// The units join the first cargo entry of their kind, and the volume of
-	// an entry is rounded up as a whole.
-	have := 0
-	for _, u := range c.Cargo {
-		if u.Type == code && u.TechLevel == tl {
-			have = u.Qty
-			break
-		}
-	}
-	free, base := c.SpaceFree(), d.StowedVolume(tl, have)
-	if free < 0 {
+	free := c.SpaceFree()
+	if free.Sign() < 0 {
 		return 0
 	}
 	// The most n for which the n units fit: the first that doesn't, less 1.
 	return sort.Search(qty, func(n int) bool {
-		return d.StowedVolume(tl, have+n+1)-base > free
+		return d.StowedVolume(tl, n+1).Cmp(free) > 0
 	})
 }
 

@@ -121,10 +121,10 @@ func TestMining(t *testing.T) {
 			name: "FUEL the cargo has no room for goes back to the deposit",
 			colony: game.Colony{
 				Type: game.CENC, Population: game.Population{USK: 300, PRO: 100},
-				// 2,125 STRC-1 enclose 425 VU, which the 400 population units
+				// 2,125 STRN enclose 425 VU, which the 400 population units
 				// and the 50 FUEL fill. Burning the FUEL frees 25 VU: room
 				// for 50 FUEL.
-				Operational:  []game.Unit{{Type: "STRC", TechLevel: 1, Qty: 2125}},
+				Operational:  []game.Unit{{Type: "STRN", Qty: 2125}},
 				Cargo:        []game.Unit{{Type: "FUEL", Qty: 50}},
 				MiningGroups: []game.MiningGroup{mines(1, 1, 100, 1)},
 			},

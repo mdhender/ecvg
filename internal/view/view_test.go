@@ -126,7 +126,7 @@ func TestEmpireRows(t *testing.T) {
 		t.Errorf("colonies: %+v, %+v", r.Colonies, rows[1].Colonies)
 	}
 
-	if c := r.Colonies[0]; c.People != 1200 || c.Mass != 12 || c.Volume != 0 || c.LifeSupport != 0 || c.Food != 3 {
+	if c := r.Colonies[0]; c.People != 1200 || c.Mass != 12 || c.Volume != 12 || c.LifeSupport != 0 || c.Food != 3 {
 		t.Errorf("open-air colony: %+v", c)
 	}
 	enclosed := empireData()

@@ -515,7 +515,7 @@ func unitOf(t Token, want string) (game.Unit, error) {
 		if want != "" {
 			return bad(fmt.Sprintf("want %s-1 to %s-%d", want, want, units.MaxTechLevel))
 		}
-		return bad("want a unit, such as STRC-1 or CNGD")
+		return bad("want a unit, such as FACT-1 or CNGD")
 	case want != "" && code != want:
 		return bad(fmt.Sprintf("want %s-1 to %s-%d", want, want, units.MaxTechLevel))
 	case !d.HasTechLevel:

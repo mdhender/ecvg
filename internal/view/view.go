@@ -114,8 +114,8 @@ type EmpireRow struct {
 type ColonyRow struct {
 	game.Colony
 	People int `json:"people"`
-	// Mass is in MU, Volume in VU, and LifeSupport in LU; the last two are 0
-	// for an open-air colony.
+	// Mass is in MU, Volume in VU, and LifeSupport in LU; the last is 0
+	// for an open-air colony, whose population wants enclosure all the same.
 	Mass        int `json:"mass"`
 	Volume      int `json:"volume"`
 	LifeSupport int `json:"life_support"`
@@ -185,7 +185,7 @@ func EmpireRows(d game.Data) ([]EmpireRow, error) {
 			Colony:      c,
 			People:      p.People(),
 			Mass:        p.Mass(),
-			Volume:      p.Volume(c.Type),
+			Volume:      p.Volume(),
 			LifeSupport: p.LifeSupport(c.Type),
 			Food:        p.FoodWanted(c.Rations),
 		})

@@ -156,7 +156,7 @@ function renderDetail() {
     out.push(table(["<Type", "Units", "People"], [["UEM", p.uem], ["USK", p.usk], ["PRO", p.pro], ["SLD", p.sld],
       ["Total", p.uem + p.usk + p.pro + p.sld]].map(([k, n]) => [k, num(n), num(n * 100)])));
     out.push(el("p", `Eats ${num(c.food)} FOOD a turn · mass ${num(c.mass)} MU · ` +
-      (c.life_support ? `takes ${num(c.volume)} VU and ${num(c.life_support)} LU` : "open air, so no space or life support needed"), "sub"));
+      (c.life_support ? `takes ${num(c.volume)} VU and ${num(c.life_support)} LU` : `wants ${num(c.volume)} VU; open air, so no life support needed`), "sub"));
     out.push(...units("Operational", c.operational), ...units("Cargo", c.cargo),
       ...groups("Farming groups", c.farming_groups), ...groups("Mining groups", c.mining_groups, true),
       ...groups("Factory groups", c.factory_groups));

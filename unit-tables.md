@@ -41,8 +41,9 @@
 | SDRV      | Space Drive         | Propulsion     | yes    |
 | SPAG      | Special Agent       | Cadre          | no     |
 | SPY       | Spy                 | Cadre          | no     |
-| STRC      | Structure           | Structural     | yes    |
 | STRL      | Light Structure     | Structural     | yes    |
+| STRN      | Structure           | Structural     | yes    |
+| STRS      | Super-Light Structure | Structural   | yes    |
 | TRNE      | Trainee             | Cadre          | no     |
 | TRNS      | Transport           | Transportation | yes    |
 | UEM       | Unemployables       | Living         | no     |
@@ -64,8 +65,9 @@ Units not listed here have a lot size of 1, so their values are also per unit.
 | CNGD      | 10        |
 | CSUP      | 50        |
 | PROB      | 10 x TL^2 |
-| STRC      | 10        |
 | STRL      | 100       |
+| STRN      | 100       |
+| STRS      | 100       |
 
 Inventory counts individual units, not lots.
 The mass or volume of a quantity is `quantity x lot value / lot size`, computed on the total and rounded up once.
@@ -104,8 +106,9 @@ Manufactured units are built in whole lots.
 | PROB      | 200             | 300                 |
 | SENS      | 1000 x TL       | 2000 x TL           |
 | SDRV      | 15 x TL         | 10 x TL             |
-| STRC      | 7 x TL          | 3 x TL              |
-| STRL      | 7 x TL          | 3 x TL              |
+| STRL      | 5               | 5                   |
+| STRN      | 7               | 3                   |
+| STRS      | 2               | 8                   |
 | TRNS      | 3 x TL          | 1 x TL              |
 
 ## Units Requiring Assembly
@@ -127,8 +130,9 @@ These units must be assembled before they can be used.
 | POWR      | yes  |
 | SENS      | yes  |
 | SDRV      | yes  |
-| STRC      | yes  |
 | STRL      | yes  |
+| STRN      | yes  |
+| STRS      | yes  |
 
 ## Unit Mass and Volume
 
@@ -139,7 +143,7 @@ These units must be assembled before they can be used.
 | AWPN      | 2 x TL          | 2 x TL          | 1 x TL          |
 | AUTO      | 4 x TL          | 4 x TL          | 2 x TL          |
 | CNGD      | 6               | 3               | 3               |
-| CSUP      | 2               | 2               | 2               |
+| CSUP      | 2               | 1               | 1               |
 | ESHD      | 50 x TL         | 50 x TL         | 25 x TL         |
 | EWPN      | 10 x TL         | 10 x TL         | 5 x TL          |
 | FACT      | 2 x (TL + 6)    | 2 x (TL + 6)    | TL + 6          |
@@ -162,8 +166,9 @@ These units must be assembled before they can be used.
 | RSCH      | 0               | 0               | 0               |
 | SENS      | 3000 x TL       | 3000 x TL       | 1500 x TL       |
 | SDRV      | 25 x TL         | 25 x TL         | 12.5 x TL       |
-| STRC      | 10 x TL         | 10 x TL         | 10 x TL         |
-| STRL      | 10 x TL         | 10 x TL         | 10 x TL         |
+| STRL      | 10              | 0               | 5               |
+| STRN      | 10              | 0               | 5               |
+| STRS      | 10              | 0               | 5               |
 | TRNS      | 4 x TL          | 4 x TL          | 4 x TL          |
 
 > **NOTE**
@@ -171,8 +176,8 @@ These units must be assembled before they can be used.
 > Population Units can never be stowed.
 
 > **NOTE**
-> Stowed volume is rounded up after multiplying by the quantity, never per unit.
-> 10 stowed ACFT-1 occupy 25 VU; 11 occupy 28 VU (27.5 rounded up).
+> Mass and volume are kept exactly, as fractions, and are never rounded per unit.
+> Only a report rounds a total, up: 10 stowed ACFT-1 occupy 25 VU; 11 occupy 27.5 VU, shown as 28.
 
 ## Unit Notes
 
@@ -213,8 +218,9 @@ These units must be assembled before they can be used.
 | SDRV      | 1 professional / 100 and 1 x TL fuel only                              | Produces 3000 x TL^2 thrust                                                          |
 | SPAG      |                                                                        | Used to infiltrate rebel population sectors and assist police in locating rebels     |
 | SPY       |                                                                        | Used to perform espionage                                                            |
-| STRC      | Must be assembled to enclose volume                                    | Encloses (1 x TL^2) divided by structural requirement (based on Entity type)         |
-| STRL      | Must be assembled to enclose volume                                    | Light structure; encloses (1 x TL^2) divided by structural requirement (based on Entity type) |
+| STRL      | Must be assembled to enclose volume                                    | Light structure; 5 STRN equivalents, divided by the structure ratio (based on Entity type) |
+| STRN      | Must be assembled to enclose volume                                    | 1 STRN equivalent, divided by the structure ratio (based on Entity type)             |
+| STRS      | Must be assembled to enclose volume                                    | Super-light structure; 20 STRN equivalents, divided by the structure ratio (based on Entity type) |
 | TRNE      | Professionals to perform Training                                      | Trainees are in training to become Professionals                                     |
 | TRNS      | 1 professional / 10 and 0.1 x TL^2 fuel                                | Transports 20 x TL^2 Mass; In Combat = 3 x TL^2 Mass                                 |
 | UEM       | Food and Consumer Goods                                                | Population growth occurs in this category                                            |
@@ -223,22 +229,25 @@ These units must be assembled before they can be used.
 
 ## Enclosed Space
 
-Assembled `STRC` and `STRL` units create space for their entity.
-The space each unit creates is (1 x TL^2) divided by the entity's structural requirement.
-Stowed structure creates no space and occupies its full volume.
-Assembled structure does not count against the space it creates, but its mass still counts when moving the ship.
+Assembled `STRN`, `STRL`, and `STRS` units provide enclosure for their entity (manual F3.1.1).
+None of them carries a tech level, and each has a mass of 0.1 MU.
+An assembled `STRN` counts as 1 STRN equivalent, a `STRL` as 5, and a `STRS` as 20.
+The space a unit provides is its STRN equivalents divided by the entity's structure ratio.
+Stowed structure provides no space and requires 0.05 VU a unit.
+Assembled structure requires no space, but its mass still counts when moving the ship.
 
-`STRL` creates the same space as `STRC` for a tenth of the materials and mass, with two limits:
+All three absorb damage in combat at the same rate.
+`STRN` is built only in surface colonies; orbital colonies of TL 1-4 build `STRL` and those of TL 5-10 build `STRS` (manual H3.8).
 
-- `STRL` can only be built in Enclosed Orbital Colonies.
-- `STRC` absorbs more damage in combat.
+| Entity Type             | Structure Ratio | STRN   | STRL   | STRS   |
+|-------------------------|-----------------|--------|--------|--------|
+| Ship                    | 10              | 0.1    | 0.5    | 2      |
+| Open Air Surface Colony | 1               | 1      | 5      | 20     |
+| Enclosed Surface Colony | 5               | 0.2    | 1      | 4      |
+| Enclosed Orbital Colony | 8               | 0.125  | 0.625  | 2.5    |
 
-| Entity Type             | Structural Requirement | Space per Unit |
-|-------------------------|------------------------|----------------|
-| Ship                    | 10                     | 0.1 x TL^2 VU  |
-| Open Air Surface Colony | 1                      | 1 x TL^2 VU    |
-| Enclosed Surface Colony | 5                      | 0.2 x TL^2 VU  |
-| Enclosed Orbital Colony | 10                     | 0.1 x TL^2 VU  |
+The last three columns are the VU one assembled unit encloses.
+Mass and volume are kept exactly, as fractions; only the reports round them, up.
 
 ## Draft: Unit-Definition Catalog
 
@@ -262,7 +271,7 @@ Generation rules applied:
 - Resource units (`FUEL`, `GOLD`, `MTL`, `NMTL`) and `FOOD` have only a TL0 row.
 - Living (`PRO`, `SLD`, `UEM`, `USK`) and Cadre (`CWRK`, `POL`, `RBL`, `SPAG`, `SPY`, `TRNE`, `WRKR`) entries have no rows.
 - `RSCH` is a non-physical bookkeeping unit and has no row.
-- All remaining units have TL1–TL10 rows, except `CNGD` and `CSUP` (TL0 only).
+- All remaining units have TL1–TL10 rows, except `CNGD`, `CSUP`, `STRL`, `STRN`, and `STRS` (TL0 only).
 - Invariant: a unit code never has both a TL0 row and a positive-TL row.
 - `stowed_volume_units` may be fractional (`ACFT`, `HDRV`, `MLNC`, `SDRV` at odd Tech Levels); see the rounding note under **Unit Mass and Volume**.
 - `mtl_input`, `nmtl_input`, `mass_units`, `volume_units`, and `stowed_volume_units` are per lot; divide by `lot_size` for a single unit.
@@ -301,8 +310,9 @@ Notes:
 | PRTO      | yes         | no                 |
 | SDRV      | yes         | yes                |
 | SENS      | yes         | yes                |
-| STRC      | yes         | yes                |
-| STRL      | yes         | yes                |
+| STRL      | no          | yes                |
+| STRN      | no          | yes                |
+| STRS      | no          | yes                |
 | TRNS      | yes         | no                 |
 
 
@@ -349,7 +359,7 @@ Notes:
 | AWPN      | 9          | 1        | 9          | 9          | 18         | 18           | 9                   |
 | AWPN      | 10         | 1        | 10         | 10         | 20         | 20           | 10                  |
 | CNGD      | 0          | 10       | 2          | 4          | 6          | 3            | 3                   |
-| CSUP      | 0          | 50       | 1          | 1          | 2          | 2            | 2                   |
+| CSUP      | 0          | 50       | 1          | 1          | 2          | 1            | 1                   |
 | ESHD      | 1          | 1        | 25         | 25         | 50         | 50           | 25                  |
 | ESHD      | 2          | 1        | 50         | 50         | 100        | 100          | 50                  |
 | ESHD      | 3          | 1        | 75         | 75         | 150        | 150          | 75                  |
@@ -515,26 +525,9 @@ Notes:
 | SENS      | 8          | 1        | 8000       | 16000      | 24000      | 24000        | 12000               |
 | SENS      | 9          | 1        | 9000       | 18000      | 27000      | 27000        | 13500               |
 | SENS      | 10         | 1        | 10000      | 20000      | 30000      | 30000        | 15000               |
-| STRC      | 1          | 10       | 7          | 3          | 10         | 10           | 10                  |
-| STRC      | 2          | 10       | 14         | 6          | 20         | 20           | 20                  |
-| STRC      | 3          | 10       | 21         | 9          | 30         | 30           | 30                  |
-| STRC      | 4          | 10       | 28         | 12         | 40         | 40           | 40                  |
-| STRC      | 5          | 10       | 35         | 15         | 50         | 50           | 50                  |
-| STRC      | 6          | 10       | 42         | 18         | 60         | 60           | 60                  |
-| STRC      | 7          | 10       | 49         | 21         | 70         | 70           | 70                  |
-| STRC      | 8          | 10       | 56         | 24         | 80         | 80           | 80                  |
-| STRC      | 9          | 10       | 63         | 27         | 90         | 90           | 90                  |
-| STRC      | 10         | 10       | 70         | 30         | 100        | 100          | 100                 |
-| STRL      | 1          | 100      | 7          | 3          | 10         | 10           | 10                  |
-| STRL      | 2          | 100      | 14         | 6          | 20         | 20           | 20                  |
-| STRL      | 3          | 100      | 21         | 9          | 30         | 30           | 30                  |
-| STRL      | 4          | 100      | 28         | 12         | 40         | 40           | 40                  |
-| STRL      | 5          | 100      | 35         | 15         | 50         | 50           | 50                  |
-| STRL      | 6          | 100      | 42         | 18         | 60         | 60           | 60                  |
-| STRL      | 7          | 100      | 49         | 21         | 70         | 70           | 70                  |
-| STRL      | 8          | 100      | 56         | 24         | 80         | 80           | 80                  |
-| STRL      | 9          | 100      | 63         | 27         | 90         | 90           | 90                  |
-| STRL      | 10         | 100      | 70         | 30         | 100        | 100          | 100                 |
+| STRL      | 0          | 100      | 5          | 5          | 10         | 0            | 5                   |
+| STRN      | 0          | 100      | 7          | 3          | 10         | 0            | 5                   |
+| STRS      | 0          | 100      | 2          | 8          | 10         | 0            | 5                   |
 | TRNS      | 1          | 1        | 3          | 1          | 4          | 4            | 4                   |
 | TRNS      | 2          | 1        | 6          | 2          | 8          | 8            | 8                   |
 | TRNS      | 3          | 1        | 9          | 3          | 12         | 12           | 12                  |

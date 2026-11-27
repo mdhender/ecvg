@@ -55,7 +55,7 @@ func TestFarmRules(t *testing.T) {
 }
 
 // roomy is enough structure that a test colony never runs out of space.
-var roomy = game.Unit{Type: "STRL", TechLevel: 10, Qty: 10_000_000}
+var roomy = game.Unit{Type: "STRS", Qty: 50_000_000}
 
 func TestFarming(t *testing.T) {
 	group := func(no int, us ...game.GroupUnits) game.Group { return game.Group{No: no, Units: us} }
@@ -177,12 +177,12 @@ func TestFarming(t *testing.T) {
 			name: "no room for the harvest",
 			colony: game.Colony{
 				Type: game.CENC, Population: game.Population{USK: 30, PRO: 10},
-				// 60 STRC-5 enclose 60 x 25 / 5 = 300 VU. The 40 population
-				// units take 40, the 10 FARM-6 180 (18 each), the 2 STRC in
+				// 1,500 STRN enclose 1,500 / 5 = 300 VU. The 40 population
+				// units take 40, the 10 FARM-6 180 (18 each), the 200 STRN in
 				// cargo 10, and the 20 FUEL 10 (10 once it is burned): 240
 				// used and 60 free, which is room for 20 FOOD at 3 VU each.
-				Operational:   []game.Unit{{Type: "STRC", TechLevel: 5, Qty: 60}, {Type: "FARM", TechLevel: 6, Qty: 10}},
-				Cargo:         []game.Unit{{Type: "FUEL", Qty: 80}, {Type: "STRC", TechLevel: 5, Qty: 2}},
+				Operational:   []game.Unit{{Type: "STRN", Qty: 1500}, {Type: "FARM", TechLevel: 6, Qty: 10}},
+				Cargo:         []game.Unit{{Type: "FUEL", Qty: 80}, {Type: "STRN", Qty: 200}},
 				FarmingGroups: []game.Group{group(1, game.GroupUnits{Qty: 10, TechLevel: 6})},
 			},
 			want: game.Harvest{Units: 10, Worked: 10, Fuel: 60, Food: 20, Lost: 280},

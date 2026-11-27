@@ -52,13 +52,17 @@ func TestPopulation(t *testing.T) {
 				t.Errorf("units %d, people %d, mass %d, food %d; want %d, %d, %d, %d",
 					p.Units(), p.People(), p.Mass(), p.Food(), tc.units, tc.people, tc.mass, tc.food)
 			}
+			if p.Volume() != tc.enclosedVU {
+				t.Errorf("volume %d, want %d", p.Volume(), tc.enclosedVU)
+			}
 			for _, typ := range []game.EntityType{game.CSHP, game.CENC, game.CORB} {
-				if p.Volume(typ) != tc.enclosedVU || p.LifeSupport(typ) != tc.enclosed {
-					t.Errorf("%s: volume %d, life support %d; want %d, %d", typ, p.Volume(typ), p.LifeSupport(typ), tc.enclosedVU, tc.enclosed)
+				if p.LifeSupport(typ) != tc.enclosed {
+					t.Errorf("%s: life support %d, want %d", typ, p.LifeSupport(typ), tc.enclosed)
 				}
 			}
-			if p.Volume(game.COPN) != 0 || p.LifeSupport(game.COPN) != 0 {
-				t.Errorf("COPN: volume %d, life support %d; want 0, 0", p.Volume(game.COPN), p.LifeSupport(game.COPN))
+			// In the open the population wants enclosure, but no life support.
+			if p.LifeSupport(game.COPN) != 0 {
+				t.Errorf("COPN: life support %d, want 0", p.LifeSupport(game.COPN))
 			}
 		})
 	}

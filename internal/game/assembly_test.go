@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mdhender/ecvg/internal/game"
+	"github.com/mdhender/ecvg/internal/units"
 )
 
 func TestAssemble(t *testing.T) {
@@ -88,12 +89,12 @@ func TestAssemble(t *testing.T) {
 	})
 
 	t.Run("an enclosed colony needs room for the assembled units", func(t *testing.T) {
-		// 100 STRC-5 enclose 500 VU. 73 FOOD take 219 and 20 stowed FARM-6
+		// 2,500 STRN enclose 500 VU. 73 FOOD take 219 and 20 stowed FARM-6
 		// 180, which leaves 101. Assembled, a FARM-6 takes 9 VU more.
 		c := game.Colony{
 			Type:          game.CENC,
 			Cadres:        game.Cadres{CWRK: 10},
-			Operational:   []unit{{Type: "STRC", TechLevel: 5, Qty: 100}},
+			Operational:   []unit{{Type: "STRN", Qty: 2500}},
 			Cargo:         []unit{{Type: "FOOD", Qty: 73}, {Type: "FARM", TechLevel: 6, Qty: 20}},
 			FarmingGroups: []game.Group{{No: 1, Units: []game.GroupUnits{{TechLevel: 6}}}},
 			Assembly:      []game.Assembly{{Kind: game.KindFarming, GroupNo: 1, Unit: unit{Type: "FARM", TechLevel: 6, Qty: 20}}},
@@ -102,10 +103,10 @@ func TestAssemble(t *testing.T) {
 		// counts the CWRK.
 		work(&c)
 		a := c.Assembly[0]
-		if a.Assembled != 11 || a.Unit.Qty != 9 || a.EMU != 162 || a.Waiting != "room" || c.SpaceFree() != 2 ||
+		if a.Assembled != 11 || a.Unit.Qty != 9 || a.EMU != 162 || a.Waiting != "room" || c.SpaceFree() != units.Whole(2) ||
 			c.FarmingGroups[0].Units[0].Qty != 11 || c.Operational[1] != (unit{Type: "FARM", TechLevel: 6, Qty: 11}) ||
 			c.Construction != (game.Construction{Pool: 5000, Used: 360}) {
-			t.Errorf("work %+v, free %d, group %+v, operational %+v, construction %+v", a, c.SpaceFree(), c.FarmingGroups[0].Units, c.Operational, c.Construction)
+			t.Errorf("work %+v, free %v, group %+v, operational %+v, construction %+v", a, c.SpaceFree(), c.FarmingGroups[0].Units, c.Operational, c.Construction)
 		}
 	})
 

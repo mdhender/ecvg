@@ -141,14 +141,14 @@ func TestCatalogue(t *testing.T) {
 			case !ok || mtl != twice(t, r[3]) || nmtl != twice(t, r[4]):
 				t.Errorf("inputs for 2 lots %d, %d, %v; want twice %s, %s", mtl, nmtl, ok, r[3], r[4])
 			}
-			if got, want := d.Mass(tl, 2*lot), twice(t, r[5]); got != want {
-				t.Errorf("mass of 2 lots %d, want %d", got, want)
+			if got, want := d.Mass(tl, 2*lot), units.Whole(twice(t, r[5])); got != want {
+				t.Errorf("mass of 2 lots %v, want %v", got, want)
 			}
-			if got, want := d.Volume(tl, 2*lot), twice(t, r[6]); got != want {
-				t.Errorf("volume of 2 lots %d, want %d", got, want)
+			if got, want := d.Volume(tl, 2*lot), units.Whole(twice(t, r[6])); got != want {
+				t.Errorf("volume of 2 lots %v, want %v", got, want)
 			}
-			if got, want := d.StowedVolume(tl, 2*lot), twice(t, r[7]); got != want {
-				t.Errorf("stowed volume of 2 lots %d, want %d", got, want)
+			if got, want := d.StowedVolume(tl, 2*lot), units.Whole(twice(t, r[7])); got != want {
+				t.Errorf("stowed volume of 2 lots %v, want %v", got, want)
 			}
 		})
 	}
@@ -167,7 +167,8 @@ func TestCatalogue(t *testing.T) {
 	}
 }
 
-// TestRounding checks the document's worked examples: totals round up once.
+// TestRounding checks the document's worked examples: totals are exact, and
+// round up once when they are shown.
 func TestRounding(t *testing.T) {
 	def := func(code string) units.Def {
 		d, ok := units.Lookup(code)
@@ -180,17 +181,19 @@ func TestRounding(t *testing.T) {
 		name      string
 		got, want int
 	}{
-		{"40 PROB-3 mass", def(units.PROB).Mass(3, 40), 223},
-		{"10 stowed ACFT-1", def(units.ACFT).StowedVolume(1, 10), 25},
-		{"11 stowed ACFT-1", def(units.ACFT).StowedVolume(1, 11), 28},
-		{"1 CNGD mass", def(units.CNGD).Mass(0, 1), 1},
-		{"515,279 CNGD mass", def(units.CNGD).Mass(0, 515279), 309168},
-		{"3 FUEL volume", def(units.FUEL).Volume(0, 3), 2},
-		{"20,000 STRL-10 mass", def(units.STRL).Mass(10, 20000), 20000},
-		{"650,000 stowed FACT-10", def(units.FACT).StowedVolume(10, 650000), 10400000},
-		{"no units", def(units.FACT).Mass(10, 0), 0},
-		{"a population unit", def(units.USK).Mass(0, 7), 7},
-		{"research points", def(units.RSCH).Mass(0, 7), 0},
+		{"40 PROB-3 mass", def(units.PROB).Mass(3, 40).Ceil(), 223},
+		{"10 stowed ACFT-1", def(units.ACFT).StowedVolume(1, 10).Ceil(), 25},
+		{"11 stowed ACFT-1", def(units.ACFT).StowedVolume(1, 11).Ceil(), 28},
+		{"1 CNGD mass", def(units.CNGD).Mass(0, 1).Ceil(), 1},
+		{"515,279 CNGD mass", def(units.CNGD).Mass(0, 515279).Ceil(), 309168},
+		{"3 FUEL volume", def(units.FUEL).Volume(0, 3).Ceil(), 2},
+		{"20,001 STRL mass", def(units.STRL).Mass(0, 20001).Ceil(), 2001},
+		{"1 stowed STRN", def(units.STRN).StowedVolume(0, 1).Ceil(), 1},
+		{"assembled STRS", def(units.STRS).Volume(0, 1000).Ceil(), 0},
+		{"650,000 stowed FACT-10", def(units.FACT).StowedVolume(10, 650000).Ceil(), 10400000},
+		{"no units", def(units.FACT).Mass(10, 0).Ceil(), 0},
+		{"a population unit", def(units.USK).Mass(0, 7).Ceil(), 7},
+		{"research points", def(units.RSCH).Mass(0, 7).Ceil(), 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.got != tc.want {

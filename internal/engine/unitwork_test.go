@@ -14,11 +14,11 @@ import (
 )
 
 // shipyard returns the builders game with units for the unit orders: colony 1
-// has 20 STRC-1 in its depot, and the orbital colony 2 has 10 SDRV-1
+// has 20 STRN in its depot, and the orbital colony 2 has 10 SDRV-1
 // assembled and 4 in its cargo.
 func shipyard() game.Data {
 	d := builders()
-	d.Colonies[0].Depot = append(d.Colonies[0].Depot, game.Unit{Type: "STRC", TechLevel: 1, Qty: 20})
+	d.Colonies[0].Depot = append(d.Colonies[0].Depot, game.Unit{Type: "STRN", Qty: 20})
 	d.Colonies[1].Operational = []game.Unit{{Type: "SDRV", TechLevel: 1, Qty: 10}}
 	d.Colonies[1].Cargo = append(d.Colonies[1].Cargo, game.Unit{Type: "SDRV", TechLevel: 1, Qty: 4})
 	return d
@@ -36,20 +36,20 @@ func TestUnitWorkOrders(t *testing.T) {
 	}{
 		{
 			name:  "assemble with a cap",
-			text:  "assemble 5 STRC-1 on 1 using 20 CWKR",
-			work1: []game.Assembly{{Unit: unit{Type: "STRC", TechLevel: 1, Qty: 5}, MaxCWRK: 20}},
+			text:  "assemble 5 STRN on 1 using 20 CWKR",
+			work1: []game.Assembly{{Unit: unit{Type: "STRN", Qty: 5}, MaxCWRK: 20}},
 		},
 		{name: "assembling a unit that is never assembled does nothing", text: "assemble 10 CNGD on 1"},
 		{name: "disassembling a unit that is never assembled does nothing", text: "disassemble 10 TRNS-1 on 1 using 5 CWRK"},
 		{name: "a no-op still needs the entity", text: "assemble 10 CNGD on 3", err: engine.ErrNotControlled},
 		{name: "group units are assembled by the group orders", text: "assemble 10 FARM-10 on 1", err: engine.ErrGroupUnit},
 		{name: "groups can't be disassembled", text: "disassemble 10 FARM-10 on 1", err: engine.ErrGroupUnit},
-		{name: "the units must be in storage", text: "assemble 21 STRC-1 on 1", err: engine.ErrNotEnoughUnits},
+		{name: "the units must be in storage", text: "assemble 21 STRN on 1", err: engine.ErrNotEnoughUnits},
 		{
 			name:  "units are claimed once",
-			text:  "assemble 15 STRC-1 on 1\nscrap 5 STRC-1 on 1\nassemble 1 STRC-1 on 1",
+			text:  "assemble 15 STRN on 1\nscrap 5 STRN on 1\nassemble 1 STRN on 1",
 			err:   engine.ErrNotEnoughUnits,
-			work1: []game.Assembly{{Unit: unit{Type: "STRC", TechLevel: 1, Qty: 15}}, {Action: game.WorkScrap, Unit: unit{Type: "STRC", TechLevel: 1, Qty: 5}}},
+			work1: []game.Assembly{{Unit: unit{Type: "STRN", Qty: 15}}, {Action: game.WorkScrap, Unit: unit{Type: "STRN", Qty: 5}}},
 		},
 		{
 			name:  "scrap claims units from the group orders",
@@ -68,7 +68,7 @@ func TestUnitWorkOrders(t *testing.T) {
 			err:   engine.ErrNotEnoughAssembled,
 			work2: []game.Assembly{{Action: game.WorkDisassemble, Unit: sdrv(6)}},
 		},
-		{name: "units in storage can't be disassembled", text: "disassemble 1 STRC-1 on 1", err: engine.ErrNotEnoughAssembled},
+		{name: "units in storage can't be disassembled", text: "disassemble 1 STRN on 1", err: engine.ErrNotEnoughAssembled},
 		{
 			name:  "scrap",
 			text:  "scrap 4 SDRV-1 on 2 using 200 CWRK",

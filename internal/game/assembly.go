@@ -55,9 +55,9 @@ const DisassemblyLossPercent = 10
 func workEMU(w Work, d units.Def, tl, qty int) int {
 	mass := d.Mass(tl, qty)
 	if w == WorkScrap {
-		return (mass*EMUPerCWRK + ScrapMUPerCWRK - 1) / ScrapMUPerCWRK
+		mass = mass.Mul(EMUPerCWRK).Div(ScrapMUPerCWRK)
 	}
-	return mass
+	return mass.Ceil()
 }
 
 // disassemblyLoss returns how many of the next n units an order disassembles
@@ -264,12 +264,13 @@ func (c *Colony) construct(phase func(Work) bool) {
 }
 
 // fit returns the most of n units that the colony has room to assemble or
-// disassemble. They fit if the colony is within its capacity afterwards, or
-// no further over it than it was. Both ways the space can go either way:
-// most units are bigger assembled, and structure takes space only when it is
-// stowed and makes space only when it is assembled. An open-air surface
-// colony always has room (manual F3.2). Done is how many units
-// the work has disassembled already: the units it loses take no room.
+// disassemble (manual F3.2.2, F3.2.4). They fit if the colony is within its
+// capacity afterwards, or no further over it than it was. So assembling
+// structure and disassembling anything else always fit, since they only free
+// space: most units require twice the enclosure assembled, and structure
+// requires it only when stowed and provides it only when assembled. An
+// open-air surface colony always has room (manual F3.2). Done is how many
+// units the work has disassembled already: the units it loses take no room.
 func (c *Colony) fit(w Work, d units.Def, tl, n, done int) int {
 	if w == WorkScrap || !c.Type.Enclosed() {
 		return n
@@ -285,7 +286,7 @@ func (c *Colony) fit(w Work, d units.Def, tl, n, done int) int {
 			t.install(d, tl, k+1)
 		}
 		after := t.SpaceFree()
-		return after < 0 && after < before
+		return after.Sign() < 0 && after.Cmp(before) < 0
 	})
 }
 

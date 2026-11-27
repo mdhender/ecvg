@@ -147,7 +147,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				commas(s.Units()), commas(s.UEM), commas(s.USK), commas(s.PRO), commas(s.SLD))
 		}
 		if c.Type.Enclosed() {
-			p("  Space taken: %s VU   Life support needed: %s LU", commas(pop.Volume(c.Type)), commas(pop.LifeSupport(c.Type)))
+			p("  Space taken: %s VU   Life support needed: %s LU", commas(pop.Volume()), commas(pop.LifeSupport(c.Type)))
+		} else {
+			p("  Space wanted: %s VU", commas(pop.Volume()))
 		}
 
 		if k := c.Cadres; k != (game.Cadres{}) || len(c.Drafted)+len(c.Disbanded) > 0 || c.Trained.Trainees > 0 {
@@ -254,16 +256,18 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		}
 		p("")
 		p("SPACE %19s", "VU")
-		p("  %-8s %14s", "Capacity", commas(c.Capacity()))
-		p("  %-8s %14s", "Used", commas(c.SpaceUsed()))
-		if free := c.SpaceFree(); free >= 0 {
-			p("  %-8s %14s", "Free", commas(free))
+		// The engine keeps space exactly; the report rounds each line up, so
+		// the lines needn't add up.
+		p("  %-8s %14s", "Capacity", commas(c.Capacity().Ceil()))
+		p("  %-8s %14s", "Used", commas(c.SpaceUsed().Ceil()))
+		if free := c.SpaceFree(); free.Sign() >= 0 {
+			p("  %-8s %14s", "Free", commas(free.Ceil()))
 		} else {
 			why := "OVER CAPACITY: nothing more can be stored in cargo"
 			if !c.Type.Enclosed() {
 				why = "an open-air colony may hold more than it encloses"
 			}
-			p("  %-8s %14s   %s", "Over by", commas(-free), why)
+			p("  %-8s %14s   %s", "Over by", commas(c.SpaceUsed().Sub(c.Capacity()).Ceil()), why)
 		}
 		units("OPERATIONAL", c.Operational)
 		units("CARGO", c.Cargo)

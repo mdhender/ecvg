@@ -49,8 +49,9 @@ const (
 	SLD  = "SLD"  // soldiers
 	SPAG = "SPAG" // special agent
 	SPY  = "SPY"  // spy
-	STRC = "STRC" // structure
 	STRL = "STRL" // light structure
+	STRN = "STRN" // structure
+	STRS = "STRS" // super-light structure
 	TRNE = "TRNE" // trainee
 	TRNS = "TRNS" // transport
 	UEM  = "UEM"  // unemployables
@@ -115,6 +116,7 @@ type Def struct {
 	Manufactured bool
 
 	lot, lotPerTL2       int // lot size: lot, or lotPerTL2 x TL^2
+	encloses             int // STRN equivalents an assembled unit provides
 	mtl, nmtl            amount
 	mass, volume, stowed amount
 }
@@ -163,31 +165,36 @@ func (d Def) Inputs(tl, lots int) (mtl, nmtl int, ok bool) {
 	return d.mtl.at(tl) * lots, d.nmtl.at(tl) * lots, true
 }
 
-// Mass returns the mass of qty units, in MU, rounded up.
-func (d Def) Mass(tl, qty int) int {
+// Encloses returns the enclosure an assembled unit provides, in STRN
+// equivalents (manual F3.1.1): 1 for STRN, 5 for STRL, 20 for STRS, and 0
+// for everything else.
+func (d Def) Encloses() int {
+	return d.encloses
+}
+
+// Mass returns the mass of qty units, in MU. It is exact.
+func (d Def) Mass(tl, qty int) Frac {
 	return d.total(d.mass, tl, qty)
 }
 
-// Volume returns the space qty assembled (or never stowed) units take, in VU,
-// rounded up.
-func (d Def) Volume(tl, qty int) int {
+// Volume returns the enclosure qty assembled (or never stowed) units
+// require, in VU. It is exact. Assembled structure requires none.
+func (d Def) Volume(tl, qty int) Frac {
 	return d.total(d.volume, tl, qty)
 }
 
-// StowedVolume returns the space qty unassembled units take in storage, in
-// VU, rounded up.
-func (d Def) StowedVolume(tl, qty int) int {
+// StowedVolume returns the enclosure qty unassembled units require in
+// storage, in VU. It is exact.
+func (d Def) StowedVolume(tl, qty int) Frac {
 	return d.total(d.stowed, tl, qty)
 }
 
-// total returns qty units' share of the per-lot amount a. Rounding is done
-// once, on the total, and goes against the player: up.
-func (d Def) total(a amount, tl, qty int) int {
+// total returns qty units' share of the per-lot amount a, exactly.
+func (d Def) total(a amount, tl, qty int) Frac {
 	if a.div == 0 || qty <= 0 {
-		return 0
+		return Frac{}
 	}
-	div := a.div * d.LotSize(tl)
-	return (qty*a.at(tl) + div - 1) / div
+	return NewFrac(qty*a.at(tl), a.div*d.LotSize(tl))
 }
 
 // Lookup returns the definition of the unit with the given code.
@@ -235,6 +242,14 @@ func build() []Def {
 		return d
 	}
 
+	// Structure (manual F3.1.1, R3.0): no tech level, 0.1 MU a unit, 0.05 VU
+	// stowed and none assembled, and built in lots of 100.
+	structure := func(code, name string, encloses, mtl, nmtl int) Def {
+		d := noTL(lots(made(code, name, Structural, true, fixed(mtl), fixed(nmtl), fixed(10), fixed(0), fixed(5)), 100))
+		d.encloses = encloses
+		return d
+	}
+
 	prob := made(PROB, "Probe", Recon, false, fixed(200), fixed(300), fixed(500), fixed(500), fixed(500))
 	prob.lot, prob.lotPerTL2 = 0, 10
 
@@ -247,7 +262,7 @@ func build() []Def {
 		made(AUTO, "Automation", Infrastructure, true, perTL(2), perTL(2), perTL(4), perTL(4), perTL(2)),
 		made(AWPN, "Assault Weapons", Weaponry, false, perTL(1), perTL(1), perTL(2), perTL(2), perTL(1)),
 		noTL(lots(made(CNGD, "Consumer Goods", Commodity, false, fixed(2), fixed(4), fixed(6), fixed(3), fixed(3)), 10)),
-		noTL(lots(made(CSUP, "Combat Supplies", Ammunition, false, fixed(1), fixed(1), fixed(2), fixed(2), fixed(2)), 50)),
+		noTL(lots(made(CSUP, "Combat Supplies", Ammunition, false, fixed(1), fixed(1), fixed(2), fixed(1), fixed(1)), 50)),
 		people(CWRK, "Construction Worker", Cadre),
 		made(ESHD, "Energy Shield", Weaponry, true, perTL(25), perTL(25), perTL(50), perTL(50), perTL(25)),
 		made(EWPN, "Energy Weapon", Weaponry, true, perTL(5), perTL(5), perTL(10), perTL(10), perTL(5)),
@@ -279,8 +294,9 @@ func build() []Def {
 		people(SLD, "Soldiers", Living),
 		people(SPAG, "Special Agent", Cadre),
 		people(SPY, "Spy", Cadre),
-		lots(made(STRC, "Structure", Structural, true, perTL(7), perTL(3), perTL(10), perTL(10), perTL(10)), 10),
-		lots(made(STRL, "Light Structure", Structural, true, perTL(7), perTL(3), perTL(10), perTL(10), perTL(10)), 100),
+		structure(STRL, "Light Structure", 5, 5, 5),
+		structure(STRN, "Structure", 1, 7, 3),
+		structure(STRS, "Super-Light Structure", 20, 2, 8),
 		people(TRNE, "Trainee", Cadre),
 		made(TRNS, "Transport", Transportation, false, perTL(3), perTL(1), perTL(4), perTL(4), perTL(4)),
 		people(UEM, "Unemployables", Living),

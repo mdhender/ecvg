@@ -18,7 +18,7 @@
         {"type": "FARM", "tech_level": 10, "qty": 100000},
         {"type": "LFSU", "tech_level": 10, "qty": 100},
         {"type": "SDRV", "tech_level": 10, "qty": 1},
-        {"type": "STRL", "tech_level": 10, "qty": 20000}
+        {"type": "STRL", "qty": 400000}
       ],
       "cargo": [
         {"type": "FOOD", "qty": 4269990},
