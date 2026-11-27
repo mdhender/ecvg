@@ -14,10 +14,10 @@
 //	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //	draft Quantity UnitOrCadre from EntityID
 //	disband Quantity UnitOrCadre from EntityID
-//	assemble Quantity Unit on EntityID
+//	assemble Quantity CadreUnit on EntityID
 //	assemble factory-group on EntityID with Quantity FactoryUnit (, Quantity FactoryUnit)* [producing Unit]
 //	assemble farming-group on EntityID with Quantity FarmUnit
-//	assemble mining-group on EntityID with Quantity MiningUnit working DepositID
+//	assemble mining-group on EntityID with Quantity MiningUnit working DepositNo
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit (, Quantity FactoryUnit)*
 //	assemble farming-group GroupNo on EntityID add Quantity FarmUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
@@ -57,11 +57,11 @@ const (
 	ErrInvalidGroupNo    = cerrs.Error("invalid group number")
 	ErrInvalidQuantity   = cerrs.Error("invalid quantity")
 	ErrInvalidUnit       = cerrs.Error("invalid unit")
-	ErrInvalidDepositID  = cerrs.Error("invalid deposit ID")
+	ErrInvalidDepositNo  = cerrs.Error("invalid deposit number")
 )
 
 // Order is one order. Its type says which: SetRations, SetIdle, Draft,
-// Disband, Assemble, or AssembleGroup.
+// Disband, AssembleCadre, or AssembleGroup.
 type Order interface {
 	// String returns the order as it would be written.
 	String() string
@@ -118,15 +118,17 @@ func (o Disband) String() string {
 	return fmt.Sprintf("disband %d %s from %d", o.Qty, o.Unit, o.EntityID)
 }
 
-// Assemble is the order "assemble Quantity Unit on EntityID". It assembles
-// Unit.Qty of a unit on the entity with ID EntityID.
-type Assemble struct {
+// AssembleCadre is the order "assemble Quantity CadreUnit on EntityID". It
+// assembles Qty of the cadre with the code Unit, CWRK, TRNE, or SPY, on the
+// entity with ID EntityID.
+type AssembleCadre struct {
 	EntityID int
-	Unit     game.Unit
+	Unit     string
+	Qty      int
 }
 
-func (o Assemble) String() string {
-	return fmt.Sprintf("assemble %d %s on %d", o.Unit.Qty, unitName(o.Unit), o.EntityID)
+func (o AssembleCadre) String() string {
+	return fmt.Sprintf("assemble %d %s on %d", o.Qty, o.Unit, o.EntityID)
 }
 
 // AssembleGroup is the order that assembles units into a factory, farming,
@@ -139,8 +141,9 @@ type AssembleGroup struct {
 	// Units is the units to assemble: one entry for a farming or mining
 	// group, one or more for a factory group.
 	Units []game.Unit
-	// DepositID is the deposit a new mining group works.
-	DepositID int
+	// DepositNo is the deposit a new mining group works: its number on the
+	// entity's planet.
+	DepositNo int
 	// Producing is what a new factory group is to make, if the order says;
 	// its Qty is 0.
 	Producing game.Unit
@@ -163,8 +166,8 @@ func (o AssembleGroup) String() string {
 	if o.Producing.Type != "" {
 		fmt.Fprintf(&sb, " producing %s", unitName(o.Producing))
 	}
-	if o.DepositID != 0 {
-		fmt.Fprintf(&sb, " working %d", o.DepositID)
+	if o.DepositNo != 0 {
+		fmt.Fprintf(&sb, " working %d", o.DepositNo)
 	}
 	return sb.String()
 }
@@ -309,10 +312,10 @@ var groupUnit = map[game.GroupKind]string{
 }
 
 const assembleUsage = `want one of:
-  assemble Quantity Unit on EntityID
+  assemble Quantity CadreUnit on EntityID (CWRK, TRNE, or SPY)
   assemble factory-group on EntityID with Quantity FACT-n, Quantity FACT-n ... [producing Unit]
   assemble farming-group on EntityID with Quantity FARM-n
-  assemble mining-group on EntityID with Quantity MINE-n working DepositID
+  assemble mining-group on EntityID with Quantity MINE-n working DepositNo
   assemble factory-group GroupNo on EntityID add Quantity FACT-n, Quantity FACT-n ...
   assemble farming-group GroupNo on EntityID add Quantity FARM-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n`
@@ -329,19 +332,23 @@ func parseAssemble(tokens []Token) (Order, error) {
 		}
 	}
 	if kind == "" {
-		// assemble Quantity Unit on EntityID
+		// assemble Quantity CadreUnit on EntityID
 		if len(tokens) != 5 || !tokens[3].Is("on") {
 			return nil, usage
 		}
-		u, err := quantityOf(tokens[1], tokens[2], "")
-		if err != nil {
-			return nil, err
+		qty, ok := quantity(tokens[1])
+		if !ok || qty < 1 {
+			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600", ErrInvalidQuantity, tokens[1].Text)
+		}
+		code := strings.ToUpper(tokens[2].Text)
+		if tokens[2].Quoted || (code != units.CWRK && code != units.TRNE && code != units.SPY) {
+			return nil, fmt.Errorf("%w: %q: want CWRK, TRNE, or SPY", ErrInvalidUnit, tokens[2].Text)
 		}
 		id, err := entityID(tokens[4])
 		if err != nil {
 			return nil, err
 		}
-		return Assemble{EntityID: id, Unit: u}, nil
+		return AssembleCadre{EntityID: id, Unit: code, Qty: qty}, nil
 	}
 
 	o := AssembleGroup{Kind: kind}
@@ -415,8 +422,8 @@ func parseAssemble(tokens []Token) (Order, error) {
 		if !ok1 || !ok2 || !t.Is("working") {
 			return nil, usage
 		}
-		if o.DepositID, ok = number(id); !ok || o.DepositID < 1 {
-			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidDepositID, id.Text)
+		if o.DepositNo, ok = number(id); !ok || o.DepositNo < 1 {
+			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidDepositNo, id.Text)
 		}
 	case kind == game.KindFactory && len(rest) > 0:
 		t, ok1 := next()

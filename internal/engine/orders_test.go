@@ -286,27 +286,27 @@ disband 500 SPY from 1
 disband 20 SLD from 1
 disband 5 POL from 1
 disband 5 CWRK from 3
-assemble 100 STRL-1 on 1
-assemble farming-group on 1 with 10 FARM-1`)})
+assemble 25 SPY on 1`)})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Accepted != 4 || len(result.Rejected) != 4 || d.Colonies[0].Cadres != (game.Cadres{CWRK: 200, SPY: 10}) {
+	if result.Accepted != 5 || len(result.Rejected) != 2 || d.Colonies[0].Cadres != (game.Cadres{CWRK: 200, SPY: 10}) {
 		t.Fatalf("accepted %d, rejected %+v, cadres %+v", result.Accepted, result.Rejected, d.Colonies[0].Cadres)
 	}
-	for i, e := range []error{engine.ErrNotDraftable, engine.ErrNotControlled, engine.ErrNotImplemented, engine.ErrNotImplemented} {
+	for i, e := range []error{engine.ErrNotDraftable, engine.ErrNotControlled} {
 		if !errors.Is(result.Rejected[i].Err, e) {
 			t.Errorf("rejection %d: %v, want %v", i, result.Rejected[i].Err, e)
 		}
 	}
 	engine.Draft(&d, result.Drafts)
 	c := d.Colonies[0]
-	if c.Cadres != (game.Cadres{CWRK: 80}) || c.Population != (game.Population{USK: 1020, PRO: 300, SLD: 30}) {
+	// Assembling a cadre drafts it: 25 SPY, after the 10 were disbanded.
+	if c.Cadres != (game.Cadres{CWRK: 80, SPY: 25}) || c.Population != (game.Population{USK: 1020, PRO: 300, SLD: 30}) {
 		t.Errorf("cadres %+v, population %+v", c.Cadres, c.Population)
 	}
 	want := []game.Drafted{{Unit: "CWRK", Asked: 150, Drafted: 150}, {Unit: "SPY", Asked: 500, Drafted: 10}, {Unit: "SLD", Asked: 20, Drafted: 20}}
-	if !reflect.DeepEqual(c.Disbanded, want) || len(c.Drafted) != 1 {
-		t.Errorf("disbanded %+v, drafted %+v; want %+v and one draft", c.Disbanded, c.Drafted, want)
+	if !reflect.DeepEqual(c.Disbanded, want) || len(c.Drafted) != 2 {
+		t.Errorf("disbanded %+v, drafted %+v; want %+v and two drafts", c.Disbanded, c.Drafted, want)
 	}
 }
 

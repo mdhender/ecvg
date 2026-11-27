@@ -193,6 +193,30 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 				}
 			}
 		}
+		if len(c.Assembly) > 0 || c.Construction.Used > 0 {
+			p("")
+			p("ASSEMBLY")
+			if k := c.Construction; k.Pool > 0 || k.Used > 0 {
+				p("  LAST TURN: the CWRK did %s EMU of assembly work of the %s EMU they could", commas(k.Used), commas(k.Pool))
+			} else {
+				p("  LAST TURN: no CWRK, so no assembly work was done")
+			}
+			for _, a := range c.Assembly {
+				name := unitName(a.Unit.Type, a.Unit.TechLevel)
+				if a.Unit.Qty == 0 {
+					p("  %s group %d: %s %s assembled last turn, and the work is done", title(a.Kind), a.GroupNo, commas(a.Assembled), name)
+					continue
+				}
+				p("  %s group %d: %s %s assembled last turn; %s still to assemble, with %s EMU done toward them",
+					title(a.Kind), a.GroupNo, commas(a.Assembled), name, commas(a.Unit.Qty), commas(a.EMU))
+				switch a.Waiting {
+				case "room":
+					p("      WAITING: no room in the entity for more of them assembled")
+				case "units":
+					p("      WAITING: the units aren't in storage")
+				}
+			}
+		}
 		units := func(title string, us []game.Unit) {
 			p("")
 			p("%s", title)
@@ -243,6 +267,9 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			for _, g := range gs {
 				if g.IdlePercent > 0 {
 					p("  Group %-3d ORDERED IDLE: %d%% of its units", g.No, g.IdlePercent)
+				}
+				if u := g.Producing; u.Type != "" {
+					p("  Group %-3d producing %s", g.No, unitName(u.Type, u.TechLevel))
 				}
 				for _, u := range g.Units {
 					p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
@@ -385,4 +412,21 @@ func plural(n int, one, many string) string {
 		return one
 	}
 	return many
+}
+
+// unitName formats a unit as orders write it: FACT-10, or CNGD.
+func unitName(code string, tl int) string {
+	if tl == 0 {
+		return code
+	}
+	return fmt.Sprintf("%s-%d", code, tl)
+}
+
+// title returns the kind of group with a capital letter.
+func title(k game.GroupKind) string {
+	s := string(k)
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }

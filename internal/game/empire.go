@@ -82,6 +82,10 @@ type Colony struct {
 	Disbanded []Drafted `json:"disbanded,omitempty"`
 	// Trained is what became of the TRNE cadre in the prior turn.
 	Trained Trained `json:"trained,omitzero"`
+	// Assembly is the colony's assembly work in progress, oldest first, and
+	// Construction what its CWRK did in the prior turn.
+	Assembly     []Assembly   `json:"assembly,omitempty"`
+	Construction Construction `json:"construction,omitzero"`
 	// Rations is the percentage of the food its population needs that the
 	// colony hands out, MinRations..MaxRations, by default DefaultRations.
 	Rations int `json:"rations"`
@@ -156,6 +160,8 @@ type Group struct {
 	// staff or fuel. It stands until the empire changes it.
 	IdlePercent int          `json:"idle_percent,omitzero"`
 	Units       []GroupUnits `json:"units"`
+	// Producing is what a factory group is to make, if its empire has said.
+	Producing Unit `json:"producing,omitzero"`
 }
 
 // MiningGroup is a group of mines working one deposit.

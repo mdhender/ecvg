@@ -188,6 +188,27 @@ func TestEmpire(t *testing.T) {
 			},
 		},
 		{
+			name:     "assembly",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.Construction = game.Construction{Pool: 500000, Used: 499990}
+				c.Assembly = []game.Assembly{
+					{Kind: game.KindMining, GroupNo: 1, Unit: game.Unit{Type: "MINE", TechLevel: 10, Qty: 8334}, EMU: 20, Assembled: 16666},
+					{Kind: game.KindFarming, GroupNo: 2, Unit: game.Unit{Type: "FARM", TechLevel: 6, Qty: 9}, EMU: 162, Assembled: 11, Waiting: "room"},
+					{Kind: game.KindFactory, GroupNo: 3, Unit: game.Unit{Type: "FACT", TechLevel: 1}, Assembled: 40},
+				}
+				c.FactoryGroups = []game.Group{{No: 3, Producing: game.Unit{Type: "FARM", TechLevel: 1}, Units: []game.GroupUnits{{Qty: 40, TechLevel: 1}}}}
+			},
+			want: []string{
+				"\nASSEMBLY\n  LAST TURN: the CWRK did 499,990 EMU of assembly work of the 500,000 EMU they could\n",
+				"  Mining group 1: 16,666 MINE-10 assembled last turn; 8,334 still to assemble, with 20 EMU done toward them\n",
+				"  Farming group 2: 11 FARM-6 assembled last turn; 9 still to assemble, with 162 EMU done toward them\n      WAITING: no room in the entity for more of them assembled\n",
+				"  Factory group 3: 40 FACT-1 assembled last turn, and the work is done\n",
+				"  Group 3   producing FARM-1\n",
+			},
+		},
+		{
 			name:     "workers",
 			empireID: 1,
 			edit: func(d *game.Data) {
