@@ -24,7 +24,7 @@
 //	scrap Quantity Unit on EntityID
 //
 // Any assemble, disassemble, or scrap order may end with "using Quantity CWRK", which caps the CWRK that work
-// on it in a turn. CWKR is read as CWRK there.
+// on it in a turn. CWKR is read as CWRK there, and it may have a race ID too.
 //
 // EntityID is the ID of an entity. PercentageAmount is a whole number with a
 // "%" joined to it: "50%", not "50 %". For rations it is from game.MinRations
@@ -33,6 +33,8 @@
 // is the number of a group of that kind. Quantity is a whole number, 1 or
 // more, which may have commas between its thousands: "3600" or "3,600".
 // UnitOrCadre is the code of a population unit or cadre, such as SLD or CWRK.
+// It may have a race ID joined to it by a hyphen, such as SLD-3; without one,
+// or with race 0, it is of the race of the empire that gives the order.
 // A unit that has a tech level is written with it, joined by a hyphen:
 // FactoryUnit is FACT-1 to FACT-10, FarmUnit FARM-1 to FARM-10, and
 // MiningUnit MINE-1 to MINE-10. A unit that has none is its code alone, such
@@ -101,11 +103,14 @@ func (o SetIdle) String() string {
 type Draft struct {
 	EntityID int
 	Unit     string
-	Qty      int
+	// Race is the ID of the race of the people, or 0 for the race of the
+	// empire that gives the order. Nothing uses it yet.
+	Race int
+	Qty  int
 }
 
 func (o Draft) String() string {
-	return fmt.Sprintf("draft %d %s from %d", o.Qty, o.Unit, o.EntityID)
+	return fmt.Sprintf("draft %d %s from %d", o.Qty, popName(o.Unit, o.Race), o.EntityID)
 }
 
 // Disband is the order "disband Quantity UnitOrCadre from EntityID". It
@@ -114,11 +119,13 @@ func (o Draft) String() string {
 type Disband struct {
 	EntityID int
 	Unit     string
-	Qty      int
+	// Race is as for Draft.
+	Race int
+	Qty  int
 }
 
 func (o Disband) String() string {
-	return fmt.Sprintf("disband %d %s from %d", o.Qty, o.Unit, o.EntityID)
+	return fmt.Sprintf("disband %d %s from %d", o.Qty, popName(o.Unit, o.Race), o.EntityID)
 }
 
 // AssembleGroup is the order that assembles units into a factory, farming,
@@ -183,6 +190,32 @@ func using(maxCWRK int) string {
 		return ""
 	}
 	return fmt.Sprintf(" using %d CWRK", maxCWRK)
+}
+
+// popName returns a population unit or cadre as orders write it: SLD, or
+// SLD-3 if the order names a race.
+func popName(code string, race int) string {
+	if race == 0 {
+		return code
+	}
+	return fmt.Sprintf("%s-%d", code, race)
+}
+
+// popCode returns the code and race ID of a token that names a population
+// unit or cadre: its code and, optionally, a race ID joined to it by a
+// hyphen, such as SLD or SLD-3. Case is ignored. The race is 0 if the token
+// has none, and 0 stands for the race of the empire that gives the order.
+func popCode(t Token) (code string, race int, ok bool) {
+	code, id, hasRace := strings.Cut(strings.ToUpper(t.Text), "-")
+	if d, found := units.Lookup(code); t.Quoted || !found || !d.Population() {
+		return "", 0, false
+	}
+	if hasRace {
+		if race, ok = number(Token{Text: id}); !ok {
+			return "", 0, false
+		}
+	}
+	return code, race, true
 }
 
 // unitName returns the unit as orders write it: FACT-10, or CNGD.
@@ -307,18 +340,18 @@ func parseDraft(tokens []Token, verb string) (Order, error) {
 	if !ok || qty < 1 {
 		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600", ErrInvalidQuantity, tokens[1].Text)
 	}
-	code := strings.ToUpper(tokens[2].Text)
-	if d, ok := units.Lookup(code); tokens[2].Quoted || !ok || !d.Population() {
-		return nil, fmt.Errorf("%w: %q: want a population unit or cadre, such as SLD or CWRK", ErrInvalidUnit, tokens[2].Text)
+	code, race, ok := popCode(tokens[2])
+	if !ok {
+		return nil, fmt.Errorf("%w: %q: want a population unit or cadre, such as SLD or CWRK, which may have a race ID joined to it, such as SLD-3", ErrInvalidUnit, tokens[2].Text)
 	}
 	id, ok := number(tokens[4])
 	if !ok || id < 1 {
 		return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidEntityID, tokens[4].Text)
 	}
 	if verb == "disband" {
-		return Disband{EntityID: id, Unit: code, Qty: qty}, nil
+		return Disband{EntityID: id, Unit: code, Race: race, Qty: qty}, nil
 	}
-	return Draft{EntityID: id, Unit: code, Qty: qty}, nil
+	return Draft{EntityID: id, Unit: code, Race: race, Qty: qty}, nil
 }
 
 // groupUnit is the unit that the groups of each kind are made of.
@@ -348,7 +381,16 @@ func usingClause(tokens []Token) (int, []Token, error) {
 	if !ok || maxCWRK < 1 {
 		return 0, nil, fmt.Errorf("%w: %q: want a whole number, 1 or more, such as 3600 or 3,600", ErrInvalidQuantity, tokens[n-2].Text)
 	}
-	if !tokens[n-1].Is(units.CWRK) && !tokens[n-1].Is("CWKR") {
+	// CWKR is read as CWRK. The cadre may name a race, as CWRK-3; nothing
+	// uses it yet.
+	cadre := tokens[n-1]
+	if code, race, hasRace := strings.Cut(cadre.Text, "-"); strings.EqualFold(code, "CWKR") {
+		cadre.Text = units.CWRK
+		if hasRace {
+			cadre.Text += "-" + race
+		}
+	}
+	if code, _, ok := popCode(cadre); !ok || code != units.CWRK {
 		return 0, nil, fmt.Errorf("%w: %q: want CWRK", ErrInvalidUnit, tokens[n-1].Text)
 	}
 	return maxCWRK, tokens[:n-3], nil
@@ -393,8 +435,8 @@ func parseAssemble(tokens []Token) (Order, error) {
 	}
 	if kind == "" {
 		// assemble Quantity Unit on EntityID. People aren't assembled.
-		if len(tokens) > 2 && !tokens[2].Quoted {
-			if d, ok := units.Lookup(strings.ToUpper(tokens[2].Text)); ok && d.Population() {
+		if len(tokens) > 2 {
+			if _, _, ok := popCode(tokens[2]); ok {
 				return nil, fmt.Errorf("%w: %q: people are drafted, not assembled: draft Quantity UnitOrCadre from EntityID", ErrInvalidUnit, tokens[2].Text)
 			}
 		}

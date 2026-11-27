@@ -3270,7 +3270,6 @@ An order in the 1980 format is not accepted yet.
 ### S2.1 Quantities
 
 A quantity is a whole number, 1 or more, unless the rule for the order says otherwise.
-E numbers, such as 4E7 for 40,000,000, are not accepted; the quantity must be written out.
 
 <a id="rule-S2.2"></a>
 ### S2.2 Commas
@@ -3344,17 +3343,17 @@ RACE #2      SIGNATURE:                      PLAYER ID #22    ACCT #0353
 
 
 22, DAS, 60,000, STRN.
-22, TFR, 1E6, MSSL-1, [24].
-22, PUP, 2E6, NMTL, [24].
+22, TFR, 1,000,000, MSSL-1, [24].
+22, PUP, 2,000,000, NMTL, [24].
 22, TFR, 100,000, FUEL, [295].
 
 22, PUP, 3, M, [295].
 800, SPY.
 100, CWRK-1.
-2E5, LFSU-2.
+200,000, LFSU-2.
 
 22, SPM, 1, G, A.
-25, SPM, 1E3, G, E.
+25, SPM, 1,000, G, E.
 209, TFR, 100,000, MTL, [22].
 209, MOV, (0,0,0,1,6).
 
@@ -3665,7 +3664,7 @@ will have more STRL for sale next turn. Signed.
 
 - Format: S/C ID#, "ASM", quantity, item.
 - Example: 100, ASM, 100, SPY.
-- Example: 100, ASM, 3E5, MLNC-1.
+- Example: 100, ASM, 300,000, MLNC-1.
 - Notes: This format is used to either form SPY and CWRK's, or to take items out of storage and put them to use.
 
 - Format: S/C ID#, "ASM", "TL"-TL#.
@@ -3703,7 +3702,7 @@ will have more STRL for sale next turn. Signed.
   60, CWRK-3.
   1,000, MLNC-1.
   500, FACT-2, 7.
-  2E6, FACT-1, TRNS-1.
+  2,000,000, FACT-1, TRNS-1.
   3,000, MINE-1, 28.
   ```
 - Notes: The multiple ASM orders are used to allow a S/C to assemble more than one item in a turn without writing a separate order for each assembly.
@@ -3736,7 +3735,7 @@ will have more STRL for sale next turn. Signed.
   ```text
   75, DAS, 4, M.
   30, SPY.
-  4E9, CWRK-3.
+  4,000,000,000, CWRK-3.
   1,000, MLNC-2.
   50,000, FACT-4,7.
   3,000, MINE-6, 4.
@@ -3815,8 +3814,8 @@ This order does not require "END" to finish it.
 - Format: S/C ID#, "REC", quantity, item, [S/C ID#'s received from].
 - Examples:
   ```text
-  307, REC, 1E6, NMTL, [75].
-  75, REC, 3E3, NMTL, [72, 73].
+  307, REC, 1,000,000, NMTL, [75].
+  75, REC, 3,000, NMTL, [72, 73].
   ```
 - Notes: The first REC order has S/C 307 receive 1,000,000 NMTL from S/C #75; a single S/C is still written as a list ([S2.5](#rule-S2.5)).
   The second causes the NMTL to be received from 72 and 73.
@@ -3877,7 +3876,7 @@ A REC order cancelled this way is cancelled for every S/C in its list.
 - Example:
   ```text
   307, PUP, 3, M, [80, 81].
-  2E6, STRL.
+  2,000,000, STRL.
   800, FOOD.
   90, CWRK-2.
   ```
@@ -4126,7 +4125,7 @@ NOTE: ALL SPM ORDERS CAN BE USED IN THE PLAYER'S OWN S/C, OR IN FOREIGN S/C's.
 ### S12.2 Disband Orders (DSB)
 
 - Format: S/C ID#, "DSB", quantity, units to be disbanded.
-- Example: 66, DSB, 7E3, TRNE-1.
+- Example: 66, DSB, 7,000, TRNE-1.
 - Notes: Only SLD or TRNE can be disbanded.
   (SPY and CWRK cadres must be dis-assembled).
 
