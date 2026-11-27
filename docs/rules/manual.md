@@ -513,7 +513,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 |       | Regent         | A player who manages a Ruler's S/C's, follows his orders.  |
 | RETL  | Retool         | This order changes the item being built by a FACT group.    |
 | RSCH  | Research point | A unit of research, built by a factory.                    |
-| RTN   | Ration         | This order sets the amount of food eaten in the S/C's.     |
 |       | Ruler          | Player, not a Regent, who controls a S/C.                  |
 | RUN   | Run            | This order has one ship run from another ship.             |
 
@@ -702,7 +701,7 @@ All the orders for one stage are processed before any of the orders for the next
 ### B3.13 Pay Change Stage
 
 1. <a id="rule-B3.13.1"></a>PAY orders processed (see [S12.3](#rule-S12.3)<!-- was 17.4.42 -->)
-2. <a id="rule-B3.13.2"></a>RTN orders processed (see [S12.4](#rule-S12.4)<!-- was 17.4.43 -->)
+2. <a id="rule-B3.13.2"></a>Set rations orders processed (see [S12.4](#rule-S12.4)<!-- was 17.4.43 -->)
 
 <a id="rule-B3.14"></a>
 ### B3.14 Naming Stage
@@ -2171,7 +2170,7 @@ Note: 30% OF THE STARVING POP DIE EACH **TURN**.
 <a id="rule-G4.2"></a>
 ### G4.2 Ration Percentage
 
-The percentage of a ration (RTN) order is the percentage of the normal 1/4 food unit per population unit.
+The percentage of a set rations order ([S12.4](#rule-S12.4)) is the percentage of the normal 1/4 food unit per population unit.
 
 <a id="rule-G5.0"></a>
 ## G5.0 Consumer Goods
@@ -3230,7 +3229,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Set idle               | `set idle for GroupKind group GroupNo of EntityID to PercentageAmount` | [S8.1](#rule-S8.1)\*, [S8.3](#rule-S8.3)\*, [S8.5](#rule-S8.5)\*, [S8.6](#rule-S8.6)\* |
 | Draft                  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
 | Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2) |
-| Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4)\* |
+| Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4) |
 
 Any assemble, disassemble, or scrap order may end with `using Quantity CWRK`.
 
@@ -4276,13 +4275,41 @@ disband 40 SPY from 7          # frees 40 PRO and 40 SLD
   Race numbers are not shown in pay orders.
 
 <a id="rule-S12.4"></a>
-### S12.4 Ration Orders (RTN)
+### S12.4 Set Rations
 
-- Format: S/C ID#, "RTN", % of food.
-- Example: 16, RTN, 95.
-- Notes: The RTN order rations the population of colony 16 to 95% of the standard amount of food.
-  The percent sign is not used in the order.
-  RTN orders are standing orders.
+Sets how much food the population of a S/C is given each turn.
+
+**Syntax**
+
+```text
+set rations for EntityID to PercentageAmount
+```
+
+| Value            | Meaning                                                                                      |
+|------------------|----------------------------------------------------------------------------------------------|
+| EntityID         | The S/C whose population is rationed.                                                        |
+| PercentageAmount | The percentage of the normal ration ([G4.2](#rule-G4.2)), from 1% to 500% ([S2.6](#rule-S2.6)). |
+
+**Examples**
+
+```text
+set rations for 16 to 95%    # the population of S/C 16 gets 95% of the normal ration
+set rations for 16 to 100%   # back to the normal ration
+```
+
+**Rules**
+
+- The normal ration, 100%, is 1/4 of a food unit per POP per turn ([G4.1](#rule-G4.1)).
+  A new S/C is on the normal ration.
+- This is a standing order: the rations stay as they were set until the player sets them again.
+- The order takes effect on the turn it is written.
+- If a S/C is given more than one set rations order in a turn, the last one counts.
+- If the S/C has less food than the rations call for, the population eats all there is, and starvation is checked from what was actually eaten ([G4.1.1](#rule-G4.1.1)).
+
+**Rejected when**
+
+- PercentageAmount is not a whole number from 1% to 500% with the percent sign joined to it.
+- The S/C does not belong to the player.
 
 <a id="rule-S13.0"></a>
 ## S13.0 Naming and News Orders
