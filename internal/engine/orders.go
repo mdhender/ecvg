@@ -39,11 +39,15 @@ type OrdersResult struct {
 	Accepted int
 	// Rejected lists the orders that were not, in file and line order.
 	Rejected []Rejection
+	// Drafts lists the accepted draft orders, which the draft phase carries
+	// out later in the turn.
+	Drafts []DraftOrder
 }
 
 // ApplyOrders is the orders phase: it carries out each empire's orders on d,
 // file by file and line by line. An order that is not valid, or that its
-// empire may not give, is rejected and the rest are still carried out. It
+// empire may not give, is rejected and the rest are still carried out. Draft
+// orders are checked here and carried out by the Draft phase. It
 // replaces d.OrderResults with a record of every order, accepted or not. It
 // fails with ErrNoSuchEmpire, before changing d, if a file is for an empire
 // that is not in the game.
@@ -63,7 +67,7 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 		for _, line := range f.Lines {
 			err := line.Err
 			if err == nil {
-				err = applyOrder(d, f.EmpireID, line.Order)
+				err = applyOrder(d, &result, f.EmpireID, line.Order)
 			}
 			record := game.OrderResult{EmpireID: f.EmpireID, Line: line.No, Text: line.Text, Accepted: err == nil}
 			if err != nil {
@@ -82,15 +86,18 @@ func ApplyOrders(d *game.Data, files []orders.File) (OrdersResult, error) {
 	return result, nil
 }
 
-// applyOrder carries out one order given by the empire with ID empireID.
-func applyOrder(d *game.Data, empireID int, order orders.Order) error {
+// applyOrder carries out one order given by the empire with ID empireID. A
+// draft order is only checked and added to result.Drafts.
+func applyOrder(d *game.Data, result *OrdersResult, empireID int, order orders.Order) error {
 	switch o := order.(type) {
 	case orders.SetRations:
 		return SetRations(d, empireID, o.EntityID, o.Percent)
 	case orders.Draft:
-		// The order is read, but the rules for carrying it out aren't
-		// settled: what population a draft takes, and when.
-		return fmt.Errorf("draft %s: %w", o.Unit, ErrNotImplemented)
+		if err := checkDraft(d, empireID, o.EntityID, o.Unit); err != nil {
+			return err
+		}
+		result.Drafts = append(result.Drafts, DraftOrder{EntityID: o.EntityID, Unit: o.Unit, Qty: o.Qty})
+		return nil
 	case orders.SetIdle:
 		return SetIdle(d, empireID, o.EntityID, o.Kind, o.GroupNo, o.Percent)
 	}
@@ -114,10 +121,6 @@ func SetRations(d *game.Data, empireID, entityID, percent int) error {
 	}
 	return fmt.Errorf("entity %d: %w", entityID, ErrNotControlled)
 }
-
-// ErrNotImplemented is the error for an order that the engine can read but
-// can't carry out yet.
-const ErrNotImplemented = cerrs.Error("the engine can't carry out this order yet")
 
 // ErrNoSuchGroup is the error for an order that names a group its entity
 // doesn't have.

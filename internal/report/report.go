@@ -141,6 +141,25 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 		}{{"UEM", pop.UEM}, {"USK", pop.USK}, {"PRO", pop.PRO}, {"SLD", pop.SLD}, {"Total", pop.Units()}} {
 			p("  %-8s %14s %15s", row.name, commas(row.units), commas(row.units*game.PeoplePerPopulationUnit))
 		}
+		if k := c.Cadres; k != (game.Cadres{}) {
+			p("  Cadres, drafted from the population above:")
+			if k.CWRK > 0 {
+				p("    %-6s %14s   (%s PRO and %s USK)", "CWRK", commas(k.CWRK), commas(k.CWRK), commas(k.CWRK))
+			}
+			if k.TRNE > 0 {
+				p("    %-6s %14s   (%s PRO and %s USK)", "TRNE", commas(k.TRNE), commas(k.PRO()-k.CWRK-k.SPY), commas(k.TRNE))
+			}
+			if k.SPY > 0 {
+				p("    %-6s %14s   (%s PRO and %s SLD)", "SPY", commas(k.SPY), commas(k.SPY), commas(k.SPY))
+			}
+		}
+		for _, dr := range c.Drafted {
+			if dr.Drafted < dr.Asked {
+				p("  DRAFTED LAST TURN: %s of the %s %s ordered: no more could be drafted", commas(dr.Drafted), commas(dr.Asked), dr.Unit)
+			} else {
+				p("  DRAFTED LAST TURN: %s %s", commas(dr.Drafted), dr.Unit)
+			}
+		}
 		p("  Food eaten each turn at %d%% rations: %s FOOD", c.Rations, commas(pop.FoodWanted(c.Rations)))
 		if s := c.Starved; s.Units() > 0 {
 			p("  STARVED LAST TURN: %s units (UEM %s, USK %s, PRO %s, SLD %s)",

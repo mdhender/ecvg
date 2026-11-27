@@ -164,6 +164,7 @@ type TemplateColony struct {
 	Type             game.EntityType `json:"type"`
 	TechLevel        int             `json:"tech_level"`
 	Population       game.Population `json:"population"`
+	Cadres           game.Cadres     `json:"cadres,omitzero"`
 	Operational      []game.Unit     `json:"operational"`
 	Cargo            []game.Unit     `json:"cargo"`
 	Depot            []game.Unit     `json:"depot,omitempty"`
@@ -219,6 +220,11 @@ func (t EmpireTemplate) Validate() error {
 		}
 		if p := c.Population; p.UEM < 0 || p.USK < 0 || p.PRO < 0 || p.SLD < 0 {
 			bad("colony %d: negative population", i+1)
+		}
+		if k := c.Cadres; k.CWRK < 0 || k.TRNE < 0 || k.SPY < 0 {
+			bad("colony %d: negative cadres", i+1)
+		} else if k.Fit(c.Population) != k {
+			bad("colony %d: cadres: the population can't make them up (CWRK is 1 PRO and 1 USK each, TRNE 1 USK and 1 PRO per 100, SPY 1 PRO and 1 SLD)", i+1)
 		}
 		list := func(kind string, operational bool, us []game.Unit) {
 			for j, u := range us {

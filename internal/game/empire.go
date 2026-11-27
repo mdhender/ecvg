@@ -74,6 +74,10 @@ type Colony struct {
 	TechLevel int        `json:"tech_level"`
 	// Population is the colony's population units.
 	Population Population `json:"population"`
+	// Cadres is the cadres drafted from the population, and Drafted what the
+	// draft orders of the prior turn asked for and got.
+	Cadres  Cadres    `json:"cadres,omitzero"`
+	Drafted []Drafted `json:"drafted,omitempty"`
 	// Rations is the percentage of the food its population needs that the
 	// colony hands out, MinRations..MaxRations, by default DefaultRations.
 	Rations int `json:"rations"`

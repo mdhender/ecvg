@@ -201,14 +201,64 @@ func TestSetIdle(t *testing.T) {
 	})
 }
 
-func TestDraftIsNotCarriedOutYet(t *testing.T) {
+func TestDraftOrders(t *testing.T) {
 	d := twoEmpires()
-	want := twoEmpires()
-	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "draft 5,000 CWRK from 1")})
+	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300}
+	want := d.Colonies[0]
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, `draft 5,000 CWRK from 1
+draft 10 POL from 1
+draft 10 USK from 1
+draft 10 SLD from 3
+draft 100 SLD from 1`)})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Rejected) != 1 || !errors.Is(result.Rejected[0].Err, engine.ErrNotImplemented) || !reflect.DeepEqual(d.Colonies, want.Colonies) {
-		t.Errorf("rejected %+v, colonies %+v; want the order rejected as not implemented and nothing changed", result.Rejected, d.Colonies)
+	// The orders phase only queues the drafts.
+	if !reflect.DeepEqual(d.Colonies[0], want) {
+		t.Errorf("the orders phase changed the colony: %+v", d.Colonies[0])
+	}
+	wantDrafts := []engine.DraftOrder{{EntityID: 1, Unit: "CWRK", Qty: 5000}, {EntityID: 1, Unit: "SLD", Qty: 100}}
+	if !reflect.DeepEqual(result.Drafts, wantDrafts) || result.Accepted != 2 || len(result.Rejected) != 3 {
+		t.Fatalf("drafts %+v, accepted %d, rejected %+v", result.Drafts, result.Accepted, result.Rejected)
+	}
+	for i, e := range []error{engine.ErrNotDraftable, engine.ErrNotDraftable, engine.ErrNotControlled} {
+		if !errors.Is(result.Rejected[i].Err, e) {
+			t.Errorf("rejection %d: %v, want %v", i, result.Rejected[i].Err, e)
+		}
+	}
+	d.Colonies[1].Drafted = []game.Drafted{{Unit: "SLD", Asked: 1, Drafted: 1}} // last turn's
+	engine.Draft(&d, result.Drafts)
+	c := d.Colonies[0]
+	if c.Cadres != (game.Cadres{CWRK: 300}) || c.Population != (game.Population{USK: 900, PRO: 300, SLD: 100}) {
+		t.Errorf("cadres %+v, population %+v", c.Cadres, c.Population)
+	}
+	if got := []game.Drafted{{Unit: "CWRK", Asked: 5000, Drafted: 300}, {Unit: "SLD", Asked: 100, Drafted: 100}}; !reflect.DeepEqual(c.Drafted, got) {
+		t.Errorf("drafted %+v, want %+v", c.Drafted, got)
+	}
+	if d.Colonies[1].Drafted != nil {
+		t.Errorf("last turn's record was kept: %+v", d.Colonies[1].Drafted)
+	}
+}
+
+// A draft comes after production: the people drafted work the turn they are
+// drafted in and are out of the worker cadre from the next.
+func TestDraftedPeopleWorkThisTurn(t *testing.T) {
+	d := twoEmpires()
+	d.Game.Turn = 1
+	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300, SLD: 50}
+	d.Colonies[0].Cargo = []game.Unit{{Type: "FOOD", Qty: 10_000}} // or they starve
+	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "draft 200 CWRK from 1\ndraft 150 TRNE from 1\ndraft 40 SPY from 1")}); err != nil {
+		t.Fatal(err)
+	}
+	c := d.Colonies[0]
+	if c.Workers.PRO != 300 || c.Workers.USK != 1000 || c.Cadres != (game.Cadres{CWRK: 200, TRNE: 150, SPY: 40}) {
+		t.Fatalf("turn 1: workers %+v, cadres %+v", c.Workers, c.Cadres)
+	}
+	if _, err := engine.RunTurn(&d, nil); err != nil {
+		t.Fatal(err)
+	}
+	// 200 + 2 + 40 PRO and 200 + 150 USK are held by the cadres.
+	if c = d.Colonies[0]; c.Workers.PRO != 58 || c.Workers.USK != 650 || c.Drafted != nil {
+		t.Errorf("turn 2: workers %+v, drafted %+v; want 58 PRO and 650 USK", c.Workers, c.Drafted)
 	}
 }

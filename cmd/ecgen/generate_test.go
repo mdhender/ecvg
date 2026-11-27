@@ -236,6 +236,8 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 		{"tech level on a unit without one", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cargo":[{"type":"FOOD","tech_level":1,"qty":1}]}]}`},
 		{"operational unit that is never assembled", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"operational":[{"type":"FOOD","qty":1}]}]}`},
 		{"depot in an enclosed colony", `{"colonies":[{"no":1,"type":"CENC","tech_level":1,"depot":[{"type":"FUEL","qty":1}]}]}`},
+		{"cadres the population can't make up", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"population":{"usk":10,"pro":5},"cadres":{"cwrk":6}}]}`},
+		{"negative cadres", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"cadres":{"spy":-1}}]}`},
 		{"commodity in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot":[{"type":"FOOD","qty":1}]}]}`},
 		{"static unit assembled in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot_operational":[{"type":"LFSU","tech_level":1,"qty":1}]}]}`},
 		{"unassembled kind of unit operational in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot_operational":[{"type":"FUEL","qty":1}]}]}`},
