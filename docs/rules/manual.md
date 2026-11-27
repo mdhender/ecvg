@@ -372,11 +372,15 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 |------|---------------------|------------------------------------------------------------|
 |      | Cadre               | A group of population units trained for a particular task. |
 | CF\* | Combat factor       | Represents the force of attacker or defender.              |
+| CENC | Enclosed surface colony | Surface colony sealed from environment.                |
 | CLS  | Close               | This order has a ship approach another ship.               |
 | COM  | Combine             | This order combines two factory groups into one.           |
 | CON  | Control             | This order enables a player to control a planet.           |
 | CNGD | Consumer goods      | All that people need, except for food and air.             |
 | CNW  | Construction worker | Cadre consisting of 1 PRO and 1 USK.                       |
+| COPN | Open colony         | Surface colony open to environment.                        |
+| CORB | Orbiting colony     | Colony that orbits a planet.                               |
+| CSHP | Ship                | Spaceship.                                                 |
 
 ### D
 
@@ -395,7 +399,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code | Term                    | Definition                                      |
 |------|-------------------------|-------------------------------------------------|
 | END  | End                     | Signals the end of an add-on or set-up order.   |
-| ESC  | Enclosed surface colony | Surface colony sealed from environment.         |
 | ESH  | Energy shields          | Defensive armament used against energy weapons. |
 | EWP  | Energy weapons          | Weapons that fire beams or rays of energy.      |
 
@@ -442,7 +445,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term                   | Definition                                                                      |
 |------|------------------------|---------------------------------------------------------------------------------|
-| LFS  | Life Support units     | Recycle air and water for every s/c except OPC's ([G6.1](#rule-G6.1)).          |
+| LFS  | Life Support units     | Recycle air and water for every s/c except COPN's ([G6.1](#rule-G6.1)).          |
 
 ### M
 
@@ -478,8 +481,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term                    | Definition                                                                  |
 |------|-------------------------|-----------------------------------------------------------------------------|
-| OBC  | Orbiting colony         | Colony that orbits a planet.                                                |
-| OPC  | Open colony             | Surface colony open to environment.                                         |
 | ORE  | Ore                     | Raw resource extracted by MIN's, before it is refined ([H2.1](#rule-H2.1)). |
 | OTS  | Offensive troop support | See Combat ([D4.0](#rule-D4.0)<!-- was 15 -->).                             |
 
@@ -526,7 +527,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | SCR  | Scrap          | This order converts items back into METS and NMTS.   |
 | SEL  | Sell           | This order sells items to or through the market.     |
 | SEN  | Sensors        | Devices to do probes and improve EWP and MSL firing. |
-| SHP  | Ship           | Spaceship.                                           |
 | SHT  | Shut-down      | This order shuts down all farms in a s/c.            |
 
 | Code     | Term                         | Definition                                                    |
@@ -1089,15 +1089,15 @@ All colonies are at tactical coordinates (0,0,0), so the distance between two co
 
 | From | To  | Distance |
 |------|-----|----------|
-| ESC  | ESC | 1        |
-| ESC  | OPC | 1        |
-| OPC  | ESC | 1        |
-| OPC  | OPC | 1        |
-| ESC  | OBC | 2        |
-| OPC  | OBC | 2        |
-| OBC  | ESC | 2        |
-| OBC  | OPC | 2        |
-| OBC  | OBC | 3        |
+| CENC | CENC | 1        |
+| CENC | COPN | 1        |
+| COPN | CENC | 1        |
+| COPN | COPN | 1        |
+| CENC | CORB | 2        |
+| COPN | CORB | 2        |
+| CORB | CENC | 2        |
+| CORB | COPN | 2        |
+| CORB | CORB | 3        |
 
 When a ship is involved, the ship's tactical coordinates ([D6.3.4](#rule-D6.3.4)) are shown on the orbit probe section of the printout ([M2.1](#rule-M2.1)).
 
@@ -1262,7 +1262,7 @@ Fractions are dropped.
 
 Casualties from a raid are computed as in [D9.7.2](#rule-D9.7.2)<!-- was as above --> and then multiplied by a fraction.
 The fraction used differs according to the type of target.
-The fractions are 0.3 for OPC's, 0.5 for ESC's, 0.75 for OBC's, and 0.9 for ships.
+The fractions are 0.3 for COPN's, 0.5 for CENC's, 0.75 for CORB's, and 0.9 for ships.
 
 <a id="rule-D10.0"></a>
 ## D10.0 Mission Completion
@@ -1437,7 +1437,7 @@ None of the attacks penetrated D's ESH's.
 <a id="rule-F1.0"></a>
 ## F1.0 Types
 
-There are: ships (SHP), enclosed surface colonies (ESC), open surface colonies (OPC), and orbiting colonies (OBC).
+There are: ships (CSHP), enclosed surface colonies (CENC), open surface colonies (COPN), and orbiting colonies (CORB).
 
 <a id="rule-F2.0"></a>
 ## F2.0 Location Restrictions
@@ -1445,22 +1445,22 @@ There are: ships (SHP), enclosed surface colonies (ESC), open surface colonies (
 <a id="rule-F2.1"></a>
 ### F2.1 Open Colonies
 
-OPC's are not allowed on planets with a habitability number of 0.
+COPN's are not allowed on planets with a habitability number of 0.
 
 <a id="rule-F2.2"></a>
 ### F2.2 Enclosed Surface Colonies
 
-ESC's may be on any planet.
+CENC's may be on any planet.
 
 <a id="rule-F2.3"></a>
 ### F2.3 Orbiting Colonies
 
-OBC's may be located in any orbit around a star, whether or not there is a planet there.
+CORB's may be located in any orbit around a star, whether or not there is a planet there.
 
 <a id="rule-F2.4"></a>
 ### F2.4 Ships
 
-SHP's may be located in any orbit around a star, or in orbit 0 ([A3.1](#rule-A3.1)), whether or not there is a planet there, and may be moved from orbit to orbit, or from its orbit to orbit 0 of another star system.
+CSHP's may be located in any orbit around a star, or in orbit 0 ([A3.1](#rule-A3.1)), whether or not there is a planet there, and may be moved from orbit to orbit, or from its orbit to orbit 0 of another star system.
 All incoming ships arrive in orbit 0 of the star system.
 
 <a id="rule-F3.0"></a>
@@ -1469,12 +1469,12 @@ All incoming ships arrive in orbit 0 of the star system.
 <a id="rule-F3.1"></a>
 ### F3.1 Definition
 
-Assembled STUN, STUL, or STUS provide enclosure capacity for a s/c's units and population, except NMTS and METS in OPC's and ESC's.
+Assembled STUN, STUL, or STUS provide enclosure capacity for a s/c's units and population, except NMTS and METS in COPN's and CENC's.
 Required enclosure is the sum of the volume units (VU) required to enclose the population, stored items, and assembled items that require enclosure, using [R3.0](#rule-R3.0) and the assembly exceptions in [F10.7](#rule-F10.7).
 Assembled STUN, STUL, and STUS require zero VU of enclosure and do not add to the structural requirement ([R3.0](#rule-R3.0)).
 The required enclosure in VU times the structure ratio gives the structural requirement in STUN equivalents ([F3.1.1](#rule-F3.1.1)).
 The s/c must have enough assembled structural units to meet this requirement, subject to [F3.2](#rule-F3.2).
-In OPC's and ESC's, NMTS and METS are stored outside the colony.
+In COPN's and CENC's, NMTS and METS are stored outside the colony.
 
 <a id="rule-F3.1.1"></a>
 #### F3.1.1 Structure Ratio
@@ -1486,24 +1486,23 @@ The structure ratio is the number of STUN equivalents required to enclose one vo
 
 | S/C Type                       | Structure Ratio |
 |--------------------------------|-----------------|
-| Open colonies (OPC)             | 1               |
-| Enclosed surface colonies (ESC) | 5               |
-| Orbiting colonies (OBC)         | 8               |
-| Ships (SHP)                     | 10              |
+| Open colonies (COPN)             | 1               |
+| Enclosed surface colonies (CENC) | 5               |
+| Orbiting colonies (CORB)         | 8               |
+| Ships (CSHP)                     | 10              |
 
 Available enclosure capacity is the VU of enclosure supplied by the assembled structural units: the total assembled STUN equivalents divided by the structure ratio.
 The following table gives the volume units enclosed by 1 MU of assembled structure:
 
-| Structural Unit | Mass Per Unit (MU) | Units Per 1 MU | OPC | ESC | OBC  | SHIP |
-|-----------------|--------------------|----------------|-----|-----|------|------|
+| Structural Unit | Mass Per Unit (MU) | Units Per 1 MU | COPN | CENC | CORB | CSHP |
+|-----------------|--------------------|----------------|------|------|------|------|
 | STUN            | 0.1                | 10             | 10  | 2   | 1.25 | 1    |
 | STUL            | 0.1                | 10             | 50  | 10  | 6.25 | 5    |
 | STUS            | 0.1                | 10             | 200 | 40  | 25   | 20   |
 
-SHIP in this table means SHP.
 
-This means that structural requirements of a SHP are determined by how much it carries.
-If a SHP is to transport 100,000 volume units, it requires 1,000,000 STUN equivalents: 1,000,000 STUN, 200,000 STUL, 50,000 STUS, or a combination providing at least that many equivalents.
+This means that structural requirements of a CSHP are determined by how much it carries.
+If a CSHP is to transport 100,000 volume units, it requires 1,000,000 STUN equivalents: 1,000,000 STUN, 200,000 STUL, 50,000 STUS, or a combination providing at least that many equivalents.
 For the number of volume units per item see the UNIT CHARACTERISTICS SUMMARY in [R3.0](#rule-R3.0)<!-- was on the back cover -->.
 
 <a id="rule-F3.2"></a>
@@ -1520,7 +1519,7 @@ These limits do not apply to open colonies.
 <a id="rule-F3.2.1"></a>
 #### F3.2.1 Incoming Items
 
-Items enter a SHP, OBC, or ESC by TFR, PUP, STP, or ADN only as far as its enclosure capacity allows.
+Items enter a CSHP, CORB, or CENC by TFR, PUP, STP, or ADN only as far as its enclosure capacity allows.
 The remaining enclosure capacity is the available enclosure capacity less the required enclosure.
 The item entries in an order are processed in the order listed.
 Each entry is checked against the receiving s/c's remaining enclosure capacity when it is executed, using the inventory and assembled structure at that moment, including the effects of every unit accepted before it.
@@ -1541,14 +1540,14 @@ With 1 VU remaining, an entry for one unassembled HDRV-10 (225 VU) is rejected, 
 <a id="rule-F3.2.2"></a>
 #### F3.2.2 Disassembly
 
-A SHP, OBC, or ESC may not disassemble items if its resulting required enclosure would exceed its resulting available enclosure capacity.
+A CSHP, CORB, or CENC may not disassemble items if its resulting required enclosure would exceed its resulting available enclosure capacity.
 The resulting state counts the capacity lost with any disassembled structural units, and the enclosure required by the units that reach storage after the 10% disassembly loss ([F10.3](#rule-F10.3)).
 Items whose disassembly is refused stay assembled; none are lost, and none are added to storage.
 
 <a id="rule-F3.2.3"></a>
 #### F3.2.3 Manufactured Items
 
-In an OBC or ESC, a manufactured item leaves the production pipeline for storage only if there is enough remaining enclosure capacity for it ([H3.0](#rule-H3.0)).
+In a CORB or CENC, a manufactured item leaves the production pipeline for storage only if there is enough remaining enclosure capacity for it ([H3.0](#rule-H3.0)).
 Items that do not fit remain in WIP and stall it; they do not enter storage.
 
 <a id="rule-F4.0"></a>
@@ -1826,7 +1825,7 @@ Dis-assembly of non-population units causes a 10% *LOSS*.
 For instance, if 5,000 EWP-2 are dis-assembled then 500 will be lost and 4,500 will appear in storage under "un-assembled items" in the storage section of the printout.
 There is no loss in disassembling population units.
 When determining the 10% loss, fractions are rounded down.
-In a SHP, OBC, or ESC, a disassembly is refused if the result would exceed the s/c's enclosure capacity ([F3.2.2](#rule-F3.2.2)).
+In a CSHP, CORB, or CENC, a disassembly is refused if the result would exceed the s/c's enclosure capacity ([F3.2.2](#rule-F3.2.2)).
 
 <a id="rule-F10.4"></a>
 ### F10.4 Non-Assembly Items
@@ -2039,7 +2038,7 @@ These increases may be based upon several conditions which may occur (individual
 
 1. General population is underpaid, or back pay exists.
 2. General population is underfed.
-3. Lack of housing space (occurs only in OPC's - people sleep in streets).
+3. Lack of housing space (occurs only in COPN's - people sleep in streets).
 4. Starvation occurring.
    Causes greater rebel increases than #2.
 5. Jettisoning people (to colony 0).
@@ -2105,7 +2104,7 @@ Trainee decreases are caused by DSB orders which disband them, (they become USK 
 
 The death rate per s/c per turn is 0.625%.
 The computer applies this percentage to each population type within the s/c.
-This percentage is increased for all open colonies when the total POP in all the OPC's of the planet exceeds the planet's HN limit ([A4.2](#rule-A4.2)).
+This percentage is increased for all open colonies when the total POP in all the COPN's of the planet exceeds the planet's HN limit ([A4.2](#rule-A4.2)).
 
 <a id="rule-G4.0"></a>
 ## G4.0 Food
@@ -2177,8 +2176,8 @@ Life support units (LFS) are used in s/c's to recycle air and water.
 They will support the number of POP equal to their TL squared.
 For instance, a TL-5 LFS (LFS-5) will support 25 POP.
 A LFS uses one fuel unit times its TL per turn (i.e. a LFS-5 uses 5 fuel units per turn).
-Only OPC's do not require LFS.
-LFS on OBC's in orbits 1-5 do not use FUEL, but use solar power.
+Only COPN's do not require LFS.
+LFS on CORB's in orbits 1-5 do not use FUEL, but use solar power.
 
 <a id="rule-G6.2"></a>
 ### G6.2 Death Rate Affected
@@ -2248,7 +2247,7 @@ The personnel required to run one FRM unit of any TL is one PRO and three USK.
 ### H1.5 Fuel Use
 
 One FRM-1 uses 0.5 fuel units per turn; one FRM-2 through FRM-5 uses 0.5 times the TL in fuel units per turn; one FRM-6 through FRM-10 uses 1 fuel unit times the TL per turn.
-FRM's on OBC's in orbits 1-5 use no fuel, but use solar power.
+FRM's on CORB's in orbits 1-5 use no fuel, but use solar power.
 
 <a id="rule-H1.6"></a>
 ### H1.6 Shut Downs and Start Ups
@@ -2341,7 +2340,7 @@ Ships can NOT have assembled factories (operating factories), but may carry them
 ### H3.1 Fuel and Personnel Requirements
 
 Each FCT requires one PRO times the efficiency factor (see [H3.2](#rule-H3.2)<!-- was 8.3.2 -->) and three USK times the efficiency factor.
-Each FCT uses 0.5 fuel units times the factory's TL per turn, except FCT units in OBC's within the 5th orbit or less, which use 0 fuel.
+Each FCT uses 0.5 fuel units times the factory's TL per turn, except FCT units in CORB's within the 5th orbit or less, which use 0 fuel.
 Personnel and fuel are only used by assembled (functioning) FCT groups.
 
 <a id="rule-H3.2"></a>
@@ -2444,13 +2443,13 @@ RSCH and TL's are further explained in subject [J](#j-technology-and-research)<!
 <a id="rule-H3.8"></a>
 ### H3.8 STUN, STUL, and STUS
 
-STUN are only built in ESC's and OPC's.
-STUN can not be built in OBC's.
+STUN are only built in CENC's and COPN's.
+STUN can not be built in CORB's.
 An attempt to do so will result in the computer changing the STUN to either STUL or STUS.
 
-* OBC's TL 1-4 build STUL, so the computer would change the STUN to STUL.
-* OBC's TL5-10 build STUS, so the computer would change the STUN to STUS.
-* And if one tried to have an OBC-7, for instance, build STUL, the computer would automatically change the STUL to STUS.
+* CORB's TL 1-4 build STUL, so the computer would change the STUN to STUL.
+* CORB's TL5-10 build STUS, so the computer would change the STUN to STUS.
+* And if one tried to have a CORB-7, for instance, build STUL, the computer would automatically change the STUL to STUS.
 
 In other words, ordering a structural type with less enclosure capacity per unit than the appropriate type will cause the computer to correct it to the appropriate type.
 But ordering a type with *greater* enclosure capacity per unit than the appropriate type will cause the order to abort.
@@ -2834,7 +2833,7 @@ Spies do not rebel.
 | Standard of living: below 0.1 \*\*                              | 50% or more of current rebel pop.                               |
 | Food rationing                                                  | 1-75% of current rebel pop.                                     |
 | Starvation \*\*                                                 | 75% or more of current rebel pop.                               |
-| Lack of housing (in OPC's only)                                 | 25% of unhoused pop become rebels.                              |
+| Lack of housing (in COPN's only)                                 | 25% of unhoused pop become rebels.                              |
 | Jettisoning POP's.                                              | 10 x number jettisoned become rebels.                           |
 | POP's become under the control of a player of a different race. | 1% to 10% of those POP's become rebels                          |
 | Back pay                                                        | The ratio of back pay to POP's determines the rate of increase. |
@@ -2946,10 +2945,10 @@ The following formula determines the percentage of SPYS caught and shot when ent
 
 | S/C Type | Percent Caught |
 |----------|----------------|
-| ESC      | 50%            |
-| OBC      | 50%            |
-| OPC      | 10%            |
-| SHP      | 50%            |
+| CENC     | 50%            |
+| CORB     | 50%            |
+| COPN     | 10%            |
+| CSHP     | 50%            |
 
 Casualties less than one will be rounded up to one.
 
@@ -3095,8 +3094,8 @@ Most of the printout is in easy to understand terms, with the exceptions of the 
 ```text
                                                           tactical
 Format:   S/C type  S/C name (S/C ID#)  mass=log base 10  coordinates
-Example:  SHP       VEGA-5   (356)      M=6               (9,-28,13)
-          OPC       BADSHOT  (28)       M=8               (0,0,0)
+Example:  CSHP      VEGA-5   (356)      M=6               (9,-28,13)
+          COPN      BADSHOT  (28)       M=8               (0,0,0)
 ```
 
 <a id="rule-R2.0"></a>
@@ -3147,7 +3146,7 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 | ASC           | 3xTL                  | 2xTL                  | 5xTL                | 0.1               | 10xTL=CF                     | 1 SLD                       | 5xTL      | NON       |
 | ANM           | 2xTL                  | 2xTL                  | 4xTL                | 0                 | (2^AT÷2^MT)x.55              | none                        | 4xTL      | NON       |
 | AUT           | 2xTL                  | 2xTL                  | 4xTL                | 0                 | Replaces 1 USK xTL^2         | none                        | 2xTL      | UNA       |
-| CNGD          | 0.2                   | 0.3                   | 0.6                 | 0                 | --                           | --                          | 0.6       | NON       |
+| CNGD          | 0.2                   | 0.4                   | 0.6                 | 0                 | --                           | --                          | 0.6       | NON       |
 | ESH           | 25xTL                 | 25xTL                 | 50xTL               | 10xTL/attack      | 10xTL^2 deflected per attack | none                        | 25xTL     | UNA       |
 | EWP           | 5xTL                  | 5xTL                  | 10xTL               | 4xTL/attack       | 10xTL^2 energy/att.          | none                        | 5xTL      | UNA       |
 | FCT           | 8+TL                  | 4+TL                  | 12+(2xTL)           | 0.5xTL\*          | 5xTL MU/TN                   | varies                      | 6+TL      | UNA       |
@@ -3469,7 +3468,7 @@ will have more STUL for sale next turn. Signed.
   ```
 - Example:
   ```text
-  29, STP, SHP.
+  29, STP, CSHP.
   50,000, STUN.
   5, PRO-2.
   1, SDRV-1.

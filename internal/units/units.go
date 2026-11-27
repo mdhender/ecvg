@@ -43,7 +43,7 @@ const (
 	PROB = "PROB" // probe
 	PRTO = "PRTO" // prototype
 	RBL  = "RBL"  // rebel
-	RP   = "RP"   // research point
+	RSCH = "RSCH" // research point
 	SDRV = "SDRV" // space drive
 	SENS = "SENS" // sensor
 	SLD  = "SLD"  // soldiers
@@ -249,7 +249,7 @@ func build() []Def {
 		noTL(lots(made(CNGD, "Consumer Goods", Commodity, false, fixed(2), fixed(4), fixed(6), fixed(3), fixed(3)), 10)),
 		noTL(lots(made(CSUP, "Combat Supplies", Ammunition, false, fixed(1), fixed(1), fixed(2), fixed(2), fixed(2)), 50)),
 		people(CWRK, "Construction Worker", Cadre),
-		made(ESHD, "Energy Shield", Weaponry, true, perTL(10), perTL(10), perTL(20), perTL(20), perTL(10)),
+		made(ESHD, "Energy Shield", Weaponry, true, perTL(25), perTL(25), perTL(50), perTL(50), perTL(25)),
 		made(EWPN, "Energy Weapon", Weaponry, true, perTL(5), perTL(5), perTL(10), perTL(10), perTL(5)),
 		made(FACT, "Factory", Infrastructure, true, linear(1, 8), linear(1, 4), linear(2, 12), linear(2, 12), linear(1, 6)),
 		made(FARM, "Farm", Infrastructure, true, linear(1, 4), linear(1, 2), linear(2, 6), linear(2, 6), linear(1, 3)),
@@ -273,7 +273,7 @@ func build() []Def {
 		prto,
 		people(RBL, "Rebel", Cadre),
 		// A research point is bookkeeping, with no mass or volume.
-		{Code: RP, Name: "Research Point", Class: Technology, lot: 1},
+		{Code: RSCH, Name: "Research Point", Class: Technology, lot: 1},
 		made(SDRV, "Space Drive", Propulsion, true, perTL(15), perTL(10), perTL(25), perTL(25), halves(25, 0)),
 		made(SENS, "Sensor", Recon, true, perTL(1000), perTL(2000), perTL(3000), perTL(3000), perTL(1500)),
 		people(SLD, "Soldiers", Living),

@@ -19,7 +19,7 @@ WIP is how the game squares a quarterly turn with a yearly build time.
 
 The capacity rule is stated by the year.
 One FACT converts 20 MU times its TL of MTL and NMTL each year into units of the same total mass ([H3.3](../rules/manual.md#rule-H3.3)).
-Factories build everything except population, FOOD, and resources ([H3.0](../rules/manual.md#rule-H3.0)); the proposed rules take research away from them too ([Research](#research)).
+Factories build everything except population, FOOD, and resources ([H3.0](../rules/manual.md#rule-H3.0)).
 Mass is conserved: the unit characteristics give each unit's mass as the sum of its MTL and NMTL ([R3.0](../rules/manual.md#rule-R3.0)).
 A load is split between MTL and NMTL in the proportions of the unit's inputs.
 So a FACT-1 building LFSU-2, at 6 MTL and 10 NMTL each, takes 20 MU in that same proportion, 7.5 MTL and 12.5 NMTL, and turns it into 1.25 LFSU-2 a year.
@@ -224,18 +224,15 @@ Subtract it from the size of the group, and what is left is the FACT that are fr
 
 ## Research
 
-The manual has factory groups build research ([H3.7](../rules/manual.md#rule-H3.7)); in the proposed rules they do not.
-RP has no mass and needs no MTL or NMTL ([J4.1](../rules/manual.md#rule-J4.1)), so it would never fill a load or pass through the pipeline.
-Instead, laboratory (LAB) units, assembled into laboratory groups, make it.
-There are no laboratory groups yet.
+Factory groups also build research ([H3.7](../rules/manual.md#rule-H3.7)), and it does not go through the pipeline.
+RSCH has no mass ([R3.0](../rules/manual.md#rule-R3.0)) and needs no MTL or NMTL ([J4.1](../rules/manual.md#rule-J4.1)), so it never fills a load.
+A FACT building RSCH makes 0.25 times its TL in RSCH each turn ([J4.1](../rules/manual.md#rule-J4.1)).
 
-A LAB is a unit of its own in the [unit tables](../../unit-tables.md), a little lighter than a FACT of the same TL.
-It needs three PRO and one USK, where a FACT needs one PRO and three USK, and the same fuel, 0.5 times its TL a turn.
-Each LAB produces 0.25 times its TL in RP for each turn it is allocated labor and fuel; a turn without them is simply a turn without research, with no WIP to stall or hold.
-Laboratories produce just after factories in the turn, and their labor and fuel are allocated the same way: senior groups first.
+A group ordered to build research finishes its WIP first ([J4.1](../rules/manual.md#rule-J4.1)): a FACT that holds a load carries it through, and turns to research when it is free.
+Switching to research needs no retooling, but switching from research back to a unit does ([H3.6](../rules/manual.md#rule-H3.6)).
 
-Keeping research out of the factories keeps it out of the pipeline's rules altogether.
-A FACT is never switched to or from research, so it never has to finish its WIP before research or retool after it.
+Research is going to move out of the factories to laboratory (LAB) units.
+Until it does, this is how it works.
 
 ## Farms and mines
 
@@ -266,6 +263,6 @@ A factory, by contrast, holds its finished work in its stockpile and stops takin
 ## Why seniority matters
 
 Every allocation in production, of resources, staff, and fuel, serves the oldest group first.
-Seniority is group number: a new group always gets a higher number than any before it, and a number is never reused, so the lowest number is always the oldest group.
+Seniority is group number: an entity's groups of every kind share one run of numbers, a new group always gets a higher number than any before it, and a number is never reused, so the lowest number is always the oldest group.
 In a shortage the newest groups go without, and an empire can not renumber or reorder the groups ([H3.9](../rules/manual.md#rule-H3.9)).
 Where the manual shuts a group down, the tool an empire has here is the `set idle` order, which idles a percentage of a group's units; idled units ask for no staff or fuel, which leaves more for the rest.

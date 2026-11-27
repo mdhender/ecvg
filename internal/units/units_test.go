@@ -98,7 +98,7 @@ func TestFlags(t *testing.T) {
 		if listed[d.Code] {
 			continue
 		}
-		if d.HasTechLevel || d.RequiresAssembly || d.Manufactured || !(d.Population() || d.Code == units.RP) {
+		if d.HasTechLevel || d.RequiresAssembly || d.Manufactured || !(d.Population() || d.Code == units.RSCH) {
 			t.Errorf("%s: not in the document's catalogue, but %+v", d.Code, d)
 		}
 	}
@@ -158,7 +158,7 @@ func TestCatalogue(t *testing.T) {
 		switch {
 		case d.HasTechLevel:
 			want = units.MaxTechLevel - units.MinTechLevel + 1
-		case !d.Population() && d.Code != units.RP:
+		case !d.Population() && d.Code != units.RSCH:
 			want = 1
 		}
 		if count[d.Code] != want {
@@ -190,7 +190,7 @@ func TestRounding(t *testing.T) {
 		{"650,000 stowed FACT-10", def(units.FACT).StowedVolume(10, 650000), 10400000},
 		{"no units", def(units.FACT).Mass(10, 0), 0},
 		{"a population unit", def(units.USK).Mass(0, 7), 7},
-		{"research points", def(units.RP).Mass(0, 7), 0},
+		{"research points", def(units.RSCH).Mass(0, 7), 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.got != tc.want {

@@ -244,7 +244,7 @@ func (t EmpireTemplate) Validate() error {
 				switch d, ok := units.Lookup(u.Type); {
 				case !ok:
 					bad("colony %d: %s %d: unknown unit %q", i+1, kind, j+1, u.Type)
-				case d.Population() || d.Code == units.RP:
+				case d.Population() || d.Code == units.RSCH:
 					bad("colony %d: %s %d: %s can't be listed as a unit", i+1, kind, j+1, u.Type)
 				case !d.ValidTechLevel(u.TechLevel) && u.TechLevel >= 0:
 					if d.HasTechLevel {

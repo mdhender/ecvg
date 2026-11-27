@@ -35,7 +35,7 @@
 | PRTO      | Prototype           | Technology     | no     |
 | PROB      | Probe               | Recon          | yes    |
 | RBL       | Rebel               | Cadre          | no     |
-| RP        | Research Point      | Technology     | no     |
+| RSCH      | Research Point      | Technology     | no     |
 | SENS      | Sensor              | Recon          | yes    |
 | SLD       | Soldiers            | Living         | no     |
 | SDRV      | Space Drive         | Propulsion     | yes    |
@@ -88,7 +88,7 @@ Manufactured units are built in whole lots.
 | AUTO      | 2 x TL          | 2 x TL              |
 | CNGD      | 2               | 4                   |
 | CSUP      | 1               | 1                   |
-| ESHD      | 10 x TL         | 10 x TL             |
+| ESHD      | 25 x TL         | 25 x TL             |
 | EWPN      | 5 x TL          | 5 x TL              |
 | FACT      | TL + 8          | 4 + TL              |
 | FARM      | TL + 4          | 2 + TL              |
@@ -140,7 +140,7 @@ These units must be assembled before they can be used.
 | AUTO      | 4 x TL          | 4 x TL          | 2 x TL          |
 | CNGD      | 6               | 3               | 3               |
 | CSUP      | 2               | 2               | 2               |
-| ESHD      | 20 x TL         | 20 x TL         | 10 x TL         |
+| ESHD      | 50 x TL         | 50 x TL         | 25 x TL         |
 | EWPN      | 10 x TL         | 10 x TL         | 5 x TL          |
 | FACT      | 2 x (TL + 6)    | 2 x (TL + 6)    | TL + 6          |
 | FARM      | 2 x (TL + 3)    | 2 x (TL + 3)    | TL + 3          |
@@ -159,7 +159,7 @@ These units must be assembled before they can be used.
 | POWR      | 2 x (TL + 5)    | 2 x (TL + 5)    | TL + 5          |
 | PRTO      | TL              | 3 x TL          | 3 x TL          |
 | PROB      | 500             | 500             | 500             |
-| RP        | 0               | 0               | 0               |
+| RSCH      | 0               | 0               | 0               |
 | SENS      | 3000 x TL       | 3000 x TL       | 1500 x TL       |
 | SDRV      | 25 x TL         | 25 x TL         | 12.5 x TL       |
 | STRC      | 10 x TL         | 10 x TL         | 10 x TL         |
@@ -207,7 +207,7 @@ These units must be assembled before they can be used.
 | PRTO      |                                                                        | Transfer Tech Levels between Entities                                                |
 | PROB      |                                                                        | One attempt per probe, then expended; built in lots of 10 x TL^2                      |
 | RBL       |                                                                        | Tally of population willing to rebel; does not allocate the underlying units         |
-| RP        |                                                                        | Expended to increase TLs                                                             |
+| RSCH      |                                                                        | Expended to increase TLs                                                             |
 | SENS      | 0.05 x TL fuel or power                                                | Used to obtain probe information                                                     |
 | SLD       | Food and Consumer Goods as well as 1 x combat supplies during combat   | Provide combat factors and also staffing for certain weapons systems                 |
 | SDRV      | 1 professional / 100 and 1 x TL fuel only                              | Produces 3000 x TL^2 thrust                                                          |
@@ -261,7 +261,7 @@ Generation rules applied:
 
 - Resource units (`FUEL`, `GOLD`, `MTL`, `NMTL`) and `FOOD` have only a TL0 row.
 - Living (`PRO`, `SLD`, `UEM`, `USK`) and Cadre (`CWRK`, `POL`, `RBL`, `SPAG`, `SPY`, `TRNE`, `WRKR`) entries have no rows.
-- `RP` is a non-physical bookkeeping unit and has no row.
+- `RSCH` is a non-physical bookkeeping unit and has no row.
 - All remaining units have TL1–TL10 rows, except `CNGD` and `CSUP` (TL0 only).
 - Invariant: a unit code never has both a TL0 row and a positive-TL row.
 - `stowed_volume_units` may be fractional (`ACFT`, `HDRV`, `MLNC`, `SDRV` at odd Tech Levels); see the rounding note under **Unit Mass and Volume**.
@@ -350,16 +350,16 @@ Notes:
 | AWPN      | 10         | 1        | 10         | 10         | 20         | 20           | 10                  |
 | CNGD      | 0          | 10       | 2          | 4          | 6          | 3            | 3                   |
 | CSUP      | 0          | 50       | 1          | 1          | 2          | 2            | 2                   |
-| ESHD      | 1          | 1        | 10         | 10         | 20         | 20           | 10                  |
-| ESHD      | 2          | 1        | 20         | 20         | 40         | 40           | 20                  |
-| ESHD      | 3          | 1        | 30         | 30         | 60         | 60           | 30                  |
-| ESHD      | 4          | 1        | 40         | 40         | 80         | 80           | 40                  |
-| ESHD      | 5          | 1        | 50         | 50         | 100        | 100          | 50                  |
-| ESHD      | 6          | 1        | 60         | 60         | 120        | 120          | 60                  |
-| ESHD      | 7          | 1        | 70         | 70         | 140        | 140          | 70                  |
-| ESHD      | 8          | 1        | 80         | 80         | 160        | 160          | 80                  |
-| ESHD      | 9          | 1        | 90         | 90         | 180        | 180          | 90                  |
-| ESHD      | 10         | 1        | 100        | 100        | 200        | 200          | 100                 |
+| ESHD      | 1          | 1        | 25         | 25         | 50         | 50           | 25                  |
+| ESHD      | 2          | 1        | 50         | 50         | 100        | 100          | 50                  |
+| ESHD      | 3          | 1        | 75         | 75         | 150        | 150          | 75                  |
+| ESHD      | 4          | 1        | 100        | 100        | 200        | 200          | 100                 |
+| ESHD      | 5          | 1        | 125        | 125        | 250        | 250          | 125                 |
+| ESHD      | 6          | 1        | 150        | 150        | 300        | 300          | 150                 |
+| ESHD      | 7          | 1        | 175        | 175        | 350        | 350          | 175                 |
+| ESHD      | 8          | 1        | 200        | 200        | 400        | 400          | 200                 |
+| ESHD      | 9          | 1        | 225        | 225        | 450        | 450          | 225                 |
+| ESHD      | 10         | 1        | 250        | 250        | 500        | 500          | 250                 |
 | EWPN      | 1          | 1        | 5          | 5          | 10         | 10           | 5                   |
 | EWPN      | 2          | 1        | 10         | 10         | 20         | 20           | 10                  |
 | EWPN      | 3          | 1        | 15         | 15         | 30         | 30           | 15                  |
