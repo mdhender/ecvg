@@ -411,7 +411,7 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 func cloneGroups(groups []game.Group) []game.Group {
 	out := make([]game.Group, len(groups))
 	for i, g := range groups {
-		out[i] = game.Group{No: g.No, Units: slices.Clone(g.Units)}
+		out[i] = game.Group{No: g.No, Units: slices.Clone(g.Units), Producing: g.Producing}
 	}
 	return out
 }

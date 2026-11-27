@@ -132,10 +132,10 @@ func TestAssembleGroupOrders(t *testing.T) {
 				}
 			},
 		},
-		{name: "a factory order needs the units", text: "assemble factory-group on 1 with 11 FACT-9", err: engine.ErrNotEnoughUnits},
+		{name: "a factory order needs the units", text: "assemble factory-group on 1 with 11 FACT-9 producing CNGD", err: engine.ErrNotEnoughUnits},
 		{
 			name: "a factory order takes the units there are",
-			text: "assemble factory-group on 1 with 11 FACT-1",
+			text: "assemble factory-group on 1 with 11 FACT-1 producing CNGD",
 			check: func(t *testing.T, c []game.Colony) {
 				if len(c[0].Assembly) != 1 || c[0].Assembly[0].Unit.Qty != 10 {
 					t.Errorf("work %+v, want 10 FACT-1", c[0].Assembly)
@@ -144,7 +144,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 		},
 		{
 			name: "a factory group is of one tech level",
-			text: "assemble factory-group on 1 with 10 FACT-1\nassemble factory-group 5 on 1 add 5 FACT-2",
+			text: "assemble factory-group on 1 with 10 FACT-1 producing CNGD\nassemble factory-group 5 on 1 add 5 FACT-2",
 			err:  engine.ErrTechLevel,
 		},
 	} {
@@ -223,7 +223,7 @@ func TestAssemblyInTheSetupTurn(t *testing.T) {
 func TestGroupNumbersAreShared(t *testing.T) {
 	d := builders()
 	d.Colonies[0].LastGroupNo = 8 // groups 5 to 8 have come and gone
-	text := "assemble mining-group on 1 with 10 MINE-10 working 1\nassemble factory-group on 1 with 5 FACT-1\nassemble farming-group on 1 with 5 FARM-1\nassemble mining-group on 1 with 10 MINE-9 working 3"
+	text := "assemble mining-group on 1 with 10 MINE-10 working 1\nassemble factory-group on 1 with 5 FACT-1 producing CNGD\nassemble farming-group on 1 with 5 FARM-1\nassemble mining-group on 1 with 10 MINE-9 working 3"
 	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, text)})
 	if err != nil || len(result.Rejected) != 0 {
 		t.Fatalf("rejected %+v, %v", result.Rejected, err)
@@ -242,7 +242,7 @@ func TestFactoryGroupLimit(t *testing.T) {
 	for len(c.FactoryGroups) < game.MaxFactoryGroups-1 {
 		c.FactoryGroups = append(c.FactoryGroups, game.Group{No: 100 + len(c.FactoryGroups)})
 	}
-	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble factory-group on 1 with 1 FACT-1\nassemble factory-group on 1 with 1 FACT-1")})
+	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble factory-group on 1 with 1 FACT-1 producing CNGD\nassemble factory-group on 1 with 1 FACT-1 producing CNGD")})
 	if err != nil {
 		t.Fatal(err)
 	}

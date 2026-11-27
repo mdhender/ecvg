@@ -437,7 +437,10 @@ func TestParseDisbandAndAssemble(t *testing.T) {
 		{line: "assemble mining-group 3 on 5 add 100 MINE-10 working 17", err: orders.ErrInvalidOrder},
 		{line: "assemble mining-group on 5 with 100 FACT-1 working 17", err: orders.ErrInvalidUnit},
 
-		{line: "assemble factory-group on 5 with 100 FACT-1", want: group(game.KindFactory, 0, 5, unit{Type: "FACT", TechLevel: 1, Qty: 100})},
+		{line: "assemble factory-group on 5 with 100 FACT-1", err: orders.ErrInvalidOrder},
+		{line: "assemble factory-group on 5 with 100 FACT-1 using 3 CWRK", err: orders.ErrInvalidOrder},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing rsch", want: producing(group(game.KindFactory, 0, 5, unit{Type: "FACT", TechLevel: 1, Qty: 100}), unit{Type: "RSCH"})},
+		{line: "assemble factory-group on 5 with 100 FACT-1 producing RSCH-1", err: orders.ErrInvalidUnit},
 		{
 			line: "assemble factory-group on 5 with 1,000 fact-10 producing CNGD",
 			want: producing(group(game.KindFactory, 0, 5, unit{Type: "FACT", TechLevel: 10, Qty: 1000}), unit{Type: "CNGD"}),
@@ -452,7 +455,7 @@ func TestParseDisbandAndAssemble(t *testing.T) {
 		{line: "assemble factory-group on 5 with 100 FACT-1 producing FUEL", err: orders.ErrInvalidUnit},
 		{line: "assemble factory-group on 5 with 100 FACT-1 producing SLD", err: orders.ErrInvalidUnit},
 		{line: "assemble factory-group on 5 with 100 FACT-1 producing", err: orders.ErrInvalidOrder},
-		{line: "assemble factory-group on 5 with 100 FACT-1,", err: orders.ErrInvalidUnit},
+		{line: "assemble factory-group on 5 with 100 FACT-1, producing CNGD", err: orders.ErrInvalidUnit},
 		{line: "assemble factory-group on 5 with 100 FACT-1 50 FACT-2", err: orders.ErrInvalidOrder},
 		{line: "assemble factory-group on 5 with 100 FARM-1", err: orders.ErrInvalidUnit},
 		{line: "assemble factory-group on 5 with lots FACT-1", err: orders.ErrInvalidQuantity},

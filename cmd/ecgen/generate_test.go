@@ -193,7 +193,7 @@ func TestGenerateRules(t *testing.T) {
 		if c.ID != i+1 || c.EmpireID != emp.ID || c.PlanetID != emp.HomeWorldID || c.Type != tc.Type ||
 			c.Population != tc.Population || c.SOL != 1.0 || c.DeathRate != 0.00625 || c.BirthRate != 0.00625 || !reflect.DeepEqual(c.Cargo, tc.Cargo) ||
 			!reflect.DeepEqual(c.FarmingGroups, tc.FarmingGroups) ||
-			len(c.MiningGroups) != 0 || len(c.FactoryGroups) != len(tc.FactoryGroups) {
+			len(c.MiningGroups) != 0 || !reflect.DeepEqual(c.FactoryGroups, cloneGroups(tc.FactoryGroups)) {
 			t.Errorf("colony %d doesn't match empire %d and the template", c.ID, emp.ID)
 		}
 	}
@@ -244,9 +244,14 @@ func TestTemplatesRejectInvalid(t *testing.T) {
 		{"unassembled kind of unit operational in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot_operational":[{"type":"FUEL","qty":1}]}]}`},
 		{"unknown unit in the depot", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"depot":[{"type":"ORE","qty":1}]}]}`},
 		{"farming group of two tech levels", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":1},{"qty":1,"tech_level":2}]}]}]}`},
-		{"two groups with one number", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":2}]}],"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}]}]}]}`},
+		{"two groups with one number", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":2}]}],"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":{"type":"CNGD"}}]}]}`},
 		{"group number 0", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":0,"units":[{"qty":1,"tech_level":2}]}]}]}`},
 		{"groups out of order", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":2,"units":[{"qty":1,"tech_level":2}]},{"no":1,"units":[{"qty":1,"tech_level":2}]}]}]}`},
+		{"factory group that makes nothing", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}]}]}]}`},
+		{"factory group that makes a resource", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":{"type":"FUEL"}}]}]}`},
+		{"factory group product missing its tech level", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":{"type":"FARM"}}]}]}`},
+		{"factory group product with a quantity", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":{"type":"CNGD","qty":5}}]}]}`},
+		{"farming group that makes something", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[{"qty":1,"tech_level":2}],"producing":{"type":"FOOD"}}]}]}`},
 		{"empty group", `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"farming_groups":[{"no":1,"units":[]}]}]}`},
 	} {
 		t.Run("empire/"+tc.name, func(t *testing.T) {
@@ -331,5 +336,16 @@ func TestCreate(t *testing.T) {
 	}
 	if entries, _ := os.ReadDir(other); len(entries) != 0 {
 		t.Errorf("a failed create left %d files behind", len(entries))
+	}
+}
+
+// A factory group of the template says what it makes, as the order that
+// assembles one must.
+func TestEmpireTemplateFactoryGroups(t *testing.T) {
+	for _, producing := range []string{`{"type":"CNGD"}`, `{"type":"FARM","tech_level":1}`, `{"type":"RSCH"}`} {
+		data := `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":` + producing + `}]}]}`
+		if _, err := parseEmpireTemplate([]byte(data)); err != nil {
+			t.Errorf("producing %s: %v", producing, err)
+		}
 	}
 }

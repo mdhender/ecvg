@@ -304,6 +304,27 @@ func (t EmpireTemplate) Validate() error {
 		}
 		groups("farming", c.FarmingGroups)
 		groups("factory", c.FactoryGroups)
+		// A factory group must say what it makes, as the order that
+		// assembles one must; no other group makes anything to order.
+		for j, g := range c.FarmingGroups {
+			if g.Producing != (game.Unit{}) {
+				bad("colony %d: farming group %d: producing: only a factory group has it", i+1, j+1)
+			}
+		}
+		for j, g := range c.FactoryGroups {
+			u := g.Producing
+			d, ok := units.Lookup(u.Type)
+			switch {
+			case u.Type == "":
+				bad("colony %d: factory group %d: no producing: want the unit the group makes, such as {\"type\": \"CNGD\"}", i+1, j+1)
+			case !ok || !d.FactoryMade():
+				bad("colony %d: factory group %d: producing %q: factories don't make it", i+1, j+1, u.Type)
+			case d.HasTechLevel && !d.ValidTechLevel(u.TechLevel), !d.HasTechLevel && u.TechLevel != 0:
+				bad("colony %d: factory group %d: producing %s at tech_level %d: not a tech level of that unit", i+1, j+1, u.Type, u.TechLevel)
+			case u.Qty != 0:
+				bad("colony %d: factory group %d: producing %s: qty %d: want no qty", i+1, j+1, u.Type, u.Qty)
+			}
+		}
 		farmTLs := map[int]bool{}
 		for j, g := range c.FarmingGroups {
 			for _, u := range g.Units {

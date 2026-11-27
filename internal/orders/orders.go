@@ -14,7 +14,7 @@
 //	set idle for GroupKind group GroupNo of EntityID to PercentageAmount
 //	draft Quantity UnitOrCadre from EntityID
 //	disband Quantity UnitOrCadre from EntityID
-//	assemble factory-group on EntityID with Quantity FactoryUnit [producing Unit]
+//	assemble factory-group on EntityID with Quantity FactoryUnit producing Unit
 //	assemble farming-group on EntityID with Quantity FarmUnit
 //	assemble mining-group on EntityID with Quantity MiningUnit working DepositNo
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
@@ -141,8 +141,8 @@ type AssembleGroup struct {
 	// DepositNo is the deposit a new mining group works: its number on the
 	// entity's planet.
 	DepositNo int
-	// Producing is what a new factory group is to make, if the order says;
-	// its Qty is 0.
+	// Producing is what a new factory group is to make, which the order must
+	// say; its Qty is 0.
 	Producing game.Unit
 	// MaxCWRK is the most CWRK that may work on the order in a turn, or 0
 	// if the order sets no cap.
@@ -363,7 +363,7 @@ var groupUnit = map[game.GroupKind]string{
 
 const assembleUsage = `want one of:
   assemble Quantity Unit on EntityID
-  assemble factory-group on EntityID with Quantity FACT-n [producing Unit]
+  assemble factory-group on EntityID with Quantity FACT-n producing Unit
   assemble farming-group on EntityID with Quantity FARM-n
   assemble mining-group on EntityID with Quantity MINE-n working DepositNo
   assemble factory-group GroupNo on EntityID add Quantity FACT-n
@@ -502,7 +502,9 @@ func parseAssemble(tokens []Token) (Order, error) {
 		if o.DepositNo, ok = number(id); !ok || o.DepositNo < 1 {
 			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidDepositNo, id.Text)
 		}
-	case kind == game.KindFactory && len(rest) > 0:
+	case kind == game.KindFactory:
+		// A new factory group must be told what to make: nothing can
+		// tell it later.
 		t, ok1 := next()
 		u, ok2 := next()
 		if !ok1 || !ok2 || !t.Is("producing") {
@@ -511,7 +513,7 @@ func parseAssemble(tokens []Token) (Order, error) {
 		if o.Producing, err = unitOf(u, ""); err != nil {
 			return nil, err
 		}
-		if d, _ := units.Lookup(o.Producing.Type); !d.Manufactured {
+		if d, _ := units.Lookup(o.Producing.Type); !d.FactoryMade() {
 			return nil, fmt.Errorf("%w: %q: factories don't make it", ErrInvalidUnit, u.Text)
 		}
 	}

@@ -3223,7 +3223,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Assemble               | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1) |
 | Disassemble            | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2) |
 | Scrap                  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3) |
-| Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n [producing Unit]`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
+| Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n producing Unit`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
 | Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
 | Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
 | Set idle               | `set idle for GroupKind group GroupNo of EntityID to PercentageAmount` | [S8.1](#rule-S8.1)\*, [S8.3](#rule-S8.3)\*, [S8.5](#rule-S8.5)\*, [S8.6](#rule-S8.6)\* |
@@ -3875,7 +3875,7 @@ Assembles FACT units from storage into a new factory group, or adds them to a gr
 **Syntax**
 
 ```text
-assemble factory-group on EntityID with Quantity FACT-n [producing Unit] [using Quantity CWRK]
+assemble factory-group on EntityID with Quantity FACT-n producing Unit [using Quantity CWRK]
 assemble factory-group GroupNo on EntityID add Quantity FACT-n [using Quantity CWRK]
 ```
 
@@ -3884,7 +3884,7 @@ assemble factory-group GroupNo on EntityID add Quantity FACT-n [using Quantity C
 | EntityID  | The S/C that has the FACT units in storage.                                   |
 | Quantity  | How many FACT units to assemble ([S2.1](#rule-S2.1)).                         |
 | FACT-n    | The FACT units, with their TL: FACT-1 to FACT-10.                             |
-| producing | The item the new group is to build, with its TL if it has one. Optional.      |
+| producing | The item the new group is to build, with its TL if it has one, or RSCH.     |
 | GroupNo   | The number of the factory group the units are added to.                       |
 | using     | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
 
@@ -3892,12 +3892,15 @@ assemble factory-group GroupNo on EntityID add Quantity FACT-n [using Quantity C
 
 ```text
 assemble factory-group on 83 with 20,000 FACT-4 producing LFSU-1   # a new group
+assemble factory-group on 83 with 500 FACT-4 producing RSCH        # a new group, for research
 assemble factory-group 5 on 99 add 10,000 FACT-3                   # more FACT for group 5
 ```
 
 **Rules**
 
 - The first form makes a new group, and the second adds to a group.
+- A new group must be told what to build.
+  An order that adds to a group does not say, since the group already builds something.
 - A new group is formed, and given the next group number of the S/C ([H3.9](#rule-H3.9)), as soon as the order is accepted.
   Its units join it as the CWRK assemble them.
 - Every FACT unit of a group is of the same TL.
@@ -3908,7 +3911,7 @@ assemble factory-group 5 on 99 add 10,000 FACT-3                   # more FACT f
 
 - The S/C has none of the FACT units in storage that are not already being assembled or scrapped.
 - The S/C already has 25 factory groups.
-- The producing unit is not one that factories build.
+- A new group is not told what to build, or the producing unit is not one that factories build.
 - The group to add to does not exist, or its units are of another TL.
 - The S/C does not belong to the player.
 

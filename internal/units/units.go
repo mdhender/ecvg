@@ -308,3 +308,9 @@ func build() []Def {
 	})
 	return defs
 }
+
+// FactoryMade reports whether a factory group can be set to make the unit:
+// a manufactured unit, or RSCH, which factories make from nothing.
+func (d Def) FactoryMade() bool {
+	return d.Manufactured || d.Code == RSCH
+}
