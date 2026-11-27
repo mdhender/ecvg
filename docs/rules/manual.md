@@ -355,7 +355,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | AMSL | Anti-missile                      | A short range missile used for defense.            |
 | APU  | Allow pick-up                     | This order allows a S/C to pick up from another.   |
 | ACFT | Assault craft                     | Armed vehicles capable of short flights in space.  |
-| ASM  | Assemble                          | This order makes items functional, forms groups.   |
 | AWPN | Assault weapons                   | Short range guns of various types.                 |
 | AUTO | Automation                        | Replaces unskilled in farms, factories, and mines. |
 
@@ -388,7 +387,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code  | Term                    | Definition                                          |
 |-------|-------------------------|-----------------------------------------------------|
 | DAM\* | Damage                  | Destruction of units in combat.                     |
-| DAS   | Dis-assemble            | This order is the reverse of an Assemble order.     |
 | DEP   | Deposit gift            | This order gives a mine group (& deposit) to a S/C. |
 | DTS   | Defensive troop support | See Combat ([D4.0](#rule-D4.0)<!-- was 15 -->).                                    |
 | DU\*  | Distance unit           | Equal to 10,000 kilometers.                         |
@@ -521,7 +519,6 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code | Term           | Definition                                           |
 |------|----------------|------------------------------------------------------|
 | S/C  | Ship or colony | Any ship or colony, interchangeably.                 |
-| SCR  | Scrap          | This order converts items back into MTL  and NMTL.   |
 | SEL  | Sell           | This order sells items to or through the market.     |
 | SENS | Sensors        | Devices to do probes and improve EWPN and MLNC firing. |
 | SHT  | Shut-down      | This order shuts down all farms in a S/C.            |
@@ -558,7 +555,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code  | Term              | Definition                                                       |
 |-------|-------------------|------------------------------------------------------------------|
 | UEM   | Unemployable unit | Population unit consisting of 100 of the elderly, disabled, etc. |
-| UNA\* | Unassembled items | Assembly type items that have been DAS'd.                        |
+| UNA\* | Unassembled items | Assembly type items that have been disassembled.                     |
 | UNC   | Uncontrol         | This order releases control of a planet.                         |
 | USK   | Unskilled unit    | Population unit consisting of 100 manual laborers.               |
 
@@ -642,8 +639,8 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.4"></a>
 ### B3.4 Dis-Assembly Stage
 
-1. <a id="rule-B3.4.1"></a>DAS orders processed (see [S6.2](#rule-S6.2)<!-- was 17.4.50 -->)
-2. <a id="rule-B3.4.2"></a>SCR orders processed (see [S6.3](#rule-S6.3)<!-- was 17.4.23 -->)
+1. <a id="rule-B3.4.1"></a>Disassemble orders processed (see [S6.2](#rule-S6.2)<!-- was 17.4.50 -->)
+2. <a id="rule-B3.4.2"></a>Scrap orders processed (see [S6.3](#rule-S6.3)<!-- was 17.4.23 -->)
 3. <a id="rule-B3.4.3"></a>JNK orders processed (see [S5.5](#rule-S5.5)<!-- was 17.4.17 -->)
 4. <a id="rule-B3.4.4"></a>MRG orders processed (see [S5.8](#rule-S5.8)<!-- was 17.4.20 -->)
 5. <a id="rule-B3.4.5"></a>GIV orders processed (see [S5.6](#rule-S5.6)<!-- was 17.4.18 -->)
@@ -673,7 +670,7 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.8"></a>
 ### B3.8 Assembly Stage
 
-1. <a id="rule-B3.8.1"></a>ASM orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->)
+1. <a id="rule-B3.8.1"></a>Assemble orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) for groups)
 
 <a id="rule-B3.9"></a>
 ### B3.9 Market Stage
@@ -2575,7 +2572,7 @@ A build change - research - order (BCH, RSCH) will cause a FACT group to change 
 A FACT producing RSCH will build .25 times its TL in RSCH per turn.
 The FACT group will complete its work-in-process before beginning the research.
 RSCH may be transferred or sold, decreasing the total number of RSCH accumulated.
-RSCH accumulate in the S/C until the player assembles them with an ASM order naming the TL he wants, such as 75, ASM, TL-3 ([S6.1](#rule-S6.1)).
+RSCH accumulate in the S/C until the player assembles them with an ASM order naming the TL he wants, such as 75, ASM, TL-3 ([S6.7](#rule-S6.7)).
 The ASM order is processed in the assembly stage, but the TL is raised during the production stage ([B3.17.6](#rule-B3.17.6)), so RSCH built that turn are counted.
 The S/C's TL rises one level at a time toward the TL named, as far as its RSCH pay for, and the RSCH used are deducted from the total accumulated; any RSCH left over stay accumulated.
 Several TL's may be gained in one turn this way.
@@ -3220,18 +3217,18 @@ The orders the game accepts are listed here, each with the rule that describes i
 
 | Order                  | Syntax | Rule |
 |------------------------|--------|------|
-| Assemble               | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1)\* |
-| Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n [producing Unit]`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.1](#rule-S6.1)\* |
-| Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.1](#rule-S6.1)\* |
-| Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.1](#rule-S6.1)\* |
-| Disassemble            | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2)\* |
-| Scrap                  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3)\* |
+| Assemble               | `assemble Quantity Unit on EntityID` | [S6.1](#rule-S6.1) |
+| Disassemble            | `disassemble Quantity Unit on EntityID` | [S6.2](#rule-S6.2) |
+| Scrap                  | `scrap Quantity Unit on EntityID` | [S6.3](#rule-S6.3) |
+| Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n [producing Unit]`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
+| Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
+| Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
 | Set idle               | `set idle for GroupKind group GroupNo of EntityID to PercentageAmount` | [S8.1](#rule-S8.1)\*, [S8.3](#rule-S8.3)\*, [S8.5](#rule-S8.5)\*, [S8.6](#rule-S8.6)\* |
 | Draft                  | `draft Quantity UnitOrCadre from EntityID` | [S12.1](#rule-S12.1) |
 | Disband                | `disband Quantity UnitOrCadre from EntityID` | [S12.2](#rule-S12.2) |
 | Set rations            | `set rations for EntityID to PercentageAmount` | [S12.4](#rule-S12.4) |
 
-Any assemble, disassemble, or scrap order may end with `using Quantity CWRK`.
+Any assemble, disassemble, or scrap order may end with `using Quantity CWRK` ([S6.0](#rule-S6.0)).
 
 \* The rule has not been rewritten yet, and still shows the order in its 1980 format.
 
@@ -3242,6 +3239,7 @@ They are listed by their 1980 codes.
 |--------|-------|
 | [S4.0](#rule-S4.0) Combat Orders | [TMV](#rule-S4.1), [CLS](#rule-S4.2), [RUN](#rule-S4.3), [PME](#rule-S4.4), [PMM](#rule-S4.5), [AME](#rule-S4.6), [AMM](#rule-S4.7), [INV](#rule-S4.8), [RAD](#rule-S4.9), [DTS](#rule-S4.10), [OTS](#rule-S4.11), [WTD](#rule-S4.12) |
 | [S5.0](#rule-S5.0) Ship and Colony Orders | [PTC](#rule-S5.1), [AAN](#rule-S5.2), [STP](#rule-S5.3), [ADN](#rule-S5.4), [JNK](#rule-S5.5), [GIV](#rule-S5.6), [ACP](#rule-S5.7), [MRG](#rule-S5.8), [CON](#rule-S5.9), [UNC](#rule-S5.10) |
+| [S6.0](#rule-S6.0) Assembly and Scrap Orders | [ASM](#rule-S6.7), to raise a TL only |
 | [S7.0](#rule-S7.0) Transfer Orders | [TFR](#rule-S7.1), [REC](#rule-S7.2), [PUP](#rule-S7.3), [APU](#rule-S7.4) |
 | [S8.0](#rule-S8.0) Production Orders | [BCH](#rule-S8.1), [COM](#rule-S8.2), [MCH](#rule-S8.3), [DEP](#rule-S8.4) |
 | [S9.0](#rule-S9.0) Market Orders | [BUY](#rule-S9.1), [SEL](#rule-S9.2) |
@@ -3395,7 +3393,7 @@ EC #3        PLAYER NAME:  PRINCE JAMES      TURN #2          PAGE 1 of 3
 RACE #2      SIGNATURE:                      PLAYER ID #22    ACCT #0353
 
 
-22, DAS, 60,000, STRN.
+disassemble 60,000 STRN on 22
 22, TFR, 1,000,000, MSSL-1, [24].
 22, PUP, 2,000,000, NMTL, [24].
 22, TFR, 100,000, FUEL, [295].
@@ -3712,117 +3710,299 @@ will have more STRL for sale next turn. Signed.
 <a id="rule-S6.0"></a>
 ## S6.0 Assembly and Scrap Orders
 
-<a id="rule-S6.1"></a>
-### S6.1 Assembly Orders (ASM)
+The orders of this section are all carried out by the construction workers (CWRK) of the S/C the order is addressed to ([F10.5](#rule-F10.5), [F11.0](#rule-F11.0)).
+The rules below apply to every one of them.
 
-- Format: S/C ID#, "ASM", quantity, item.
-- Example: 100, ASM, 100, SPY.
-- Example: 100, ASM, 300,000, MLNC-1.
-- Notes: This format is used to either form SPY and CWRK's, or to take items out of storage and put them to use.
+- Each CWRK assembles or disassembles 500 mass units per turn, or scraps 300.
+  CWRK drafted on a turn do not work until the next turn.
+- An order starts a piece of work.
+  If the S/C does not have the CWRK to finish the work on the turn it is ordered, the work goes on each turn until it is done, and no new order is needed.
+  The printout shows how far each piece of work has got.
+- Disassembly and scrap work get CWRK first, and assembly work gets the CWRK that are left.
+  Within each, the oldest work comes first.
+- A piece of work takes every CWRK it can use, unless the order limits it.
+
+**Limiting the CWRK**
+
+Any order of this section may end with a limit on the CWRK that work on it in a turn:
+
+```text
+assemble 5,000 HDRV-1 on 15 using 20 CWRK   # no more than 20 CWRK a turn
+```
+
+A limit higher than the work needs changes nothing.
+
+<a id="rule-S6.1"></a>
+### S6.1 Assemble
+
+Takes units out of storage and puts them to use.
+
+**Syntax**
+
+```text
+assemble Quantity Unit on EntityID [using Quantity CWRK]
+```
+
+| Value    | Meaning                                                                       |
+|----------|-------------------------------------------------------------------------------|
+| Quantity | How many to assemble ([S2.1](#rule-S2.1)).                                    |
+| Unit     | The unit, with its TL if it has one ([S2.4](#rule-S2.4)).                     |
+| EntityID | The S/C that has the units in storage.                                        |
+| using    | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+assemble 300,000 MLNC-1 on 100
+assemble 5,000 HDRV-1 on 15 using 20 CWRK   # no more than 20 CWRK a turn
+assemble 100 STRL on 5                      # STRL has no TL
+```
+
+**Rules**
+
+- The units must be in the S/C's storage, and not already being assembled or scrapped.
+- Assembly is done in the assembly stage ([B3.8](#rule-B3.8)).
+  A unit first works on the turn after it is assembled.
+- In a CSHP, CORB, or CENC, a unit is assembled only if there is enclosure capacity for it ([F3.2.4](#rule-F3.2.4)).
+  Until there is, the work waits.
+- FACT, FARM, and MINE are assembled into groups, with the orders of [S6.4](#rule-S6.4), [S6.5](#rule-S6.5), and [S6.6](#rule-S6.6).
+- CWRK and SPY are not assembled; they are drafted ([S12.1](#rule-S12.1)).
+- An order to assemble an item that is never assembled ([F10.4](#rule-F10.4)) is accepted and does nothing.
+
+**Rejected when**
+
+- Unit is FACT, FARM, or MINE.
+- Unit is a population unit or a cadre.
+- The S/C does not have that many of the unit in storage that are not already being assembled or scrapped.
+- The S/C does not belong to the player.
+
+<a id="rule-S6.2"></a>
+### S6.2 Disassemble
+
+Takes assembled units out of use and puts them into storage.
+
+**Syntax**
+
+```text
+disassemble Quantity Unit on EntityID [using Quantity CWRK]
+```
+
+| Value    | Meaning                                                                       |
+|----------|-------------------------------------------------------------------------------|
+| Quantity | How many to disassemble ([S2.1](#rule-S2.1)).                                 |
+| Unit     | The unit, with its TL if it has one ([S2.4](#rule-S2.4)).                     |
+| EntityID | The S/C that has the units assembled.                                         |
+| using    | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+disassemble 400 MLNC-1 on 100
+disassemble 60,000 STRN on 22 using 500 CWRK
+```
+
+**Rules**
+
+- 10% of the units an order disassembles are lost ([F10.3](#rule-F10.3)).
+  The loss is rounded down, but every order loses at least one unit.
+- Disassembly is done in the dis-assembly stage ([B3.4](#rule-B3.4)).
+- In a CSHP, CORB, or CENC, STRN, STRL, and STRS are disassembled only as far as the result stays within the S/C's enclosure capacity ([F3.2.2](#rule-F3.2.2)).
+  Until it does, the work waits.
+- FACT, FARM, and MINE that are in a group can not be disassembled yet.
+- CWRK and SPY are not disassembled; they are disbanded ([S12.2](#rule-S12.2)).
+- An order to disassemble an item that is never assembled ([F10.4](#rule-F10.4)) is accepted and does nothing.
+
+**Rejected when**
+
+- Unit is FACT, FARM, or MINE.
+- Unit is a population unit or a cadre.
+- The S/C does not have that many of the unit assembled that are not already being disassembled.
+- The S/C does not belong to the player.
+
+<a id="rule-S6.3"></a>
+### S6.3 Scrap
+
+Converts units in storage back into MTL and NMTL.
+
+**Syntax**
+
+```text
+scrap Quantity Unit on EntityID [using Quantity CWRK]
+```
+
+| Value    | Meaning                                                                       |
+|----------|-------------------------------------------------------------------------------|
+| Quantity | How many to scrap ([S2.1](#rule-S2.1)).                                       |
+| Unit     | The unit, with its TL if it has one ([S2.4](#rule-S2.4)).                     |
+| EntityID | The S/C that has the units in storage.                                        |
+| using    | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+scrap 1,000 AWPN-1 on 55
+scrap 20,000 CNGD on 38 using 100 CWRK
+```
+
+**Rules**
+
+- Scrapping returns 70% of the MTL and 70% of the NMTL the units were built from, each rounded down ([F11.0](#rule-F11.0)).
+- Only units in storage are scrapped, never assembled ones; an assembled unit must be disassembled first.
+- Scrap work is done in the dis-assembly stage ([B3.4](#rule-B3.4)).
+- A CSHP or CORB that has no room for the MTL and NMTL loses what does not fit.
+
+**Rejected when**
+
+- Unit was not built from MTL and NMTL, so there is nothing to recover.
+- Unit is a population unit or a cadre.
+- The S/C does not have that many of the unit in storage that are not already being assembled or scrapped.
+- The S/C does not belong to the player.
+
+<a id="rule-S6.4"></a>
+### S6.4 Assemble Factory Group
+
+Assembles FACT units from storage into a new factory group, or adds them to a group the S/C has ([H3.0](#rule-H3.0)).
+
+**Syntax**
+
+```text
+assemble factory-group on EntityID with Quantity FACT-n [producing Unit] [using Quantity CWRK]
+assemble factory-group GroupNo on EntityID add Quantity FACT-n [using Quantity CWRK]
+```
+
+| Value     | Meaning                                                                       |
+|-----------|-------------------------------------------------------------------------------|
+| EntityID  | The S/C that has the FACT units in storage.                                   |
+| Quantity  | How many FACT units to assemble ([S2.1](#rule-S2.1)).                         |
+| FACT-n    | The FACT units, with their TL: FACT-1 to FACT-10.                             |
+| producing | The item the new group is to build, with its TL if it has one. Optional.      |
+| GroupNo   | The number of the factory group the units are added to.                       |
+| using     | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+assemble factory-group on 83 with 20,000 FACT-4 producing LFSU-1   # a new group
+assemble factory-group 5 on 99 add 10,000 FACT-3                   # more FACT for group 5
+```
+
+**Rules**
+
+- The first form makes a new group, and the second adds to a group.
+- A new group is formed, and given the next group number of the S/C ([H3.9](#rule-H3.9)), as soon as the order is accepted.
+  Its units join it as the CWRK assemble them.
+- Every FACT unit of a group is of the same TL.
+- A S/C may have no more than 25 factory groups.
+- The rules for assembling units ([S6.1](#rule-S6.1)) apply to the FACT units.
+
+**Rejected when**
+
+- The S/C does not have that many of the FACT units in storage that are not already being assembled or scrapped.
+- The S/C already has 25 factory groups.
+- The producing unit is not one that factories build.
+- The group to add to does not exist, or its units are of another TL.
+- The S/C does not belong to the player.
+
+<a id="rule-S6.5"></a>
+### S6.5 Assemble Farming Group
+
+Assembles FARM units from storage into the S/C's farming group of their TL ([H1.0](#rule-H1.0)).
+
+**Syntax**
+
+```text
+assemble farming-group on EntityID with Quantity FARM-n [using Quantity CWRK]
+```
+
+| Value    | Meaning                                                                       |
+|----------|-------------------------------------------------------------------------------|
+| EntityID | The S/C that has the FARM units in storage.                                   |
+| Quantity | How many FARM units to assemble ([S2.1](#rule-S2.1)).                         |
+| FARM-n   | The FARM units, with their TL: FARM-1 to FARM-10.                             |
+| using    | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+assemble farming-group on 100 with 50,000 FARM-1
+assemble farming-group on 100 with 30,000 FARM-2 using 1,000 CWRK   # a second group, of TL-2
+```
+
+**Rules**
+
+- A S/C has one farming group for each TL, so the order takes no group number.
+  The units join the S/C's group of their TL; if it has none, the group is formed as soon as the order is accepted.
+- The S/C must be of a type and in a place that may have farms of that TL ([H1.3](#rule-H1.3)).
+- A planet has room for only so many FARM-1 ([H1.7](#rule-H1.7)), counting those of every player, assembled or being assembled.
+  The room goes to the orders in the order they are carried out.
+- The rules for assembling units ([S6.1](#rule-S6.1)) apply to the FARM units.
+
+**Rejected when**
+
+- The S/C does not have that many of the FARM units in storage that are not already being assembled or scrapped.
+- The S/C may not have farms of that TL.
+- The planet has no room for that many more FARM-1.
+- The order names a group number.
+- The S/C does not belong to the player.
+
+<a id="rule-S6.6"></a>
+### S6.6 Assemble Mining Group
+
+Assembles MINE units from storage into a new mining group on a deposit, or adds them to a group the S/C has ([H2.0](#rule-H2.0)).
+
+**Syntax**
+
+```text
+assemble mining-group on EntityID with Quantity MINE-n working DepositNo [using Quantity CWRK]
+assemble mining-group GroupNo on EntityID add Quantity MINE-n [using Quantity CWRK]
+```
+
+| Value     | Meaning                                                                       |
+|-----------|-------------------------------------------------------------------------------|
+| EntityID  | The S/C that has the MINE units in storage.                                   |
+| Quantity  | How many MINE units to assemble ([S2.1](#rule-S2.1)).                         |
+| MINE-n    | The MINE units, with their TL: MINE-1 to MINE-10.                             |
+| DepositNo | The number of the deposit the new group works, as the printout shows it.      |
+| GroupNo   | The number of the mining group the units are added to.                        |
+| using     | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+assemble mining-group on 37 with 25,000 MINE-2 working 30   # a new group on deposit 30
+assemble mining-group 1 on 37 add 5,000 MINE-2              # more MINE for group 1
+```
+
+**Rules**
+
+- The first form makes a new group, and the second adds to a group.
+- A new group is formed, and takes its deposit, as soon as the order is accepted.
+  Its units join it as the CWRK assemble them.
+- Only a surface colony, open or enclosed, may have mining groups, and only on deposits of its own planet ([H2.4](#rule-H2.4)).
+- A deposit is worked by one mining group only.
+  If more than one player orders a group onto a deposit on the same turn, it goes to the order that is carried out first.
+- Every MINE unit of a group is of the same TL.
+- The rules for assembling units ([S6.1](#rule-S6.1)) apply to the MINE units.
+
+**Rejected when**
+
+- The S/C does not have that many of the MINE units in storage that are not already being assembled or scrapped.
+- The S/C is a ship or an orbiting colony.
+- The S/C's planet has no deposit with that number.
+- Another mining group is working the deposit.
+- The group to add to does not exist, or its units are of another TL.
+- The S/C does not belong to the player.
+
+<a id="rule-S6.7"></a>
+### S6.7 Assemble TL (ASM)
+
+> Not yet rewritten: this order is shown in its 1980 format, and is not accepted.
 
 - Format: S/C ID#, "ASM", "TL"-TL#.
 - Example: 75, ASM, TL-3.
 - Notes: This format assembles RSCH to raise the S/C's TL to the TL named (see [J4.1](#rule-J4.1)).
   If S/C 75 is TL-1 with 300,000 RSCH, it rises to TL-3 and has no RSCH left.
   With 250,000 RSCH, it rises to TL-2 and keeps 150,000 RSCH, and the order fails with error E02 because TL-3 was not reached.
-
-- Format: S/C ID#, "ASM", quantity, "FACT"-TL#, item to build.
-- Example: 83, ASM, 20,000, FACT-4, LFSU-1.
-- Notes: This format is used to set up a new factory group.
-  S/C 83 is setting up 20,000 FACT-4 to build LFSU-1.
-
-- Format: S/C ID#, "ASM", quantity, "FACT"-TL#, FACT group #.
-- Example: 99, ASM, 10,000, FACT-3, 5.
-- Notes: This format takes FACT's from storage and adds them to an existing FACT group.
-  In this case, 10,000 FACT-3 were added to FACT group 5.
-
-- Format: S/C ID#, "ASM", quantity, "MINE"-TL#, deposit location #.
-- Example: 37, ASM, 25,000, MINE-2, 30.
-- Notes: This format takes 25,000 MINE-2 out of storage and places them on deposit #30.
-
-<a id="rule-S6.1.1"></a>
-#### S6.1.1 Multiple ASM Orders
-
-- Format:
-  ```text
-  S/C ID#, "ASM", quantity of unit types, M.
-  quantity, item.
-  ```
-- Example:
-  ```text
-  75, ASM, 6, M.
-  50, SPY.
-  60, CWRK-3.
-  1,000, MLNC-1.
-  500, FACT-2, 7.
-  2,000,000, FACT-1, TRNS-1.
-  3,000, MINE-1, 28.
-  ```
-- Notes: The multiple ASM orders are used to allow a S/C to assemble more than one item in a turn without writing a separate order for each assembly.
-  This is optional, though, and the player may write each order separately if he wishes.
-  TL is never allowed in a multiple ASM order; a TL line fails with error E01, and the rest of the order is still processed (see [J4.1](#rule-J4.1)).
-
-<a id="rule-S6.2"></a>
-### S6.2 Disassembly Orders (DAS)
-
-- Format: S/C ID#, DAS, qty, item.
-- Example: 100, DAS, 400, MLNC-1.
-- Example: 100, DAS, 1,000, SPY.
-- Notes: This format is used to either disassemble SPY or CWRK cadres, or to take items out of use and put them into storage.
-
-- Format: S/C ID#, DAS, qty, "FACT"-TL#, FACT group #.
-- Example: 99, DAS, 10,000, FACT-3, 5.
-- Notes: This format takes FACT's from an existing FACT group and puts them into storage.
-  In this case, 10,000 FACT-3 are taken from FACT group #5 and put into storage.
-
-- Format: S/C ID#, DAS, qty, "MINE"-TL#, *group #*.
-- Example: 37, DAS, 25,000, MINE-2, 8.
-- Notes: This format takes MINE's out of an existing MINE *group* and puts them into storage.
-  Please use the group #, not the deposit location.
-
-<a id="rule-S6.2.1"></a>
-#### S6.2.1 Multiple DAS Orders
-
-- Format: S/C ID#, DAS, qty of unit types, "M".
-- Example:
-  ```text
-  75, DAS, 4, M.
-  30, SPY.
-  4,000,000,000, CWRK-3.
-  1,000, MLNC-2.
-  50,000, FACT-4,7.
-  3,000, MINE-6, 4.
-  ```
-
-<a id="rule-S6.3"></a>
-### S6.3 Scrap Orders (SCR)
-
-- Format: S/C ID#, "SCR", quantity, unit to be scrapped.
-- Example: 55, SCR, 1000, AWPN-1.
-- Notes: The SCR order has S/C 55 convert the AWPN's to resource units.
-  POP's can not be scrapped.
-
-<a id="rule-S6.3.1"></a>
-#### S6.3.1 Multiple Scrap Orders
-
-- Format:
-  ```text
-  S/C ID#, "SCR", quantity of unit types, M.
-  quantity, unit.
-  ```
-- Example:
-  ```text
-  38, SCR, 5, M.
-  20,000, CNGD.
-  1,000, AWPN-1.
-  562, AWPN-2.
-  900, MSSL-1.
-  100, CSUP.
-  ```
-
-The multiple SCR is used to scrap more than one item per S/C per turn.
-This is optional; the player may write each order separately if he wishes.
-This order does not require "END" to finish it.
 
 <a id="rule-S7.0"></a>
 ## S7.0 Transfer Orders
