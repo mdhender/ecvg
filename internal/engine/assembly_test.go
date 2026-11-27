@@ -150,7 +150,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			d := builders()
-			result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, tc.text)})
+			result, err := applyAll(&d, []orders.File{file(t, 1, tc.text)})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -169,7 +169,7 @@ func TestAssembleGroupOrders(t *testing.T) {
 			if result.Accepted > 0 {
 				lines := file(t, 1, tc.text)
 				lines.Lines = lines.Lines[:result.Accepted]
-				if _, err := engine.ApplyOrders(&want, []orders.File{lines}); err != nil {
+				if _, err := applyAll(&want, []orders.File{lines}); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -224,7 +224,7 @@ func TestGroupNumbersAreShared(t *testing.T) {
 	d := builders()
 	d.Colonies[0].LastGroupNo = 8 // groups 5 to 8 have come and gone
 	text := "assemble mining-group on 1 with 10 MINE-10 working 1\nassemble factory-group on 1 with 5 FACT-1 producing CNGD\nassemble farming-group on 1 with 5 FARM-1\nassemble mining-group on 1 with 10 MINE-9 working 3"
-	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, text)})
+	result, err := applyAll(&d, []orders.File{file(t, 1, text)})
 	if err != nil || len(result.Rejected) != 0 {
 		t.Fatalf("rejected %+v, %v", result.Rejected, err)
 	}
@@ -242,7 +242,7 @@ func TestFactoryGroupLimit(t *testing.T) {
 	for len(c.FactoryGroups) < game.MaxFactoryGroups-1 {
 		c.FactoryGroups = append(c.FactoryGroups, game.Group{No: 100 + len(c.FactoryGroups)})
 	}
-	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble factory-group on 1 with 1 FACT-1 producing CNGD\nassemble factory-group on 1 with 1 FACT-1 producing CNGD")})
+	result, err := applyAll(&d, []orders.File{file(t, 1, "assemble factory-group on 1 with 1 FACT-1 producing CNGD\nassemble factory-group on 1 with 1 FACT-1 producing CNGD")})
 	if err != nil {
 		t.Fatal(err)
 	}

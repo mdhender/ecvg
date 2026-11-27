@@ -216,7 +216,7 @@ func TestLaboratorySites(t *testing.T) {
 	c := &d.Colonies[0]
 	c.Type = game.CSHP
 	c.Cargo = append(c.Cargo, game.Unit{Type: "LAB", TechLevel: 1, Qty: 30})
-	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble laboratory-group on 1 with 20 LAB-1")})
+	result, err := applyAll(&d, []orders.File{file(t, 1, "assemble laboratory-group on 1 with 20 LAB-1")})
 	if err != nil {
 		t.Fatal(err)
 	}

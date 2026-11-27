@@ -101,7 +101,7 @@ func TestAssembleTechLevelOrders(t *testing.T) {
 				d.Colonies[0].TechLevel = tc.tl
 			}
 			before := d.Colonies[0].TechLevel
-			result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, tc.text)})
+			result, err := applyAll(&d, []orders.File{file(t, 1, tc.text)})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -147,7 +147,7 @@ func TestLaboratoriesKeepWhatIsLeftInAPrototype(t *testing.T) {
 			d := techColony(game.Unit{Type: "PRTO", TechLevel: 5, Qty: 2}, game.Unit{Type: "RSCH", Qty: 7})
 			c := &d.Colonies[0]
 			c.Type, c.LaboratoryGroups = game.CORB, tc.labs
-			result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble tech-level on 1 to TL-4 with 2 PRTO-5")})
+			result, err := applyAll(&d, []orders.File{file(t, 1, "assemble tech-level on 1 to TL-4 with 2 PRTO-5")})
 			if err != nil || len(result.Rejected) != 0 {
 				t.Fatalf("rejected %+v, %v", result.Rejected, err)
 			}
@@ -194,7 +194,7 @@ func TestTechLevelIsRaisedWhenTheWorkIsDone(t *testing.T) {
 	}
 	// Once the job is done the entity can start another.
 	d.Colonies[0].Cargo = append(d.Colonies[0].Cargo, game.Unit{Type: "RSCH", Qty: 800_000})
-	result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, "assemble tech-level on 1")})
+	result, err := applyAll(&d, []orders.File{file(t, 1, "assemble tech-level on 1")})
 	if err != nil || len(result.Rejected) != 0 || d.Colonies[0].RaisingTechLevel() != 5 {
 		t.Errorf("rejected %+v, %v; raising to %d, want 5", result.Rejected, err, d.Colonies[0].RaisingTechLevel())
 	}

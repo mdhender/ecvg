@@ -51,10 +51,12 @@ func TestUnitWorkOrders(t *testing.T) {
 			work1: []game.Assembly{{Unit: unit{Type: "STRN", Qty: 20}}},
 		},
 		{
-			name:  "units are claimed once",
-			text:  "assemble 15 STRN on 1\nscrap 5 STRN on 1\nassemble 1 STRN on 1",
-			err:   engine.ErrNotEnoughUnits,
-			work1: []game.Assembly{{Unit: unit{Type: "STRN", Qty: 15}}, {Action: game.WorkScrap, Unit: unit{Type: "STRN", Qty: 5}}},
+			name: "units are claimed once",
+			text: "assemble 15 STRN on 1\nscrap 5 STRN on 1\nassemble 1 STRN on 1",
+			err:  engine.ErrNotEnoughUnits,
+			// The scrap order is started in the orders phase, and the
+			// assemble orders in the Assembly stage.
+			work1: []game.Assembly{{Action: game.WorkScrap, Unit: unit{Type: "STRN", Qty: 5}}, {Unit: unit{Type: "STRN", Qty: 15}}},
 		},
 		{
 			name:  "scrap claims units from the group orders",
@@ -99,7 +101,7 @@ func TestUnitWorkOrders(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			d := shipyard()
-			result, err := engine.ApplyOrders(&d, []orders.File{file(t, 1, tc.text)})
+			result, err := applyAll(&d, []orders.File{file(t, 1, tc.text)})
 			if err != nil {
 				t.Fatal(err)
 			}

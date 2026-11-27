@@ -36,6 +36,21 @@ func file(t *testing.T, empireID int, text string) orders.File {
 	return orders.File{EmpireID: empireID, Name: orders.FileName(empireID), Lines: lines}
 }
 
+// applyAll runs the orders phase and then every stage that carries out orders
+// of its own, in the order of the turn sequence, and nothing else: no work is
+// done.
+func applyAll(d *game.Data, files []orders.File) (engine.OrdersResult, error) {
+	result, err := engine.ApplyOrders(d, files)
+	if err != nil {
+		return result, err
+	}
+	engine.Transfers(d, &result)
+	engine.BuildChanges(d, &result)
+	engine.AssembleOrders(d, &result)
+	engine.PayChanges(d, &result)
+	return result, nil
+}
+
 func TestSetRations(t *testing.T) {
 	for _, tc := range []struct {
 		name                        string

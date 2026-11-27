@@ -42,7 +42,8 @@ func (r Rejection) String() string {
 
 // OrdersResult is the outcome of the turn's orders. The orders phase
 // (ApplyOrders) settles most of them; an order that is carried out in its own
-// stage of the turn sequence (Transfers, BuildChanges, PayChanges) is neither
+// stage of the turn sequence (Transfers, BuildChanges, AssembleOrders,
+// PayChanges) is neither
 // accepted nor rejected until that stage has run.
 type OrdersResult struct {
 	// Accepted is the number of orders carried out.
@@ -72,11 +73,19 @@ type stagedOrder struct {
 // orderStage returns the number of the stage that carries out the order, or 0
 // if the orders phase does.
 func orderStage(order orders.Order) int {
-	switch order.(type) {
+	switch o := order.(type) {
 	case orders.Transfer:
 		return StageTransfer
 	case orders.UpdateGroup:
 		return StageBuildChange
+	case orders.AssembleGroup, orders.AssembleTechLevel:
+		return StageAssembly
+	case orders.UnitWork:
+		// Disassemble and scrap orders are still started in the orders
+		// phase.
+		if o.Action == game.WorkAssemble {
+			return StageAssembly
+		}
 	case orders.SetRations:
 		return StagePayChange
 	}
@@ -131,6 +140,17 @@ func BuildChanges(d *game.Data, result *OrdersResult) {
 	result.runStage(d, StageBuildChange)
 }
 
+// AssembleOrders is the first part of the Assembly stage (B3.8): it checks
+// the turn's assemble orders (see AssembleGroup, AssembleTechLevel, and
+// UnitWork), in file and line order, and starts their work, which Assembly
+// then does. So an order can assemble what the stages before it left in
+// storage: what a transfer brought, and what the Dis-Assembly stage took
+// down. The assemble prototype order is not one of them: it is carried out in
+// the orders phase, so that the prototype can be transferred in the same turn.
+func AssembleOrders(d *game.Data, result *OrdersResult) {
+	result.runStage(d, StageAssembly)
+}
+
 // PayChanges is the Pay Change stage (B3.13): it carries out the turn's set
 // rations orders (see SetRations), in file and line order.
 func PayChanges(d *game.Data, result *OrdersResult) {
@@ -141,9 +161,10 @@ func PayChanges(d *game.Data, result *OrdersResult) {
 // by file and line by line. An order that is not valid, or that its empire
 // may not give, is rejected and the rest are still carried out. Draft orders
 // are checked here and carried out by the Draft phase. Transfer, update group,
-// and set rations orders are not looked at here at all: they wait in the
-// result for their stages (Transfers, BuildChanges, PayChanges), which check
-// them and carry them out. It replaces d.OrderResults with a record of every
+// assemble (but not assemble prototype), and set rations orders are not
+// looked at here at all: they wait in the result for their stages (Transfers,
+// BuildChanges, AssembleOrders, PayChanges), which check them and carry them
+// out. It replaces d.OrderResults with a record of every
 // order; the record of an order that waits for its stage is not accepted and
 // has no reason until the stage completes it. It fails with ErrNoSuchEmpire,
 // before changing d, if a file is for an empire that is not in the game.

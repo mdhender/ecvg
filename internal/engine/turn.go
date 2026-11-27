@@ -28,6 +28,7 @@ func (s Stage) Implemented() bool {
 const (
 	StageTransfer    = 6
 	StageBuildChange = 7
+	StageAssembly    = 8
 	StagePayChange   = 13
 )
 
@@ -47,7 +48,7 @@ var stages = []Stage{
 	{No: 5, Name: "Pre-Transfer"},
 	{No: StageTransfer, Name: "Transfer", run: func(t *turn) { Transfers(t.d, &t.orders) }},
 	{No: StageBuildChange, Name: "Build Change", run: func(t *turn) { BuildChanges(t.d, &t.orders) }},
-	{No: 8, Name: "Assembly", run: func(t *turn) { Assembly(t.d) }},
+	{No: StageAssembly, Name: "Assembly", run: assembly},
 	{No: 9, Name: "Market"},
 	{No: 10, Name: "Survey"},
 	{No: 11, Name: "Spy Move"},
@@ -76,8 +77,8 @@ func Stages() []Stage {
 // returned for the turn: most orders are checked, and their work started,
 // before any stage runs. Then the stages of the manual's turn sequence (B3.0)
 // run in order, each for every empire before the next begins. Transfer,
-// update group, and set rations orders are checked and carried out in their
-// own stages (B3.6, B3.7, B3.13). A stage that isn't built logs
+// update group, assemble, and set rations orders are checked and carried out
+// in their own stages (B3.6, B3.7, B3.8, B3.13). A stage that isn't built logs
 // "stage n: name: not implemented" and does nothing.
 //
 // It returns what became of the orders. If it fails, d is not changed.
@@ -96,6 +97,13 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	}
 	d.Game.Turn++
 	return t.orders, nil
+}
+
+// assembly is the Assembly stage (B3.8): AssembleOrders starts the work of
+// the turn's assemble orders, and Assembly does a turn of all the work.
+func assembly(t *turn) {
+	AssembleOrders(t.d, &t.orders)
+	Assembly(t.d)
 }
 
 // production is the Production stage (B3.17): AllocateResources, Farming,
