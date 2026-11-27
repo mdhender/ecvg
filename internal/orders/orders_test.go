@@ -73,13 +73,15 @@ func TestParseSetRations(t *testing.T) {
 	}{
 		{line: "set rations for 7 to 50%", want: orders.SetRations{EntityID: 7, Percent: 50}},
 		{line: "SET Rations FOR 7 To 50%", want: orders.SetRations{EntityID: 7, Percent: 50}},
-		{line: "\tset   rations for 1500   to 1%  ", want: orders.SetRations{EntityID: 1500, Percent: 1}},
-		{line: "set rations for 7 to 500% // feast", want: orders.SetRations{EntityID: 7, Percent: 500}},
+		{line: "\tset   rations for 1500   to 25%  ", want: orders.SetRations{EntityID: 1500, Percent: 25}},
+		{line: "set rations for 7 to 100% // the most", want: orders.SetRations{EntityID: 7, Percent: 100}},
 		{line: "set rations for 007 to 050% # leading zeros", want: orders.SetRations{EntityID: 7, Percent: 50}},
 		{line: "set rations for 7 to 50 %", err: orders.ErrInvalidOrder},
 		{line: "set rations for 7 to 50", err: orders.ErrInvalidPercentage},
 		{line: "set rations for 7 to 0%", err: orders.ErrInvalidPercentage},
-		{line: "set rations for 7 to 501%", err: orders.ErrInvalidPercentage},
+		{line: "set rations for 7 to 24%", err: orders.ErrInvalidPercentage},
+		{line: "set rations for 7 to 101%", err: orders.ErrInvalidPercentage},
+		{line: "set rations for 7 to 500%", err: orders.ErrInvalidPercentage},
 		{line: "set rations for 7 to -5%", err: orders.ErrInvalidPercentage},
 		{line: "set rations for 7 to +5%", err: orders.ErrInvalidPercentage},
 		{line: "set rations for 7 to 12.5%", err: orders.ErrInvalidPercentage},
@@ -128,7 +130,7 @@ func TestParseLines(t *testing.T) {
 		"set rations for 7 to 50%\r\n" +
 		"   // nothing here\n" +
 		"set rations for 7 to 50% set rations for 8 to 50%\n" +
-		"set rations for 8 to 125%"
+		"set rations for 8 to 75%"
 	lines, err := orders.Parse(strings.NewReader(text))
 	if err != nil {
 		t.Fatal(err)
@@ -146,7 +148,7 @@ func TestParseLines(t *testing.T) {
 		}
 		got = append(got, r)
 	}
-	want := []row{{3, "set rations for 7 to 50%", false}, {5, "", true}, {6, "set rations for 8 to 125%", false}}
+	want := []row{{3, "set rations for 7 to 50%", false}, {5, "", true}, {6, "set rations for 8 to 75%", false}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Parse = %+v, want %+v", got, want)
 	}

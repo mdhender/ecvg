@@ -4288,7 +4288,7 @@ set rations for EntityID to PercentageAmount
 | Value            | Meaning                                                                                      |
 |------------------|----------------------------------------------------------------------------------------------|
 | EntityID         | The S/C whose population is rationed.                                                        |
-| PercentageAmount | The percentage of the normal ration ([G4.2](#rule-G4.2)), from 1% to 500% ([S2.6](#rule-S2.6)). |
+| PercentageAmount | The percentage of the normal ration ([G4.2](#rule-G4.2)), from 25% to 100% ([S2.6](#rule-S2.6)). |
 
 **Examples**
 
@@ -4308,7 +4308,7 @@ set rations for 16 to 100%   # back to the normal ration
 
 **Rejected when**
 
-- PercentageAmount is not a whole number from 1% to 500% with the percent sign joined to it.
+- PercentageAmount is not a whole number from 25% to 100% with the percent sign joined to it.
 - The S/C does not belong to the player.
 
 <a id="rule-S13.0"></a>

@@ -28,8 +28,8 @@ const (
 // population needs. MinRations and MaxRations bound what it can be set to.
 const (
 	DefaultRations = 100
-	MinRations     = 1
-	MaxRations     = 500
+	MinRations     = 25
+	MaxRations     = 100
 )
 
 const ErrInvalidHandle = cerrs.Error("invalid handle")

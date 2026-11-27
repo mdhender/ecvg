@@ -43,12 +43,12 @@ func TestSetRations(t *testing.T) {
 		err                         error
 	}{
 		{"own colony", 1, 2, 50, nil},
-		{"least", 1, 2, 1, nil},
-		{"most", 2, 3, 500, nil},
+		{"least", 1, 2, 25, nil},
+		{"most", 2, 3, 100, nil},
 		{"another empire's colony", 1, 3, 50, engine.ErrNotControlled},
 		{"no such entity", 1, 9, 50, engine.ErrNotControlled},
-		{"too little", 1, 2, 0, orders.ErrInvalidPercentage},
-		{"too much", 1, 2, 501, orders.ErrInvalidPercentage},
+		{"too little", 1, 2, 24, orders.ErrInvalidPercentage},
+		{"too much", 1, 2, 101, orders.ErrInvalidPercentage},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			d := twoEmpires()
@@ -73,26 +73,26 @@ func TestApplyOrders(t *testing.T) {
 	d := twoEmpires()
 	result, err := engine.ApplyOrders(&d, []orders.File{
 		file(t, 1, "set rations for 1 to 50%\n"+
-			"set rations for 3 to 1%   # not ours\n"+
+			"set rations for 3 to 25%   # not ours\n"+
 			"set rations for 1 to 75%\n"+
 			"dance\n"),
-		file(t, 2, "SET RATIONS FOR 3 TO 200%\n"),
+		file(t, 2, "SET RATIONS FOR 3 TO 90%\n"),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := []int{d.Colonies[0].Rations, d.Colonies[1].Rations, d.Colonies[2].Rations}; got[0] != 75 || got[1] != 100 || got[2] != 200 {
-		t.Errorf("rations = %v, want [75 100 200]", got)
+	if got := []int{d.Colonies[0].Rations, d.Colonies[1].Rations, d.Colonies[2].Rations}; got[0] != 75 || got[1] != 100 || got[2] != 90 {
+		t.Errorf("rations = %v, want [75 100 90]", got)
 	}
 	if result.Accepted != 3 || len(result.Rejected) != 2 {
 		t.Fatalf("result = %+v, want 3 accepted and 2 rejected", result)
 	}
 	wantRecords := []game.OrderResult{
 		{EmpireID: 1, Line: 1, Text: "set rations for 1 to 50%", Accepted: true},
-		{EmpireID: 1, Line: 2, Text: "set rations for 3 to 1%   # not ours", Reason: "entity 3: " + engine.ErrNotControlled.Error()},
+		{EmpireID: 1, Line: 2, Text: "set rations for 3 to 25%   # not ours", Reason: "entity 3: " + engine.ErrNotControlled.Error()},
 		{EmpireID: 1, Line: 3, Text: "set rations for 1 to 75%", Accepted: true},
 		{EmpireID: 1, Line: 4, Text: "dance", Reason: orders.ErrUnknownOrder.Error()},
-		{EmpireID: 2, Line: 1, Text: "SET RATIONS FOR 3 TO 200%", Accepted: true},
+		{EmpireID: 2, Line: 1, Text: "SET RATIONS FOR 3 TO 90%", Accepted: true},
 	}
 	if !reflect.DeepEqual(d.OrderResults, wantRecords) {
 		t.Errorf("order results =\n%+v\nwant\n%+v", d.OrderResults, wantRecords)
@@ -104,7 +104,7 @@ func TestApplyOrders(t *testing.T) {
 	if r.EmpireID != 1 || r.Line != 2 || !errors.Is(r.Err, engine.ErrNotControlled) {
 		t.Errorf("first rejection = %+v, want empire 1 line 2 ErrNotControlled", r)
 	}
-	if want := "empire-001.txt:2: set rations for 3 to 1%   # not ours: entity 3: "; !strings.HasPrefix(r.String(), want) {
+	if want := "empire-001.txt:2: set rations for 3 to 25%   # not ours: entity 3: "; !strings.HasPrefix(r.String(), want) {
 		t.Errorf("rejection = %q, want prefix %q", r.String(), want)
 	}
 	if r := result.Rejected[1]; r.Line != 4 || !errors.Is(r.Err, orders.ErrUnknownOrder) {

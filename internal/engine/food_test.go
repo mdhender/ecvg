@@ -35,7 +35,7 @@ func TestFeed(t *testing.T) {
 		{"0%", p, 0, 9999, 0, 0, 0, all(400)},
 
 		{"24% is the first ration that starves", p, 24, 9999, 96, 96, 24, all(16)},
-		{"1%, the least that can be ordered", p, 1, 9999, 4, 4, 1, all(384)},
+		{"1%", p, 1, 9999, 4, 4, 1, all(384)},
 		{"500%", p, 500, 9999, 2000, 2000, 500, all(0)},
 		{"exactly enough food", p, 100, 400, 400, 400, 100, all(0)},
 		{"short of food, but not starving", p, 100, 200, 400, 200, 50, all(0)},
