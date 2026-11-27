@@ -80,6 +80,7 @@ We hope that you find playing our games to be a rewarding and enjoyable gaming e
   - [H1.0 Farming](#rule-H1.0)
   - [H2.0 Mining](#rule-H2.0)
   - [H3.0 Manufacturing](#rule-H3.0)
+  - [H4.0 Laboratories](#rule-H4.0)
 - [J. Technology and Research](#j-technology-and-research)
   - [J1.0 TL of Ships and Colonies](#rule-J1.0)
   - [J2.0 TL of Factories](#rule-J2.0)
@@ -441,6 +442,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term                   | Definition                                                                      |
 |------|------------------------|---------------------------------------------------------------------------------|
+| LAB  | Laboratory             | Does research, building RSCH ([H4.0](#rule-H4.0)).                               |
 | LFSU | Life Support units     | Recycle air and water for every S/C except COPN's ([G6.1](#rule-G6.1)).          |
 
 ### M
@@ -508,7 +510,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | REB\* | Rebels         | Percentage of people other than soldiers willing to rebel. |
 | REC   | Receive        | This order receives items transferred from another S/C.    |
 |       | Regent         | A player who manages a Ruler's S/C's, follows his orders.  |
-| RSCH  | Research point | A unit of research, built by a factory.                    |
+| RSCH  | Research point | A unit of research, built by a laboratory (LAB).           |
 |       | Ruler          | Player, not a Regent, who controls a S/C.                  |
 | RUN   | Run            | This order has one ship run from another ship.             |
 
@@ -666,7 +668,7 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.8"></a>
 ### B3.8 Assembly Stage
 
-1. <a id="rule-B3.8.1"></a>Assemble orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) for groups)
+1. <a id="rule-B3.8.1"></a>Assemble orders processed (see [S6.1](#rule-S6.1)<!-- was 17.4.32 -->, and [S6.4](#rule-S6.4) to [S6.6](#rule-S6.6) and [S6.8](#rule-S6.8) for groups)
 
 <a id="rule-B3.9"></a>
 ### B3.9 Market Stage
@@ -724,8 +726,9 @@ All the orders for one stage are processed before any of the orders for the next
 2. <a id="rule-B3.17.2"></a>People are fed, deaths by starvation take place
 3. <a id="rule-B3.17.3"></a>Mines produce
 4. <a id="rule-B3.17.4"></a>Factories produce
-5. <a id="rule-B3.17.5"></a>People are paid; back pay is computed
-6. <a id="rule-B3.17.6"></a>TL increases (see [J4.1](#rule-J4.1))
+5. <a id="rule-B3.17.5"></a>Laboratories do research (see [H4.0](#rule-H4.0))
+6. <a id="rule-B3.17.6"></a>People are paid; back pay is computed
+7. <a id="rule-B3.17.7"></a>TL increases (see [J4.1](#rule-J4.1))
 
 <a id="rule-B3.18"></a>
 ### B3.18 Espionage Stage
@@ -1816,6 +1819,7 @@ The following items are assembly type items:
 * FACT
 * FARM
 * HDRV
+* LAB
 * LFSU
 * MINE
 * MLNC
@@ -1891,6 +1895,7 @@ So, assembled items must be dis-assembled first.
 Mine units are assembled on a particular deposit.
 This assembly causes the MINE's to begin functioning automatically; a start-up order is not necessary.
 Factory units are assembled into factory groups; causing the FACT units to begin functioning automatically; no start-up order is necessary.
+Laboratory units are assembled into laboratory groups, and begin functioning in the same way.
 
 <a id="rule-F11.0"></a>
 ## F11.0 Scrap
@@ -1920,7 +1925,7 @@ They are not part of the work force or military; they may not be ordered to perf
 ### G1.2 Unskilled Workers (USK)
 
 Unskilled workers are those who do not require long apprenticeships or a great deal of training.
-USK can be drafted to become soldiers or trainees; or can be assembled as part of construction worker units; or they may be part of the work force for farms, mines, and factories.
+USK can be drafted to become soldiers or trainees; or can be assembled as part of construction worker units; or they may be part of the work force for farms, mines, factories, and laboratories.
 All disbanded soldiers become USK.
 
 <a id="rule-G1.3"></a>
@@ -1928,7 +1933,7 @@ All disbanded soldiers become USK.
 
 Professionals require long apprenticeships or a great deal of training.
 PRO's are graduated from the trainees, and are used to train the trainees, as well.
-They are also used to help make up spy units and construction worker units, and are part of the work force for farms, mines, and factories.
+They are also used to help make up spy units and construction worker units, and are part of the work force for farms, mines, factories, and laboratories.
 Soldiers, (5% ANNUALLY), retire from the military and become PRO's.
 
 <a id="rule-G1.4"></a>
@@ -2356,7 +2361,7 @@ All MINE's at a deposit may be given to another S/C with a deposit gift (DEP) or
 Manufacturing is done by factory (FACT) units.
 In order for a factory unit to work, it must be taken from storage and assembled into a FACT group, as is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 All FACT's in a FACT group must be at the same TL.
-Factory groups manufacture everything except population units, food, and resources.
+Factory groups manufacture everything except population units, food, resources, and research points, which are built by laboratories ([H4.0](#rule-H4.0)).
 Each FACT group can only manufacture one item at a time.
 No item can be built in less than a year.
 All FACT groups require four turns to produce any item in production.
@@ -2449,11 +2454,9 @@ A combine (COM) order combines two factory groups into one; both groups must be 
 <a id="rule-H3.6"></a>
 ### H3.6 Retooling
 
-A FACT group may be changed from building one item to building another, but it must retool first with a retool order ([S8.1](#rule-S8.1)), with the following exceptions.
+A FACT group may be changed from building one item to building another, but it must retool first with a retool order ([S8.1](#rule-S8.1)), with the following exception.
 
-* In the case of switching from making an item to making research points, no retool order is needed (switching from research to an item *does* require a retool order.)
-
-* Also, in the case of switching from one type of structural unit (STRN, STRL, STRS) to another, no retool order is needed.
+* In the case of switching from one type of structural unit (STRN, STRL, STRS) to another, no retool order is needed.
 * If the FACT units in a group are occupied with WIP, they will not retool, even though the retool order is accepted and acknowledged on the printout.
   As the FACT are freed from WIP, they retool themselves.
 
@@ -2466,7 +2469,8 @@ Retooled FACT's are shown in WIP.
 <a id="rule-H3.7"></a>
 ### H3.7 Research and TL
 
-A factory group ordered to build research (RSCH) will build one research point per FACT times the FACT's TL per game year, divided by four for the amount per turn.
+Factory groups do not build research (RSCH).
+Research is done by laboratories ([H4.0](#rule-H4.0)).
 A FACT group may not build any item of a higher TL than that of the S/C it is in.
 RSCH and TL's are further explained in subject [J](#j-technology-and-research)<!-- was Chapter 10 -->, Technological Levels.
 
@@ -2494,18 +2498,62 @@ If the shortage has been taken care of on the next turn, the computer will proce
 If the shortage still exists, processing will not be done.
 There is no way for a player to change a particular FACT group number of a FACT group to another number; if there is a shortage, the player should shut down his less necessary FACT groups ([S8.5](#rule-S8.5)).
 The computer assigns the group numbers; the player can not choose one.
-A S/C's FARM, MINE, and FACT groups share one run of group numbers.
-Each new group gets the next number, higher than any the S/C has given out, in the order the computer encounters the assemble factory group orders ([S6.4](#rule-S6.4)).
+A S/C's FARM, MINE, FACT, and LAB groups share one run of group numbers.
+Each new group gets the next number, higher than any the S/C has given out, in the order the computer encounters the assemble group orders ([S6.4](#rule-S6.4) to [S6.6](#rule-S6.6), and [S6.8](#rule-S6.8)).
 A number is never used again, even after its group has been disassembled.
 
 <a id="rule-H3.10"></a>
 ### H3.10 Automation
 
-Automation units (AUTO) are used to replace USK for FARM's, MINE's, and FACT's.
+Automation units (AUTO) are used to replace USK for FARM's, MINE's, FACT's, and LAB's.
 The AUTO's TL squared times the number of AUTO's being used equals the number of USKs being replaced.
 AUTO's are not assigned to specific production groups, but are counted as USK labor available to any production group in the S/C.
 If a colony, for instance, has 1,000 FARM's, 10,000 MINE's, and one 50,000 factory unit group, it will need 183,000 USK or the equivalent in AUTO (which could be 183,000 AUTO-1 or 45,750 AUTO-2 or 7,320 AUTO-5, etc.).
 AUTO's use no fuel.
+
+<a id="rule-H4.0"></a>
+## H4.0 Laboratories
+
+Research is done by laboratory (LAB) units, which build research points (RSCH).
+All the laboratory units at each technological level (TL) form a LAB group.
+There can be only one group *per TL* in a S/C.
+In order for the laboratory units to be taken from storage and put to work, the player assembles them into a LAB group.
+This is done with an assemble laboratory group order ([S6.8](#rule-S6.8)), and is explained in [F10.0](#rule-F10.0), Assembly.
+Any S/C may have assembled laboratories, ships included.
+LAB units are manufactured by factory groups, like any other item ([H3.0](#rule-H3.0)).
+
+<a id="rule-H4.1"></a>
+### H4.1 Amount of Research Done
+
+One LAB builds 0.25 times its TL in RSCH per turn.
+The research of all the LAB's of a S/C is added up, and the total is rounded down to a whole number of RSCH; the fraction is lost.
+For example, 1,000 LAB-1 build 250 RSCH in a turn, and 3 LAB-1 working alone build none.
+The RSCH are added to the S/C's storage, where they accumulate.
+RSCH have no mass and require no enclosure, so there is always room for them.
+MTL and NMTL are not required to build RSCH.
+What RSCH are used for is explained in [J4.0](#rule-J4.0), Improving TL.
+
+<a id="rule-H4.2"></a>
+### H4.2 Fuel and Personnel Required
+
+Each LAB consumes 0.5 times its TL in fuel each turn.
+One LAB of any TL requires three PRO and one USK to operate it.
+AUTO may replace the USK ([H3.10](#rule-H3.10)), but never the PRO.
+
+<a id="rule-H4.3"></a>
+### H4.3 Effect of Shortages
+
+Shortages of fuel or labor will cause LAB's to not do research, either fully or partially.
+Laboratories are the last to be given labor and fuel: FARM, MINE, and FACT groups all come before them.
+LAB groups work one by one, in group number order, lowest number first ([H3.9](#rule-H3.9)).
+As many laboratories will work as are able before the shortage stops them.
+
+<a id="rule-H4.4"></a>
+### H4.4 Shut Downs and Restarts
+
+A shut down order ([S8.5](#rule-S8.5)) stops the research done by LAB's of a laboratory group: all of them, or only a portion.
+LAB's that are shut down use no personnel or fuel.
+A restart order ([S8.6](#rule-S8.6)) is used ONLY to restart laboratories that have been shut down.
 
 # J. Technology and Research
 
@@ -2570,12 +2618,11 @@ There are three ways to do so.
 ### J4.1 Research Points
 
 One way to improve a S/C's TL is to build the required amount of research points necessary to raise it.
-An update factory group order to produce RSCH ([S8.1](#rule-S8.1)) will cause a FACT group to change from manufacturing an item to building RSCH.
-A FACT producing RSCH will build .25 times its TL in RSCH per turn.
-The FACT group will complete its work-in-process before beginning the research.
+RSCH are built by laboratories ([H4.0](#rule-H4.0)), assembled into a LAB group with an assemble laboratory group order ([S6.8](#rule-S6.8)).
+A LAB will build .25 times its TL in RSCH per turn.
 RSCH may be transferred or sold, decreasing the total number of RSCH accumulated.
 RSCH accumulate in the S/C until the player assembles them with an ASM order naming the TL he wants, such as 75, ASM, TL-3 ([S6.7](#rule-S6.7)).
-The ASM order is processed in the assembly stage, but the TL is raised during the production stage ([B3.17.6](#rule-B3.17.6)), so RSCH built that turn are counted.
+The ASM order is processed in the assembly stage, but the TL is raised during the production stage ([B3.17.7](#rule-B3.17.7)), so RSCH built that turn are counted.
 The S/C's TL rises one level at a time toward the TL named, as far as its RSCH pay for, and the RSCH used are deducted from the total accumulated; any RSCH left over stay accumulated.
 Several TL's may be gained in one turn this way.
 An ASM order naming the S/C's current TL, a lower TL, or a TL above 10 fails with error E01.
@@ -3186,6 +3233,7 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 | FARM TL2-5     | 4+TL                  | 2+TL                  | 6+(2xTL)            | 0.5xTL\*          | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
 | FARM TL6-10    | 4+TL                  | 2+TL                  | 6+(2xTL)            | 1xTL              | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
 | HDRV          | 25xTL                 | 20xTL                 | 45xTL               | 40 x dist.        | 1045xTL MU lift              | none                        | 22.5xTL   | UNA       |
+| LAB           | 5+TL                  | 3+TL                  | 8+(2xTL)            | 0.5xTL            | 0.25xTL RSCH/TN              | 3 PRO + 1 USK               | 4+TL      | UNA       |
 | LFSU          | 3xTL                  | 5xTL                  | 8xTL                | 1xTL              | TL^2= POP supported          | none                        | 4xTL      | UNA       |
 | MRBT          | 10+TL                 | 10+TL                 | 20+(2xTL)           | 0                 | TLx2= SLD replaced           | none                        | 20+(2xTL) | NON       |
 | MINE          | 5+TL                  | 5+TL                  | 10+(2xTL)           | 0.5xTL            | 25xTL MU/TN                  | 1 PRO + 3 USK               | 5+TL      | UNA       |
@@ -3225,6 +3273,7 @@ The orders the game accepts are listed here, each with the rule that describes i
 | Assemble factory group | `assemble factory-group on EntityID with Quantity FACT-n producing Unit`<br>`assemble factory-group GroupNo on EntityID add Quantity FACT-n` | [S6.4](#rule-S6.4) |
 | Assemble farming group | `assemble farming-group on EntityID with Quantity FARM-n` | [S6.5](#rule-S6.5) |
 | Assemble mining group  | `assemble mining-group on EntityID with Quantity MINE-n working DepositNo`<br>`assemble mining-group GroupNo on EntityID add Quantity MINE-n` | [S6.6](#rule-S6.6) |
+| Assemble laboratory group | `assemble laboratory-group on EntityID with Quantity LAB-n` | [S6.8](#rule-S6.8) |
 | Update factory group   | `update factory-group GroupNo of EntityID retool`<br>`update factory-group GroupNo of EntityID produce Unit` | [S8.1](#rule-S8.1) |
 | Shut down              | `update GroupKind-group GroupNo of EntityID shutdown Quantity`<br>`update GroupKind-group GroupNo of EntityID shutdown PercentageAmount` | [S8.5](#rule-S8.5) |
 | Restart                | `update GroupKind-group GroupNo of EntityID restart Quantity`<br>`update GroupKind-group GroupNo of EntityID restart PercentageAmount` | [S8.6](#rule-S8.6) |
@@ -3766,7 +3815,7 @@ assemble 100 STRL on 5                      # STRL has no TL
   A unit works on the turn it is assembled.
 - In a CSHP, CORB, or CENC, a unit is assembled only if there is enclosure capacity for it ([F3.2.4](#rule-F3.2.4)).
   Until there is, the work waits.
-- FACT, FARM, and MINE are assembled into groups, with the orders of [S6.4](#rule-S6.4), [S6.5](#rule-S6.5), and [S6.6](#rule-S6.6).
+- FACT, FARM, MINE, and LAB are assembled into groups, with the orders of [S6.4](#rule-S6.4), [S6.5](#rule-S6.5), [S6.6](#rule-S6.6), and [S6.8](#rule-S6.8).
 - CWRK and SPY are not assembled; they are drafted ([S12.1](#rule-S12.1)).
 - An order to assemble an item that is never assembled ([F10.4](#rule-F10.4)) does nothing.
   The printout may or may not say so.
@@ -3881,7 +3930,7 @@ assemble factory-group GroupNo on EntityID add Quantity FACT-n [using Quantity C
 | EntityID  | The S/C that has the FACT units in storage.                                   |
 | Quantity  | How many FACT units to assemble ([S2.1](#rule-S2.1)).                         |
 | FACT-n    | The FACT units, with their TL: FACT-1 to FACT-10.                             |
-| producing | The item the new group is to build, with its TL if it has one, or RSCH.     |
+| producing | The item the new group is to build, with its TL if it has one.              |
 | GroupNo   | The number of the factory group the units are added to.                       |
 | using     | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
 
@@ -3889,7 +3938,7 @@ assemble factory-group GroupNo on EntityID add Quantity FACT-n [using Quantity C
 
 ```text
 assemble factory-group on 83 with 20,000 FACT-4 producing LFSU-1   # a new group
-assemble factory-group on 83 with 500 FACT-4 producing RSCH        # a new group, for research
+assemble factory-group on 83 with 500 FACT-4 producing LAB-4       # a new group, to build laboratories
 assemble factory-group 5 on 99 add 10,000 FACT-3                   # more FACT for group 5
 ```
 
@@ -3909,6 +3958,7 @@ assemble factory-group 5 on 99 add 10,000 FACT-3                   # more FACT f
 - The S/C has none of the FACT units in storage that are not already being assembled or scrapped.
 - The S/C already has 25 factory groups.
 - A new group is not told what to build, or the producing unit is not one that factories build.
+  Factories do not build RSCH: laboratories do ([S6.8](#rule-S6.8)).
 - The group to add to does not exist, or its units are of another TL.
 - The S/C does not belong to the player.
 
@@ -4012,6 +4062,45 @@ assemble mining-group 1 on 37 add 5,000 MINE-2              # more MINE for grou
 - Notes: This format assembles RSCH to raise the S/C's TL to the TL named (see [J4.1](#rule-J4.1)).
   If S/C 75 is TL-1 with 300,000 RSCH, it rises to TL-3 and has no RSCH left.
   With 250,000 RSCH, it rises to TL-2 and keeps 150,000 RSCH, and the order fails with error E02 because TL-3 was not reached.
+
+<a id="rule-S6.8"></a>
+### S6.8 Assemble Laboratory Group
+
+Assembles LAB units from storage into the S/C's laboratory group of their TL ([H4.0](#rule-H4.0)).
+
+**Syntax**
+
+```text
+assemble laboratory-group on EntityID with Quantity LAB-n [using Quantity CWRK]
+```
+
+| Value    | Meaning                                                                       |
+|----------|-------------------------------------------------------------------------------|
+| EntityID | The S/C that has the LAB units in storage.                                    |
+| Quantity | How many LAB units to assemble ([S2.1](#rule-S2.1)).                          |
+| LAB-n    | The LAB units, with their TL: LAB-1 to LAB-10.                                |
+| using    | The most CWRK that work on the order in a turn ([S6.0](#rule-S6.0)). Optional. |
+
+**Examples**
+
+```text
+assemble laboratory-group on 16 with 1,000 LAB-1
+assemble laboratory-group on 16 with 200 LAB-2 using 50 CWRK   # a second group, of TL-2
+```
+
+**Rules**
+
+- A S/C has one laboratory group for each TL, so the order takes no group number.
+  The units join the S/C's group of their TL; if it has none, the group is formed, and given the next group number of the S/C ([H3.9](#rule-H3.9)), as soon as the order is accepted.
+- A laboratory group is not told what to build: laboratories build only RSCH.
+- Any S/C may have laboratory groups.
+- The rules for assembling units ([S6.1](#rule-S6.1)) apply to the LAB units.
+
+**Rejected when**
+
+- The S/C has none of the LAB units in storage that are not already being assembled or scrapped.
+- The order names a group number.
+- The S/C does not belong to the player.
 
 <a id="rule-S7.0"></a>
 ## S7.0 Transfer Orders
@@ -4187,14 +4276,14 @@ update factory-group GroupNo of EntityID produce Unit
 |----------|-------------------------------------------------------------------------|
 | GroupNo  | The number of the factory group, as the printout shows it.              |
 | EntityID | The S/C the factory group is in.                                        |
-| Unit     | The item the group is to build, with its TL if it has one, or RSCH.     |
+| Unit     | The item the group is to build, with its TL if it has one.              |
 
 **Examples**
 
 ```text
 update factory-group 8 of 16 retool           # group 8 retools
 update factory-group 8 of 16 produce EWPN-1   # and then builds EWPN-1
-update factory-group 3 of 16 produce RSCH     # research needs no retooling
+update factory-group 3 of 16 produce STRL     # from STRN: structural units need no retooling
 ```
 
 **Rules**
@@ -4203,8 +4292,7 @@ update factory-group 3 of 16 produce RSCH     # research needs no retooling
 - A group must retool before it changes the item it builds ([H3.6](#rule-H3.6)).
   A group that has retooled builds nothing until it is told what to produce.
   Both orders may be given on the same turn, the retool order first.
-- No retooling is needed to change from building an item to building RSCH, or from one type of structural unit (STRN, STRL, STRS) to another.
-  Changing from RSCH to an item *does* need it.
+- No retooling is needed to change from one type of structural unit (STRN, STRL, STRS) to another.
 - A group must retool to build the same item at a higher TL.
 - An order to produce the item the group already builds changes nothing.
 - These are standing orders: the group keeps building the item until it is told otherwise.
@@ -4215,6 +4303,7 @@ update factory-group 3 of 16 produce RSCH     # research needs no retooling
 
 - The group is told to produce a different item and has not retooled.
 - Unit is not one that factories build.
+  Factories do not build RSCH: laboratories do ([H4.0](#rule-H4.0)).
 - The S/C has no factory group with that number.
 - The S/C does not belong to the player.
 
@@ -4247,7 +4336,7 @@ update factory-group 3 of 16 produce RSCH     # research needs no retooling
 <a id="rule-S8.5"></a>
 ### S8.5 Shut Down
 
-Shuts down units of a factory, farming, or mining group.
+Shuts down units of a factory, farming, mining, or laboratory group.
 The units stay assembled, but do not produce, and use no personnel or fuel.
 
 **Syntax**
@@ -4259,7 +4348,7 @@ update GroupKind-group GroupNo of EntityID shutdown PercentageAmount
 
 | Value            | Meaning                                                                         |
 |------------------|---------------------------------------------------------------------------------|
-| GroupKind        | The kind of group: factory, farming, or mining.                                 |
+| GroupKind        | The kind of group: factory, farming, mining, or laboratory.                     |
 | GroupNo          | The number of the group, as the printout shows it.                              |
 | EntityID         | The S/C the group is in.                                                        |
 | Quantity         | How many more of the group's units to shut down ([S2.1](#rule-S2.1)).           |
@@ -4271,6 +4360,7 @@ update GroupKind-group GroupNo of EntityID shutdown PercentageAmount
 update factory-group 8 of 16 shutdown 100%    # all of FACT group 8 shuts down
 update mining-group 1 of 35 shutdown 20,000   # 20,000 more MINE of group 1 shut down
 update farming-group 2 of 100 shutdown 25%    # a quarter of the group's FARM shut down
+update laboratory-group 9 of 16 shutdown 50%  # half of the group's LAB shut down
 ```
 
 **Rules**
@@ -4292,7 +4382,7 @@ update farming-group 2 of 100 shutdown 25%    # a quarter of the group's FARM sh
 <a id="rule-S8.6"></a>
 ### S8.6 Restart
 
-Restarts units of a factory, farming, or mining group that have been shut down ([S8.5](#rule-S8.5)).
+Restarts units of a factory, farming, mining, or laboratory group that have been shut down ([S8.5](#rule-S8.5)).
 
 **Syntax**
 
@@ -4303,7 +4393,7 @@ update GroupKind-group GroupNo of EntityID restart PercentageAmount
 
 | Value            | Meaning                                                                         |
 |------------------|---------------------------------------------------------------------------------|
-| GroupKind        | The kind of group: factory, farming, or mining.                                 |
+| GroupKind        | The kind of group: factory, farming, mining, or laboratory.                     |
 | GroupNo          | The number of the group, as the printout shows it.                              |
 | EntityID         | The S/C the group is in.                                                        |
 | Quantity         | How many of the group's shut down units to restart ([S2.1](#rule-S2.1)).        |
@@ -4315,6 +4405,7 @@ update GroupKind-group GroupNo of EntityID restart PercentageAmount
 update factory-group 8 of 16 restart 100%    # all of FACT group 8 is running again
 update mining-group 1 of 35 restart 5,000    # 5,000 of the MINE that were shut down restart
 update farming-group 2 of 100 restart 25%
+update laboratory-group 9 of 16 restart 100%
 ```
 
 **Rules**

@@ -139,7 +139,7 @@ func TestRunTurnAppliesOrders(t *testing.T) {
 
 func TestUpdateGroup(t *testing.T) {
 	us := func(qty int) []game.GroupUnits { return []game.GroupUnits{{Qty: qty, TechLevel: 1}} }
-	cngd, strn, strl, rsch := game.Unit{Type: "CNGD"}, game.Unit{Type: "STRN"}, game.Unit{Type: "STRL"}, game.Unit{Type: "RSCH"}
+	cngd, strn, strl := game.Unit{Type: "CNGD"}, game.Unit{Type: "STRN"}, game.Unit{Type: "STRL"}
 	groups := func() game.Data {
 		d := twoEmpires()
 		d.Colonies[1].FarmingGroups = []game.Group{{No: 1, Units: us(10)}, {No: 2, ShutDown: 4, Units: us(10)}}
@@ -147,9 +147,10 @@ func TestUpdateGroup(t *testing.T) {
 		d.Colonies[1].FactoryGroups = []game.Group{
 			{No: 4, Producing: cngd, Units: us(1000)},
 			{No: 5, Producing: strn, Units: us(10)},
-			{No: 6, Producing: rsch, Units: us(10)},
+			{No: 6, Producing: cngd, Units: us(10)},
 			{No: 7, Retooled: true},
 		}
+		d.Colonies[1].LaboratoryGroups = []game.LaboratoryGroup{{No: 8, ShutDown: 2, Units: us(10)}}
 		d.Colonies[2].FarmingGroups = []game.Group{{No: 1, Units: us(10)}}
 		return d
 	}
@@ -172,13 +173,14 @@ func TestUpdateGroup(t *testing.T) {
 			want: func(d *game.Data) { fact(d, 4).Producing = strn }},
 		{name: "produce without retooling", text: "update factory-group 4 of 2 produce EWPN-1", err: engine.ErrNotRetooled},
 		{name: "produce what it makes already", text: "update factory-group 4 of 2 produce CNGD", want: func(d *game.Data) {}},
-		{name: "research needs no retooling", text: "update factory-group 4 of 2 produce RSCH",
-			want: func(d *game.Data) { fact(d, 4).Producing = rsch }},
-		{name: "from research does", text: "update factory-group 6 of 2 produce CNGD", err: engine.ErrNotRetooled},
+		{name: "factories don't do research", text: "update factory-group 4 of 2 produce RSCH", err: orders.ErrInvalidUnit},
+		{name: "nor after retooling", text: "update factory-group 7 of 2 produce RSCH", err: orders.ErrInvalidUnit},
 		{name: "one structural unit to another", text: "update factory-group 5 of 2 produce STRL",
 			want: func(d *game.Data) { fact(d, 5).Producing = strl }},
 		{name: "to a structural unit from another unit", text: "update factory-group 4 of 2 produce STRL", err: engine.ErrNotRetooled},
 		{name: "only factories retool", text: "update farming-group 1 of 2 retool", err: orders.ErrInvalidOrder},
+		{name: "laboratories don't retool", text: "update laboratory-group 8 of 2 retool", err: orders.ErrInvalidOrder},
+		{name: "or produce", text: "update laboratory-group 8 of 2 produce RSCH", err: orders.ErrInvalidOrder},
 
 		{name: "shutdown a quantity", text: "update factory-group 4 of 2 shutdown 500",
 			want: func(d *game.Data) { fact(d, 4).ShutDown = 500 }},
@@ -201,6 +203,11 @@ func TestUpdateGroup(t *testing.T) {
 		{name: "restart all of it", text: "update mining-group 3 of 2 restart 100%",
 			want: func(d *game.Data) { d.Colonies[1].MiningGroups[0].ShutDown = 0 }},
 		{name: "restart with none shut down", text: "update farming-group 1 of 2 restart 1", err: engine.ErrNoneShutDown},
+		{name: "shutdown laboratories", text: "update laboratory-group 8 of 2 shutdown 50%",
+			want: func(d *game.Data) { d.Colonies[1].LaboratoryGroups[0].ShutDown = 7 }},
+		{name: "restart laboratories", text: "update laboratory-group 8 of 2 restart 1",
+			want: func(d *game.Data) { d.Colonies[1].LaboratoryGroups[0].ShutDown = 1 }},
+		{name: "a laboratory group is not a factory group", text: "update factory-group 8 of 2 shutdown 1", err: engine.ErrNoSuchGroup},
 		{name: "shutdown and restart in one turn", text: "update factory-group 4 of 2 shutdown 25%\nupdate factory-group 4 of 2 restart 25%",
 			want: func(d *game.Data) {}},
 

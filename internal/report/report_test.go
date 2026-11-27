@@ -71,6 +71,7 @@ func TestEmpire(t *testing.T) {
 				"  Group 1          100,000 units at TL 10",
 				"MINING GROUPS\n  None assembled",
 				"FACTORY GROUPS\n  None assembled",
+				"LABORATORY GROUPS\n  None assembled",
 				"    1  GOLD      12,000,000     1%",
 				"    2  FUEL      20,000,000    13%",
 			},
@@ -243,6 +244,29 @@ func TestEmpire(t *testing.T) {
 				"  USK             400,000        300,000        100,000\n",
 				"  100,000 of the USK were automation (AUTO)",
 			},
+		},
+		{
+			name:     "laboratories",
+			empireID: 1,
+			edit: func(d *game.Data) {
+				c := &d.Colonies[0]
+				c.LaboratoryGroups = []game.LaboratoryGroup{
+					{No: 5, ShutDown: 100, Units: []game.GroupUnits{{Qty: 4000, TechLevel: 1, Idle: game.Idle{Ordered: 100, Unstaffed: 900}}}},
+					{No: 6, Units: []game.GroupUnits{{Qty: 500, TechLevel: 2, Idle: game.Idle{Unfuelled: 500}}}},
+				}
+				c.Research = game.Research{Units: 4500, Worked: 3000, Ordered: 100, Unstaffed: 900, Unfuelled: 500, Fuel: 1500, RSCH: 750}
+				c.Cargo = append(c.Cargo, game.Unit{Type: "RSCH", Qty: 12750})
+				c.Assembly = []game.Assembly{{Kind: game.KindLaboratory, GroupNo: 6, Unit: game.Unit{Type: "LAB", TechLevel: 2}, Assembled: 500}}
+			},
+			want: []string{
+				"  Laboratory group 6: 500 LAB-2 assembled last turn, and the work is done\n",
+				"  RSCH                  12,750",
+				"LABORATORY GROUPS\n  Group 5   SHUT DOWN BY ORDER: 100 of its units\n  Group 5            4,000 units at TL 1\n",
+				"  Group 6              500 units at TL 2\n",
+				"  LAST TURN: 3,000 of 4,500 units worked, burned 1,500 FUEL, and made 750 RSCH\n",
+				"  100 units idle: by order\n  900 units idle: no staff (each needs 3 PRO and 1 USK)\n  500 units idle: no FUEL\n",
+			},
+			lack: []string{"LABORATORY GROUPS\n  None assembled"},
 		},
 		{
 			name:     "later turn with no orders",

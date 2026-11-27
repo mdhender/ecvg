@@ -218,7 +218,7 @@ func TestAssemblyInTheSetupTurn(t *testing.T) {
 	}
 }
 
-// An entity's farming, mining, and factory groups share one run of group
+// An entity's farming, mining, factory, and laboratory groups share one run of group
 // numbers, which always goes up and never uses a number again.
 func TestGroupNumbersAreShared(t *testing.T) {
 	d := builders()

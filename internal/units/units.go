@@ -310,7 +310,8 @@ func build() []Def {
 }
 
 // FactoryMade reports whether a factory group can be set to make the unit:
-// a manufactured unit, or RSCH, which factories make from nothing.
+// it must be a manufactured unit. Research points (RSCH) are made by
+// laboratories (LAB), not by factories.
 func (d Def) FactoryMade() bool {
-	return d.Manufactured || d.Code == RSCH
+	return d.Manufactured
 }

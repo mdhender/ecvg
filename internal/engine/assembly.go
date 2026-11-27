@@ -48,8 +48,9 @@ func Assembly(d *game.Data) {
 
 // AssembleGroup carries out an assemble order for a group, given by the
 // empire with ID empireID. It makes the new group, or finds the one the order
-// adds to (for farming units, the entity's farming group of their tech level,
-// if it has one: it may have one for each tech level, manual H1.0), and starts the assembly work for the order's units; the
+// adds to (for farming and laboratory units, the entity's group of that kind
+// and of their tech level, if it has one: it may have one of each kind for
+// each tech level, manual H1.0 and H4.0), and starts the assembly work for the order's units; the
 // Assembly phase does the work. Nothing changes if it fails:
 //
 //   - ErrNotControlled: the empire has no such entity.
@@ -76,10 +77,19 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		return fmt.Errorf("entity %d: %w", o.EntityID, ErrNotControlled)
 	}
 
-	// An entity has one farming group of each tech level, so farming units
-	// join the group of theirs, if there is one.
+	// An entity has one farming group, and one laboratory group, of each tech
+	// level, so those units join the group of theirs, if there is one.
 	if o.Kind == game.KindFarming && o.GroupNo == 0 {
 		for _, g := range c.FarmingGroups {
+			for _, gu := range g.Units {
+				if gu.TechLevel == o.Unit.TechLevel {
+					o.GroupNo = g.No
+				}
+			}
+		}
+	}
+	if o.Kind == game.KindLaboratory && o.GroupNo == 0 {
+		for _, g := range c.LaboratoryGroups {
 			for _, gu := range g.Units {
 				if gu.TechLevel == o.Unit.TechLevel {
 					o.GroupNo = g.No
@@ -108,6 +118,12 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 			for i := range c.MiningGroups {
 				if c.MiningGroups[i].No == o.GroupNo {
 					us = &c.MiningGroups[i].Units
+				}
+			}
+		case game.KindLaboratory:
+			for i := range c.LaboratoryGroups {
+				if c.LaboratoryGroups[i].No == o.GroupNo {
+					us = &c.LaboratoryGroups[i].Units
 				}
 			}
 		}
@@ -214,6 +230,9 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		case game.KindMining:
 			c.MiningGroups = append(c.MiningGroups, game.MiningGroup{No: no, DepositID: depositID})
 			us = &c.MiningGroups[len(c.MiningGroups)-1].Units
+		case game.KindLaboratory:
+			c.LaboratoryGroups = append(c.LaboratoryGroups, game.LaboratoryGroup{No: no})
+			us = &c.LaboratoryGroups[len(c.LaboratoryGroups)-1].Units
 		}
 	}
 	// The group has its entry of units from the start, so that the tech level
@@ -230,7 +249,7 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 // if it fails:
 //
 //   - ErrNotControlled: the empire has no such entity.
-//   - ErrGroupUnit: the unit is one that works in a group (FACT, FARM, MINE),
+//   - ErrGroupUnit: the unit is one that works in a group (FACT, FARM, LAB, MINE),
 //     which the group orders assemble.
 //   - ErrNotScrappable: the unit wasn't built from MTL and NMTL.
 //   - ErrNotEnoughUnits: to assemble or scrap, the entity has none of the
@@ -265,7 +284,7 @@ func UnitWork(d *game.Data, empireID int, o orders.UnitWork) error {
 		if !def.RequiresAssembly {
 			return nil // nothing to do
 		}
-		if code == units.FACT || code == units.FARM || code == units.MINE {
+		if code == units.FACT || code == units.FARM || code == units.LAB || code == units.MINE {
 			return fmt.Errorf("%s: %w", name, ErrGroupUnit)
 		}
 	}

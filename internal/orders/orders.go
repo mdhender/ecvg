@@ -16,6 +16,7 @@
 //	assemble factory-group on EntityID with Quantity FactoryUnit producing Unit
 //	assemble farming-group on EntityID with Quantity FarmUnit
 //	assemble mining-group on EntityID with Quantity MiningUnit working DepositNo
+//	assemble laboratory-group on EntityID with Quantity LabUnit
 //	assemble factory-group GroupNo on EntityID add Quantity FactoryUnit
 //	assemble mining-group GroupNo on EntityID add Quantity MiningUnit
 //	assemble Quantity Unit on EntityID
@@ -32,15 +33,15 @@
 // EntityID is the ID of an entity. PercentageAmount is a whole number with a
 // "%" joined to it: "50%", not "50 %". For rations it is from game.MinRations
 // to game.MaxRations, and for shutdown and restart, where it is a percentage
-// of the units of the group, from 1 to 100. GroupKind is farming, mining, or factory, and GroupNo
+// of the units of the group, from 1 to 100. GroupKind is farming, mining, factory, or laboratory, and GroupNo
 // is the number of a group of that kind. Quantity is a whole number, 1 or
 // more, which may have commas between its thousands: "3600" or "3,600".
 // UnitOrCadre is the code of a population unit or cadre, such as SLD or CWRK.
 // It may have a race ID joined to it by a hyphen, such as SLD-3; without one,
 // or with race 0, it is of the race of the empire that gives the order.
 // A unit that has a tech level is written with it, joined by a hyphen:
-// FactoryUnit is FACT-1 to FACT-10, FarmUnit FARM-1 to FARM-10, and
-// MiningUnit MINE-1 to MINE-10. A unit that has none is its code alone, such
+// FactoryUnit is FACT-1 to FACT-10, FarmUnit FARM-1 to FARM-10,
+// MiningUnit MINE-1 to MINE-10, and LabUnit LAB-1 to LAB-10. A unit that has none is its code alone, such
 // as CNGD. Every unit of a group is of one tech level.
 package orders
 
@@ -150,7 +151,7 @@ func (o Disband) String() string {
 }
 
 // AssembleGroup is the order that assembles units into a factory, farming,
-// or mining group of the entity with ID EntityID: a new group, if GroupNo is
+// mining, or laboratory group of the entity with ID EntityID: a new group, if GroupNo is
 // 0, or more units for the group numbered GroupNo.
 type AssembleGroup struct {
 	EntityID int
@@ -329,7 +330,7 @@ const updateGroupUsage = `want one of:
   update GroupKind-group GroupNo of EntityID shutdown PercentageAmount
   update GroupKind-group GroupNo of EntityID restart Quantity
   update GroupKind-group GroupNo of EntityID restart PercentageAmount
-GroupKind is factory, farming, or mining`
+GroupKind is factory, farming, mining, or laboratory`
 
 func parseUpdateGroup(tokens []Token) (Order, error) {
 	usage := fmt.Errorf("%w: %s", ErrInvalidOrder, updateGroupUsage)
@@ -343,7 +344,7 @@ func parseUpdateGroup(tokens []Token) (Order, error) {
 		}
 	}
 	if o.Kind == "" {
-		return nil, fmt.Errorf("%w: %q: want factory-group, farming-group, or mining-group", ErrInvalidGroupKind, tokens[1].Text)
+		return nil, fmt.Errorf("%w: %q: want factory-group, farming-group, mining-group, or laboratory-group", ErrInvalidGroupKind, tokens[1].Text)
 	}
 	if len(tokens) < 6 || !tokens[3].Is("of") {
 		return nil, usage
@@ -377,7 +378,7 @@ func parseUpdateGroup(tokens []Token) (Order, error) {
 			return nil, err
 		}
 		if d, _ := units.Lookup(o.Producing.Type); !d.FactoryMade() {
-			return nil, fmt.Errorf("%w: %q: factories don't make it", ErrInvalidUnit, args[0].Text)
+			return nil, fmt.Errorf("%w: %q: %s", ErrInvalidUnit, args[0].Text, NotFactoryMade(o.Producing.Type))
 		}
 		return o, nil
 	case action.Is("shutdown") || action.Is("restart"):
@@ -427,9 +428,19 @@ func parseDraft(tokens []Token, verb string) (Order, error) {
 
 // groupUnit is the unit that the groups of each kind are made of.
 var groupUnit = map[game.GroupKind]string{
-	game.KindFactory: units.FACT,
-	game.KindFarming: units.FARM,
-	game.KindMining:  units.MINE,
+	game.KindFactory:    units.FACT,
+	game.KindFarming:    units.FARM,
+	game.KindMining:     units.MINE,
+	game.KindLaboratory: units.LAB,
+}
+
+// NotFactoryMade says why a factory group can't be set to make the unit with
+// the given code. Research points are made by laboratories.
+func NotFactoryMade(code string) string {
+	if code == units.RSCH {
+		return "factories don't make it: laboratories do (assemble laboratory-group on EntityID with Quantity LAB-n)"
+	}
+	return "factories don't make it"
 }
 
 const assembleUsage = `want one of:
@@ -437,6 +448,7 @@ const assembleUsage = `want one of:
   assemble factory-group on EntityID with Quantity FACT-n producing Unit
   assemble farming-group on EntityID with Quantity FARM-n
   assemble mining-group on EntityID with Quantity MINE-n working DepositNo
+  assemble laboratory-group on EntityID with Quantity LAB-n
   assemble factory-group GroupNo on EntityID add Quantity FACT-n
   assemble mining-group GroupNo on EntityID add Quantity MINE-n
 any of them may end with: using Quantity CWRK`
@@ -528,9 +540,10 @@ func parseAssemble(tokens []Token) (Order, error) {
 	t, ok := next()
 	if ok && !t.Is("on") {
 		// A group number: the order adds to a group. An entity has one
-		// farming group of each tech level, so the units say which it is.
-		if kind == game.KindFarming {
-			return nil, fmt.Errorf("%w: a farming group takes no group number, its units' tech level says which group they join: assemble farming-group on EntityID with Quantity FARM-n", ErrInvalidOrder)
+		// farming group, and one laboratory group, of each tech level, so
+		// the units say which it is.
+		if kind == game.KindFarming || kind == game.KindLaboratory {
+			return nil, fmt.Errorf("%w: a %s group takes no group number, its units' tech level says which group they join: assemble %s-group on EntityID with Quantity %s-n", ErrInvalidOrder, kind, kind, groupUnit[kind])
 		}
 		if o.GroupNo, ok = number(t); !ok || o.GroupNo < 1 {
 			return nil, fmt.Errorf("%w: %q: want a whole number, 1 or more", ErrInvalidGroupNo, t.Text)
@@ -584,7 +597,7 @@ func parseAssemble(tokens []Token) (Order, error) {
 			return nil, err
 		}
 		if d, _ := units.Lookup(o.Producing.Type); !d.FactoryMade() {
-			return nil, fmt.Errorf("%w: %q: factories don't make it", ErrInvalidUnit, u.Text)
+			return nil, fmt.Errorf("%w: %q: %s", ErrInvalidUnit, u.Text, NotFactoryMade(o.Producing.Type))
 		}
 	}
 	if len(rest) > 0 {

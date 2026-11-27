@@ -402,6 +402,12 @@ func (c *Colony) addToGroup(kind GroupKind, no, tl, qty int) {
 				add(&c.MiningGroups[i].Units)
 			}
 		}
+	case KindLaboratory:
+		for i := range c.LaboratoryGroups {
+			if c.LaboratoryGroups[i].No == no {
+				add(&c.LaboratoryGroups[i].Units)
+			}
+		}
 	}
 }
 
@@ -416,6 +422,9 @@ func (c *Colony) NextGroupNo() int {
 		last = max(last, g.No)
 	}
 	for _, g := range c.FactoryGroups {
+		last = max(last, g.No)
+	}
+	for _, g := range c.LaboratoryGroups {
 		last = max(last, g.No)
 	}
 	c.LastGroupNo = last + 1

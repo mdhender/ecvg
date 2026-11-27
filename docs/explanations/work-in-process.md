@@ -224,15 +224,16 @@ Subtract it from the size of the group, and what is left is the FACT that are fr
 
 ## Research
 
-Factory groups also build research ([H3.7](../rules/manual.md#rule-H3.7)), and it does not go through the pipeline.
-RSCH has no mass ([R3.0](../rules/manual.md#rule-R3.0)) and needs no MTL or NMTL ([J4.1](../rules/manual.md#rule-J4.1)), so it never fills a load.
-A FACT building RSCH makes 0.25 times its TL in RSCH each turn ([J4.1](../rules/manual.md#rule-J4.1)).
+Factory groups do not build research ([H3.7](../rules/manual.md#rule-H3.7)), so research never goes through the pipeline.
+Research is done by laboratory (LAB) units, assembled into laboratory groups ([H4.0](../rules/manual.md#rule-H4.0)).
+RSCH has no mass ([R3.0](../rules/manual.md#rule-R3.0)) and needs no MTL or NMTL ([H4.1](../rules/manual.md#rule-H4.1)), so there is no load to claim and nothing to carry.
+A working LAB makes 0.25 times its TL in RSCH on the turn it works ([H4.1](../rules/manual.md#rule-H4.1)), as a farm makes food.
 
-A group ordered to build research finishes its WIP first ([J4.1](../rules/manual.md#rule-J4.1)): a FACT that holds a load carries it through, and turns to research when it is free.
-Switching to research needs no retooling, but switching from research back to a unit does ([H3.6](../rules/manual.md#rule-H3.6)).
+A laboratory needs three PRO and one USK, and fuel ([H4.2](../rules/manual.md#rule-H4.2)).
+Laboratories are the last to be staffed and fuelled, after the factories ([H4.3](../rules/manual.md#rule-H4.3)), so research gets what production leaves.
 
-Research is going to move out of the factories to laboratory (LAB) units.
-Until it does, this is how it works.
+In the 1980 rules factories built research, and a group could change to it without retooling.
+That is gone: a factory group that is told to produce RSCH has its order rejected.
 
 ## Farms and mines
 

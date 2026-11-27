@@ -400,6 +400,7 @@ func generateEmpires(d *game.Data, templated map[int]*TemplatePlanet, e EmpireTe
 					FactoryGroups:    cloneGroups(tc.FactoryGroups),
 					LastGroupNo:      lastGroupNo(tc),
 					MiningGroups:     []game.MiningGroup{},
+					LaboratoryGroups: []game.LaboratoryGroup{},
 				}
 				d.Colonies = append(d.Colonies, colony)
 			}

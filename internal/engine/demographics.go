@@ -38,6 +38,7 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	meals := Rations(d, d.Game.Turn)
 	PopulationChanges(d, meals)
 	Mining(d, d.Game.Turn, allocs)
+	Research(d, d.Game.Turn, allocs)
 	Demographics(d, d.Game.Turn)
 	d.Game.Turn++
 	return result, nil

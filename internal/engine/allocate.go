@@ -32,6 +32,9 @@ type Allocation struct {
 	// Mines is indexed like the colony's MiningGroups and then like the
 	// group's Units.
 	Mines [][]Work
+	// Labs is indexed like the colony's LaboratoryGroups and then like the
+	// group's Units.
+	Labs [][]Work
 }
 
 // AllocateResources is the resource allocation phase of the turn numbered
@@ -48,18 +51,21 @@ type Allocation struct {
 // production phases to respect and the report to show.
 //
 // The scheme is deliberately blunt, not efficient. It makes two passes over
-// the groups, each time the farming groups first, then the mining groups
-// (factory groups will follow them), and each kind in order of seniority: the group number,
-// lowest first. Within a group the units are taken in the order listed.
+// the groups, each time the farming groups first, then the mining groups,
+// then the laboratory groups (factory groups will come between the mines and
+// the laboratories, so research gets what production leaves), and each kind
+// in order of seniority: the group number, lowest first. Within a group the
+// units are taken in the order listed.
 //
 //  1. Staff. Each group takes as much of the cadre as it can use
 //     (game.FarmPRO and game.FarmUSK for each FARM unit, game.MinePRO and
-//     game.MineUSK for each MINE unit), until the cadre
+//     game.MineUSK for each MINE unit, game.LabPRO and game.LabUSK for each
+//     LAB unit), until the cadre
 //     can't staff another unit. Staff is never given back, even by a unit
 //     that then gets no fuel.
 //  2. Fuel. Each group takes as much FUEL as its staffed units can use
 //     (game.FarmFuel, but none for solar powered farms, game.FarmSolar;
-//     game.MineFuel). The pass
+//     game.MineFuel; game.LabFuel). The pass
 //     stops when the fuel runs out, or at the first group that has no staff.
 //
 // The fuel is only allocated here; the production phases burn it.
@@ -74,6 +80,11 @@ func AllocateResources(d *game.Data, turn int) []Allocation {
 				}
 			}
 			for _, g := range c.MiningGroups {
+				for k := range g.Units {
+					g.Units[k].Idle = game.Idle{}
+				}
+			}
+			for _, g := range c.LaboratoryGroups {
 				for k := range g.Units {
 					g.Units[k].Idle = game.Idle{}
 				}
@@ -100,7 +111,7 @@ func AllocateResources(d *game.Data, turn int) []Allocation {
 
 // slot is one group in the order the passes take them.
 type slot struct {
-	mine     bool
+	kind     game.GroupKind
 	shutDown int
 	units    []game.GroupUnits
 	work     []Work
@@ -112,26 +123,35 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 	a := Allocation{
 		Farms: make([][]Work, len(c.FarmingGroups)),
 		Mines: make([][]Work, len(c.MiningGroups)),
+		Labs:  make([][]Work, len(c.LaboratoryGroups)),
 	}
-	// The groups in the order of both passes: farms, then mines, each kind
-	// by seniority.
+	// The groups in the order of both passes: farms, then mines, then
+	// laboratories, each kind by seniority.
 	var slots []slot
 	for _, j := range bySeniority(len(c.FarmingGroups), func(j int) int { return c.FarmingGroups[j].No }) {
 		g := c.FarmingGroups[j]
 		a.Farms[j] = make([]Work, len(g.Units))
-		slots = append(slots, slot{shutDown: g.ShutDown, units: g.Units, work: a.Farms[j]})
+		slots = append(slots, slot{kind: game.KindFarming, shutDown: g.ShutDown, units: g.Units, work: a.Farms[j]})
 	}
 	for _, j := range bySeniority(len(c.MiningGroups), func(j int) int { return c.MiningGroups[j].No }) {
 		g := c.MiningGroups[j]
 		a.Mines[j] = make([]Work, len(g.Units))
-		slots = append(slots, slot{mine: true, shutDown: g.ShutDown, units: g.Units, work: a.Mines[j]})
+		slots = append(slots, slot{kind: game.KindMining, shutDown: g.ShutDown, units: g.Units, work: a.Mines[j]})
+	}
+	for _, j := range bySeniority(len(c.LaboratoryGroups), func(j int) int { return c.LaboratoryGroups[j].No }) {
+		g := c.LaboratoryGroups[j]
+		a.Labs[j] = make([]Work, len(g.Units))
+		slots = append(slots, slot{kind: game.KindLaboratory, shutDown: g.ShutDown, units: g.Units, work: a.Labs[j]})
 	}
 
 	// Pass 1: staff.
 	for _, s := range slots {
 		pro, usk := game.FarmPRO, game.FarmUSK
-		if s.mine {
+		switch s.kind {
+		case game.KindMining:
 			pro, usk = game.MinePRO, game.MineUSK
+		case game.KindLaboratory:
+			pro, usk = game.LabPRO, game.LabUSK
 		}
 		ordered := game.ShutDownUnits(s.units, s.shutDown)
 		for k, u := range s.units {
@@ -150,9 +170,12 @@ func allocate(c *game.Colony, orbitNo int) Allocation {
 			staffed += w.Staffed
 			wanted = wanted || u.Qty > w.Ordered
 			switch {
-			case s.mine:
+			case s.kind == game.KindMining:
 				w.Worked = min(w.Staffed, game.MinesFuelled(u.TechLevel, fuel))
 				w.Fuel = game.MineFuel(u.TechLevel, w.Worked)
+			case s.kind == game.KindLaboratory:
+				w.Worked = min(w.Staffed, game.LabsFuelled(u.TechLevel, fuel))
+				w.Fuel = game.LabFuel(u.TechLevel, w.Worked)
 			case game.FarmSolar(u.TechLevel, c.Type, orbitNo):
 				w.Worked = w.Staffed
 			default:

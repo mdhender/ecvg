@@ -14,7 +14,7 @@ func AutoUSK(tl, qty int) int {
 // Workers is a colony's worker (WRKR) cadre for a turn. The engine makes it,
 // when resources are allocated, from the PRO, USK, and AUTO units that the
 // empire's orders didn't allocate to something else, and then drains it as it
-// staffs the farms, mines, and factories. It lasts only for the turn; the
+// staffs the farms, mines, factories, and laboratories. It lasts only for the turn; the
 // population itself doesn't change.
 type Workers struct {
 	// PRO and USK are the cadre as it was made. USK includes AutoUSK, the

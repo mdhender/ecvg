@@ -342,10 +342,16 @@ func TestCreate(t *testing.T) {
 // A factory group of the template says what it makes, as the order that
 // assembles one must.
 func TestEmpireTemplateFactoryGroups(t *testing.T) {
-	for _, producing := range []string{`{"type":"CNGD"}`, `{"type":"FARM","tech_level":1}`, `{"type":"RSCH"}`} {
-		data := `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":` + producing + `}]}]}`
-		if _, err := parseEmpireTemplate([]byte(data)); err != nil {
+	template := func(producing string) string {
+		return `{"colonies":[{"no":1,"type":"COPN","tech_level":1,"factory_groups":[{"no":1,"units":[{"qty":1,"tech_level":1}],"producing":` + producing + `}]}]}`
+	}
+	for _, producing := range []string{`{"type":"CNGD"}`, `{"type":"FARM","tech_level":1}`, `{"type":"LAB","tech_level":1}`} {
+		if _, err := parseEmpireTemplate([]byte(template(producing))); err != nil {
 			t.Errorf("producing %s: %v", producing, err)
 		}
+	}
+	// Research is done by laboratories, not factories.
+	if _, err := parseEmpireTemplate([]byte(template(`{"type":"RSCH"}`))); !errors.Is(err, errInvalidTemplate) {
+		t.Errorf("producing RSCH: err = %v, want errInvalidTemplate", err)
 	}
 }

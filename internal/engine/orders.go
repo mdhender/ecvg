@@ -150,8 +150,8 @@ const (
 //
 // Retool has a factory group retool: it stops making what it made, and waits
 // to be told what to produce. Produce tells it. A group must have retooled to
-// change what it produces, except to change to RSCH or from one structural
-// unit (STRN, STRL, STRS) to another (manual H3.6). The retooling itself,
+// change what it produces, except to change from one structural unit (STRN,
+// STRL, STRS) to another (manual H3.6). The retooling itself,
 // which waits for the group's work in process and costs MTL and NMTL, comes
 // with manufacturing.
 //
@@ -209,6 +209,12 @@ func UpdateGroup(d *game.Data, empireID int, o orders.UpdateGroup) error {
 				factory, shutDown, groupUs = g, &g.ShutDown, g.Units
 			}
 		}
+	case game.KindLaboratory:
+		for j := range c.LaboratoryGroups {
+			if g := &c.LaboratoryGroups[j]; g.No == o.GroupNo {
+				shutDown, groupUs = &g.ShutDown, g.Units
+			}
+		}
 	}
 	if shutDown == nil {
 		return fmt.Errorf("entity %d: %s group %d: %w", o.EntityID, o.Kind, o.GroupNo, ErrNoSuchGroup)
@@ -227,12 +233,12 @@ func UpdateGroup(d *game.Data, empireID int, o orders.UpdateGroup) error {
 		}
 		want := game.Unit{Type: o.Producing.Type, TechLevel: o.Producing.TechLevel}
 		if def, _ := units.Lookup(want.Type); !def.FactoryMade() || !def.ValidTechLevel(want.TechLevel) {
-			return fmt.Errorf("%w: %s: factories don't make it", orders.ErrInvalidUnit, want.Type)
+			return fmt.Errorf("%w: %s: %s", orders.ErrInvalidUnit, want.Type, orders.NotFactoryMade(want.Type))
 		}
 		if want == factory.Producing {
 			return nil
 		}
-		if !factory.Retooled && want.Type != units.RSCH && !(structural(want.Type) && structural(factory.Producing.Type)) {
+		if !factory.Retooled && !(structural(want.Type) && structural(factory.Producing.Type)) {
 			return fmt.Errorf("factory group %d: %w", o.GroupNo, ErrNotRetooled)
 		}
 		factory.Producing, factory.Retooled = want, false

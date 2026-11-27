@@ -159,7 +159,7 @@ function renderDetail() {
       (c.life_support ? `takes ${num(c.volume)} VU and ${num(c.life_support)} LU` : `wants ${num(c.volume)} VU; open air, so no life support needed`), "sub"));
     out.push(...units("Operational", c.operational), ...units("Cargo", c.cargo),
       ...groups("Farming groups", c.farming_groups), ...groups("Mining groups", c.mining_groups, true),
-      ...groups("Factory groups", c.factory_groups));
+      ...groups("Factory groups", c.factory_groups), ...groups("Laboratory groups", c.laboratory_groups));
   }
   d.replaceChildren(...out);
   d.scrollTop = 0;

@@ -83,7 +83,7 @@ type Colony struct {
 	// Trained is what became of the TRNE cadre in the prior turn.
 	Trained Trained `json:"trained,omitzero"`
 	// LastGroupNo is the highest group number the colony has given out. Its
-	// farming, mining, and factory groups share one run of numbers, which
+	// farming, mining, factory, and laboratory groups share one run of numbers, which
 	// only goes up: a number is never used again. The lower a group's
 	// number, the more senior it is.
 	LastGroupNo int `json:"last_group_no,omitzero"`
@@ -101,6 +101,8 @@ type Colony struct {
 	Workers Workers `json:"workers,omitzero"`
 	// Harvest is what the colony's farming groups did in the prior turn.
 	Harvest Harvest `json:"harvest,omitzero"`
+	// Research is what the colony's laboratory groups did in the prior turn.
+	Research Research `json:"research,omitzero"`
 	// SOL is the standard of living, by default DefaultSOL.
 	SOL float64 `json:"sol"`
 	// DeathRate and BirthRate are fractions of the population per turn (0.01
@@ -118,10 +120,12 @@ type Colony struct {
 	// as the external depot for its MTL and NMTL, and nothing else.
 	Depot            []Unit `json:"depot,omitempty"`
 	DepotOperational []Unit `json:"depot_operational,omitempty"`
-	// The groups put the operational farm, mine, and factory units to work.
-	FarmingGroups []Group       `json:"farming_groups"`
-	MiningGroups  []MiningGroup `json:"mining_groups"`
-	FactoryGroups []Group       `json:"factory_groups"`
+	// The groups put the operational farm, mine, factory, and laboratory
+	// units to work.
+	FarmingGroups    []Group           `json:"farming_groups"`
+	MiningGroups     []MiningGroup     `json:"mining_groups"`
+	FactoryGroups    []Group           `json:"factory_groups"`
+	LaboratoryGroups []LaboratoryGroup `json:"laboratory_groups"`
 }
 
 // Unit is a quantity of one kind of unit, such as FOOD or FACT.
@@ -136,9 +140,10 @@ type Unit struct {
 type GroupKind string
 
 const (
-	KindFarming GroupKind = "farming"
-	KindMining  GroupKind = "mining"
-	KindFactory GroupKind = "factory"
+	KindFarming    GroupKind = "farming"
+	KindMining     GroupKind = "mining"
+	KindFactory    GroupKind = "factory"
+	KindLaboratory GroupKind = "laboratory"
 )
 
 // GroupAction is what an update order has a group do.

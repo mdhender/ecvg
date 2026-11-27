@@ -366,6 +366,33 @@ func Empire(w io.Writer, d game.Data, empireID int) error {
 			}
 		}
 		groups("FACTORY GROUPS", c.FactoryGroups)
+		p("")
+		p("LABORATORY GROUPS")
+		if len(c.LaboratoryGroups) == 0 {
+			p("  None assembled")
+		}
+		for _, g := range c.LaboratoryGroups {
+			if g.ShutDown > 0 {
+				p("  Group %-3d SHUT DOWN BY ORDER: %s of its units", g.No, commas(g.ShutDown))
+			}
+			for _, u := range g.Units {
+				p("  Group %-3d %14s units at TL %d", g.No, commas(u.Qty), u.TechLevel)
+				idleRows(u.Idle)
+			}
+		}
+		if r := c.Research; r.Units > 0 {
+			p("  LAST TURN: %s of %s units worked, burned %s FUEL, and made %s RSCH",
+				commas(r.Worked), commas(r.Units), commas(r.Fuel), commas(r.RSCH))
+			if r.Ordered > 0 {
+				p("  %s units idle: by order", commas(r.Ordered))
+			}
+			if r.Unstaffed > 0 {
+				p("  %s units idle: no staff (each needs %d PRO and %d USK)", commas(r.Unstaffed), game.LabPRO, game.LabUSK)
+			}
+			if r.Unfuelled > 0 {
+				p("  %s units idle: no FUEL", commas(r.Unfuelled))
+			}
+		}
 	}
 	if colonies == 0 {
 		p("")
