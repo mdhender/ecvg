@@ -240,9 +240,10 @@ draft 100 SLD from 1`)})
 	}
 }
 
-// A draft comes after production: the people drafted work the turn they are
-// drafted in and are out of the worker cadre from the next.
-func TestDraftedPeopleWorkThisTurn(t *testing.T) {
+// A draft comes before production (manual B3.0): the people drafted are out
+// of the worker cadre in the turn they are drafted in, and the trainees train
+// in it.
+func TestDraftedPeopleLeaveWorkThisTurn(t *testing.T) {
 	d := twoEmpires()
 	d.Game.Turn = 1
 	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300, SLD: 50}
@@ -250,28 +251,22 @@ func TestDraftedPeopleWorkThisTurn(t *testing.T) {
 	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "draft 200 CWRK from 1\ndraft 150 TRNE from 1\ndraft 40 SPY from 1")}); err != nil {
 		t.Fatal(err)
 	}
+	// 200 + 2 + 40 PRO and 200 + 150 USK were held by the cadres.
 	c := d.Colonies[0]
-	if c.Workers.PRO != 300 || c.Workers.USK != 1000 || c.Cadres != (game.Cadres{CWRK: 200, TRNE: 150, SPY: 40}) {
-		t.Fatalf("turn 1: workers %+v, cadres %+v", c.Workers, c.Cadres)
+	if c.Workers.PRO != 58 || c.Workers.USK != 650 {
+		t.Fatalf("turn 1: workers %+v; want 58 PRO and 650 USK", c.Workers)
 	}
-	if _, err := engine.RunTurn(&d, nil); err != nil {
-		t.Fatal(err)
-	}
-	// 200 + 2 + 40 PRO and 200 + 150 USK are held by the cadres.
-	if c = d.Colonies[0]; c.Workers.PRO != 58 || c.Workers.USK != 650 || c.Drafted != nil {
-		t.Errorf("turn 2: workers %+v, drafted %+v; want 58 PRO and 650 USK", c.Workers, c.Drafted)
-	}
-	// At the end of that turn 5% of the 150 trainees, rounded down, became
+	// At the end of the turn 5% of the 150 trainees, rounded down, became
 	// PRO, and the TRNE cadre disbanded. The other cadres stay.
 	if c.Trained != (game.Trained{Trainees: 150, Graduated: 7}) || c.Cadres != (game.Cadres{CWRK: 200, SPY: 40}) ||
 		c.Population != (game.Population{USK: 993, PRO: 307, SLD: 50}) {
-		t.Errorf("turn 2: trained %+v, cadres %+v, population %+v", c.Trained, c.Cadres, c.Population)
+		t.Errorf("turn 1: trained %+v, cadres %+v, population %+v", c.Trained, c.Cadres, c.Population)
 	}
 	if _, err := engine.RunTurn(&d, nil); err != nil {
 		t.Fatal(err)
 	}
-	if c = d.Colonies[0]; c.Workers.PRO != 67 || c.Workers.USK != 793 || c.Trained != (game.Trained{}) {
-		t.Errorf("turn 3: workers %+v, trained %+v; want 67 PRO and 793 USK", c.Workers, c.Trained)
+	if c = d.Colonies[0]; c.Workers.PRO != 67 || c.Workers.USK != 793 || c.Trained != (game.Trained{}) || c.Drafted != nil {
+		t.Errorf("turn 2: workers %+v, trained %+v, drafted %+v; want 67 PRO and 793 USK", c.Workers, c.Trained, c.Drafted)
 	}
 }
 
@@ -310,9 +305,9 @@ draft 25 SPY from 1`)})
 	}
 }
 
-// Disbanded people worked or not as they were at the start of the turn; they
-// are back in the worker cadre from the next.
-func TestDisbandTakesEffectNextTurn(t *testing.T) {
+// A disband comes before production (manual B3.0): the people disbanded are
+// back in the worker cadre in the turn they are disbanded in.
+func TestDisbandTakesEffectThisTurn(t *testing.T) {
 	d := twoEmpires()
 	d.Game.Turn = 1
 	d.Colonies[0].Population = game.Population{USK: 1000, PRO: 300}
@@ -321,7 +316,7 @@ func TestDisbandTakesEffectNextTurn(t *testing.T) {
 	if _, err := engine.RunTurn(&d, []orders.File{file(t, 1, "disband 200 CWRK from 1")}); err != nil {
 		t.Fatal(err)
 	}
-	if c := d.Colonies[0]; c.Workers.PRO != 100 || c.Workers.USK != 800 || c.Cadres != (game.Cadres{}) {
+	if c := d.Colonies[0]; c.Workers.PRO != 300 || c.Workers.USK != 1000 || c.Cadres != (game.Cadres{}) {
 		t.Fatalf("turn 1: workers %+v, cadres %+v", c.Workers, c.Cadres)
 	}
 	if _, err := engine.RunTurn(&d, nil); err != nil {
@@ -332,21 +327,20 @@ func TestDisbandTakesEffectNextTurn(t *testing.T) {
 	}
 }
 
-// A trainee cadre must exist at the start of a turn to be promoted in its
-// demographic changes; nobody is promoted in the setup turn.
+// A trainee cadre is promoted in the demographic changes of the turn it
+// trains in; nobody is promoted in the setup turn.
 func TestTraineesArePromotedInDemographics(t *testing.T) {
 	d := game.Data{Colonies: []game.Colony{
-		{ID: 1, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300, NewTRNE: 100}},
-		{ID: 2, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300, NewTRNE: 100}},
+		{ID: 1, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300}},
 	}}
 	engine.Demographics(&d, 3)
-	if c := d.Colonies[0]; c.Trained != (game.Trained{Trainees: 200, Graduated: 10}) || c.Cadres != (game.Cadres{TRNE: 100}) ||
-		c.Population != (game.Population{USK: 990, PRO: 20}) {
+	if c := d.Colonies[0]; c.Trained != (game.Trained{Trainees: 300, Graduated: 15}) || c.Cadres != (game.Cadres{}) ||
+		c.Population != (game.Population{USK: 985, PRO: 25}) {
 		t.Errorf("trained %+v, cadres %+v, population %+v", c.Trained, c.Cadres, c.Population)
 	}
-	// The setup turn: the trainees stay, and all of them train in turn 1.
+	// The setup turn: the trainees stay, and train in turn 1.
 	setup := game.Data{Colonies: []game.Colony{
-		{ID: 1, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300, NewTRNE: 100}, Trained: game.Trained{Trainees: 5}},
+		{ID: 1, Population: game.Population{USK: 1000, PRO: 10}, Cadres: game.Cadres{TRNE: 300}, Trained: game.Trained{Trainees: 5}},
 	}}
 	engine.Demographics(&setup, 0)
 	if c := setup.Colonies[0]; c.Trained != (game.Trained{}) || c.Cadres != (game.Cadres{TRNE: 300}) || c.Population != (game.Population{USK: 1000, PRO: 10}) {

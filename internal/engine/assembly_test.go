@@ -82,8 +82,17 @@ func TestAssembleGroupOrders(t *testing.T) {
 				}
 			},
 		},
-		{name: "units already being assembled can't be promised again", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 41 MINE-10", err: engine.ErrNotEnoughUnits},
-		{name: "not enough units", text: "assemble mining-group on 1 with 101 MINE-10 working 1", err: engine.ErrNotEnoughUnits},
+		{name: "units already being assembled can't be promised again", text: "assemble mining-group on 1 with 100 MINE-10 working 1\nassemble mining-group 5 on 1 add 1 MINE-10", err: engine.ErrNotEnoughUnits},
+		{
+			name: "an order for more units than there are takes them all",
+			text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 41 MINE-10",
+			check: func(t *testing.T, c []game.Colony) {
+				if len(c[0].Assembly) != 2 || c[0].Assembly[1].Unit.Qty != 40 {
+					t.Errorf("work %+v, want the second order to take the 40 left", c[0].Assembly)
+				}
+			},
+		},
+		{name: "none of the units", text: "assemble mining-group on 1 with 5 MINE-8 working 1", err: engine.ErrNotEnoughUnits},
 		{name: "a mining group is of one tech level", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 5 MINE-9", err: engine.ErrTechLevel},
 		{name: "a farming group is of one tech level", text: "assemble mining-group on 1 with 60 MINE-10 working 1\nassemble mining-group 5 on 1 add 5 MINE-9", err: engine.ErrTechLevel},
 		{name: "a deposit another empire works", text: "assemble mining-group on 1 with 60 MINE-10 working 2", err: engine.ErrDepositClaimed},
@@ -123,7 +132,16 @@ func TestAssembleGroupOrders(t *testing.T) {
 				}
 			},
 		},
-		{name: "a factory order needs the units", text: "assemble factory-group on 1 with 11 FACT-1", err: engine.ErrNotEnoughUnits},
+		{name: "a factory order needs the units", text: "assemble factory-group on 1 with 11 FACT-9", err: engine.ErrNotEnoughUnits},
+		{
+			name: "a factory order takes the units there are",
+			text: "assemble factory-group on 1 with 11 FACT-1",
+			check: func(t *testing.T, c []game.Colony) {
+				if len(c[0].Assembly) != 1 || c[0].Assembly[0].Unit.Qty != 10 {
+					t.Errorf("work %+v, want 10 FACT-1", c[0].Assembly)
+				}
+			},
+		},
 		{
 			name: "a factory group is of one tech level",
 			text: "assemble factory-group on 1 with 10 FACT-1\nassemble factory-group 5 on 1 add 5 FACT-2",
@@ -162,8 +180,9 @@ func TestAssembleGroupOrders(t *testing.T) {
 	}
 }
 
-// A group assembled in turn N first produces in turn N+1.
-func TestAssembledGroupWorksNextTurn(t *testing.T) {
+// Assembly comes before production (manual B3.0): the units a group gets in
+// turn N produce in turn N.
+func TestAssembledGroupWorksThisTurn(t *testing.T) {
 	d := builders()
 	d.Game.Turn = 1
 	// 2 CWRK do 1,000 EMU a turn: 33 MINE-10 at 30 MU each, with 10 over.
@@ -172,17 +191,17 @@ func TestAssembledGroupWorksNextTurn(t *testing.T) {
 	}
 	c := d.Colonies[0]
 	g := c.MiningGroups[0]
-	if g.Units[0].Qty != 33 || g.Mined != (game.Mined{}) || c.Assembly[0].EMU != 10 || c.Construction != (game.Construction{Pool: 1000, Used: 1000}) {
+	// The 33 worked: 33 x 25 x 10 x 10% = 825 FUEL for 165.
+	if g.Units[0].Qty != 33 || g.Mined != (game.Mined{Worked: 33, Fuel: 165, Product: 825}) || c.Assembly[0].EMU != 10 || c.Construction != (game.Construction{Pool: 1000, Used: 1000}) {
 		t.Fatalf("turn 1: group %+v, work %+v, construction %+v", g, c.Assembly, c.Construction)
 	}
 	if _, err := engine.RunTurn(&d, nil); err != nil {
 		t.Fatal(err)
 	}
-	// The 33 worked: 33 x 25 x 10 x 10% = 825 FUEL for 165. The other 27
-	// were assembled after production: 810 EMU of work.
+	// The other 27 were assembled, 810 EMU of work, and all 60 worked.
 	c = d.Colonies[0]
 	g = c.MiningGroups[0]
-	if g.Mined != (game.Mined{Worked: 33, Fuel: 165, Product: 825}) || g.Units[0].Qty != 60 || c.Construction != (game.Construction{Pool: 1000, Used: 800}) {
+	if g.Mined != (game.Mined{Worked: 60, Fuel: 300, Product: 1500}) || g.Units[0].Qty != 60 || c.Construction != (game.Construction{Pool: 1000, Used: 800}) {
 		t.Errorf("turn 2: group %+v, construction %+v", g, c.Construction)
 	}
 }

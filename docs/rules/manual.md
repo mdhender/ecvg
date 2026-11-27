@@ -1982,7 +1982,7 @@ Trainees are USK in training to become PRO's.
 Each 100 TRNE, or part of 100, requires one PRO to train them.
 Trainees and the PRO who train them do no other work while they train.
 
-A TRNE cadre trains for one turn only, the turn after it is drafted.
+A TRNE cadre trains for one turn only, the turn it is drafted.
 At the end of that turn 5% of its trainees, rounded down, graduate as PRO, and the cadre is disbanded: the other 95% become USK again, and the PRO who trained them are free.
 A player who wants to keep training must draft TRNE again every turn.
 This is unlike CWRK and SPY cadres, which stay until the player disbands them.
@@ -2079,7 +2079,7 @@ Rebels also increase if a foreign nation has his "E" spies incite loyal populati
 Trainees increase when the player writes a draft order ([S12.1](#rule-S12.1)) for a quantity of TRNE to be trained as PRO's.
 This number is deducted from the USK and added to the existing trainee units.
 Each 100 TRNE in the S/C, or part of 100, requires one PRO to train them ([G1.8](#rule-G1.8)), so the S/C drafts no more TRNE than it has PRO to train.
-The trainees train on the turn after they are drafted, and 5% of them, rounded down, graduate as professionals at the end of it.
+The trainees train on the turn they are drafted, and 5% of them, rounded down, graduate as professionals at the end of it.
 The rest are disbanded then, so trainees must be drafted every turn to keep training ([G1.8](#rule-G1.8)).
 
 <a id="rule-G3.0"></a>
@@ -3716,8 +3716,8 @@ will have more STRL for sale next turn. Signed.
 The orders of this section are all carried out by the construction workers (CWRK) of the S/C the order is addressed to ([F10.5](#rule-F10.5), [F11.0](#rule-F11.0)).
 The rules below apply to every one of them.
 
+- CWRK drafted on a turn do not work until the next turn.
 - Each CWRK assembles or disassembles 500 mass units per turn, or scraps 300.
-  CWRK drafted on a turn do not work until the next turn.
 - An order starts a piece of work.
   If the S/C does not have the CWRK to finish the work on the turn it is ordered, the work goes on each turn until it is done, and no new order is needed.
   The printout shows how far each piece of work has got.
@@ -3764,19 +3764,21 @@ assemble 100 STRL on 5                      # STRL has no TL
 **Rules**
 
 - The units must be in the S/C's storage, and not already being assembled or scrapped.
-- Assembly is done in the assembly stage ([B3.8](#rule-B3.8)).
-  A unit first works on the turn after it is assembled.
+  If the S/C has fewer of them than the quantity, it assembles the ones it has.
+- Assembly is done in the assembly stage ([B3.8](#rule-B3.8)), before production ([B3.17](#rule-B3.17)).
+  A unit works on the turn it is assembled.
 - In a CSHP, CORB, or CENC, a unit is assembled only if there is enclosure capacity for it ([F3.2.4](#rule-F3.2.4)).
   Until there is, the work waits.
 - FACT, FARM, and MINE are assembled into groups, with the orders of [S6.4](#rule-S6.4), [S6.5](#rule-S6.5), and [S6.6](#rule-S6.6).
 - CWRK and SPY are not assembled; they are drafted ([S12.1](#rule-S12.1)).
-- An order to assemble an item that is never assembled ([F10.4](#rule-F10.4)) is accepted and does nothing.
+- An order to assemble an item that is never assembled ([F10.4](#rule-F10.4)) does nothing.
+  The printout may or may not say so.
 
 **Rejected when**
 
 - Unit is FACT, FARM, or MINE.
 - Unit is a population unit or a cadre.
-- The S/C does not have that many of the unit in storage that are not already being assembled or scrapped.
+- The S/C has none of the unit in storage that are not already being assembled or scrapped.
 - The S/C does not belong to the player.
 
 <a id="rule-S6.2"></a>
@@ -3806,6 +3808,8 @@ disassemble 60,000 STRN on 22 using 500 CWRK
 
 **Rules**
 
+- The units must be assembled, and not already being disassembled.
+  If the S/C has fewer of them than the quantity, it disassembles the ones it has.
 - 10% of the units an order disassembles are lost ([F10.3](#rule-F10.3)).
   The loss is rounded down, but every order loses at least one unit.
 - Disassembly is done in the dis-assembly stage ([B3.4](#rule-B3.4)).
@@ -3813,13 +3817,14 @@ disassemble 60,000 STRN on 22 using 500 CWRK
   Until it does, the work waits.
 - FACT, FARM, and MINE that are in a group can not be disassembled yet.
 - CWRK and SPY are not disassembled; they are disbanded ([S12.2](#rule-S12.2)).
-- An order to disassemble an item that is never assembled ([F10.4](#rule-F10.4)) is accepted and does nothing.
+- An order to disassemble an item that is never assembled ([F10.4](#rule-F10.4)) does nothing.
+  The printout may or may not say so.
 
 **Rejected when**
 
 - Unit is FACT, FARM, or MINE.
 - Unit is a population unit or a cadre.
-- The S/C does not have that many of the unit assembled that are not already being disassembled.
+- The S/C has none of the unit assembled that are not already being disassembled.
 - The S/C does not belong to the player.
 
 <a id="rule-S6.3"></a>
@@ -3851,6 +3856,7 @@ scrap 20,000 CNGD on 38 using 100 CWRK
 
 - Scrapping returns 70% of the MTL and 70% of the NMTL the units were built from, each rounded down ([F11.0](#rule-F11.0)).
 - Only units in storage are scrapped, never assembled ones; an assembled unit must be disassembled first.
+  If the S/C has fewer of them in storage than the quantity, it scraps the ones it has.
 - Scrap work is done in the dis-assembly stage ([B3.4](#rule-B3.4)).
 - A CSHP or CORB that has no room for the MTL and NMTL loses what does not fit.
 
@@ -3858,7 +3864,7 @@ scrap 20,000 CNGD on 38 using 100 CWRK
 
 - Unit was not built from MTL and NMTL, so there is nothing to recover.
 - Unit is a population unit or a cadre.
-- The S/C does not have that many of the unit in storage that are not already being assembled or scrapped.
+- The S/C has none of the unit in storage that are not already being assembled or scrapped.
 - The S/C does not belong to the player.
 
 <a id="rule-S6.4"></a>
@@ -3900,7 +3906,7 @@ assemble factory-group 5 on 99 add 10,000 FACT-3                   # more FACT f
 
 **Rejected when**
 
-- The S/C does not have that many of the FACT units in storage that are not already being assembled or scrapped.
+- The S/C has none of the FACT units in storage that are not already being assembled or scrapped.
 - The S/C already has 25 factory groups.
 - The producing unit is not one that factories build.
 - The group to add to does not exist, or its units are of another TL.
@@ -3942,7 +3948,7 @@ assemble farming-group on 100 with 30,000 FARM-2 using 1,000 CWRK   # a second g
 
 **Rejected when**
 
-- The S/C does not have that many of the FARM units in storage that are not already being assembled or scrapped.
+- The S/C has none of the FARM units in storage that are not already being assembled or scrapped.
 - The S/C may not have farms of that TL.
 - The planet has no room for that many more FARM-1.
 - The order names a group number.
@@ -3983,13 +3989,13 @@ assemble mining-group 1 on 37 add 5,000 MINE-2              # more MINE for grou
   Its units join it as the CWRK assemble them.
 - Only a surface colony, open or enclosed, may have mining groups, and only on deposits of its own planet ([H2.4](#rule-H2.4)).
 - A deposit is worked by one mining group only.
-  If more than one player orders a group onto a deposit on the same turn, it goes to the order that is carried out first.
+  If two S/C's attempt to place mining groups on the same deposit, one of them will be chosen randomly by the computer to succeed, and the other will fail ([H2.4](#rule-H2.4)).
 - Every MINE unit of a group is of the same TL.
 - The rules for assembling units ([S6.1](#rule-S6.1)) apply to the MINE units.
 
 **Rejected when**
 
-- The S/C does not have that many of the MINE units in storage that are not already being assembled or scrapped.
+- The S/C has none of the MINE units in storage that are not already being assembled or scrapped.
 - The S/C is a ship or an orbiting colony.
 - The S/C's planet has no deposit with that number.
 - Another mining group is working the deposit.
@@ -4388,11 +4394,12 @@ draft 5,000 CWRK from 99      # cadres are drafted too
   People that a cadre already holds can not be drafted again.
 - If the S/C does not have the people for the whole quantity, it drafts as many as it can.
   The printout shows the quantity asked for and the quantity drafted.
-- Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), after production.
-  The people drafted still do their old work on the turn they are drafted.
+- Draft orders are carried out in the draft stage ([B3.12](#rule-B3.12)), before production ([B3.17](#rule-B3.17)).
+  The people drafted do not do their old work on the turn they are drafted.
+- CWRK drafted on a turn start assembly and scrap work on the next turn, since the assembly stage comes before the draft stage.
 - Cadres are drafted, not assembled.
 - CWRK and SPY cadres stay until they are disbanded ([S12.2](#rule-S12.2)).
-  A TRNE cadre does not: it trains on the turn after it is drafted, 5% of it graduate as PRO at the end of that turn, and the rest become USK again ([G1.8](#rule-G1.8)).
+  A TRNE cadre does not: it trains on the turn it is drafted, 5% of it graduate as PRO at the end of that turn, and the rest become USK again ([G1.8](#rule-G1.8)).
   To keep training, draft TRNE again every turn.
 
 **Rejected when**
@@ -4439,10 +4446,9 @@ disband 40 SPY from 7          # frees 40 PRO and 40 SLD
 - If the S/C has fewer than the quantity, it disbands as many as it has.
   The printout shows the quantity asked for and the quantity disbanded.
 - SLD that are part of a SPY cadre can not be disbanded; disband the SPY first.
-- When TRNE are disbanded, the trainees drafted on the same turn go first.
 - Disband orders are carried out in the draft stage ([B3.12](#rule-B3.12)), together with the draft orders and in the order the player wrote them.
-  The people are back at work from the next turn.
-- A TRNE cadre is disbanded by itself at the end of the turn it trains in ([G1.8](#rule-G1.8)), so a disband order is only needed to stop the training early.
+  The people are back at work on the same turn.
+- A TRNE cadre is disbanded by itself at the end of the turn it is drafted ([G1.8](#rule-G1.8)), so there is seldom a reason to disband one.
 
 **Rejected when**
 

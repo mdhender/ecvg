@@ -19,23 +19,25 @@ const SetupTurn = 0
 
 // RunTurn processes the game's current turn, d.Game.Turn: it runs each phase
 // in order on the state in d, which becomes the state as of the next turn, and
-// then advances d.Game.Turn. The phases, in order: ApplyOrders, with the
-// orders the empires returned for the turn, AllocateResources, Farming, Mining, Disassembly, Assembly, Draft, Rations,
-// PopulationChanges, and Demographics. It returns what became of the orders. If it fails, d is not
-// changed.
+// then advances d.Game.Turn. The phases follow the manual's turn sequence
+// (B3.0), in order: ApplyOrders, with the orders the empires returned for the
+// turn; Disassembly (B3.4); Assembly (B3.8); Draft (B3.12); production
+// (B3.17), which is AllocateResources, Farming, Rations, PopulationChanges
+// (the deaths by starvation), and Mining; and Demographics (B3.20). It
+// returns what became of the orders. If it fails, d is not changed.
 func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 	result, err := ApplyOrders(d, files)
 	if err != nil {
 		return OrdersResult{}, err
 	}
-	allocs := AllocateResources(d, d.Game.Turn)
-	Farming(d, d.Game.Turn, allocs)
-	Mining(d, d.Game.Turn, allocs)
 	Disassembly(d)
 	Assembly(d)
 	Draft(d, result.Drafts)
+	allocs := AllocateResources(d, d.Game.Turn)
+	Farming(d, d.Game.Turn, allocs)
 	meals := Rations(d, d.Game.Turn)
 	PopulationChanges(d, meals)
+	Mining(d, d.Game.Turn, allocs)
 	Demographics(d, d.Game.Turn)
 	d.Game.Turn++
 	return result, nil
@@ -43,19 +45,17 @@ func RunTurn(d *game.Data, files []orders.File) (OrdersResult, error) {
 
 // Demographics is the demographic changes phase of the turn numbered turn. It
 // applies ChangePopulation to the population of every entity in d, promotes
-// the trainees of the TRNE cadre the turn began with (game.Colony.Train; not
-// in the setup turn), and then cuts the entity's cadres down to what its population can still make up.
+// the trainees of its TRNE cadre (game.Colony.Train; not in the setup turn,
+// so trainees drafted then train in turn 1), and then cuts the entity's cadres down to what its population can still make up.
 func Demographics(d *game.Data, turn int) {
 	for i := range d.Colonies {
 		c := &d.Colonies[i]
 		c.Population = ChangePopulation(c.Population, turn)
-		// The trainees the turn began with are promoted and their cadre is
-		// disbanded. The ones drafted this turn train in the next.
+		// The trainees are promoted and their cadre is disbanded.
 		c.Trained = game.Trained{}
 		if turn > SetupTurn {
 			c.Trained = c.Train()
 		}
-		c.Cadres.NewTRNE = 0
 		// A cadre can't hold people the colony no longer has.
 		c.Cadres = c.Cadres.Fit(c.Population)
 	}

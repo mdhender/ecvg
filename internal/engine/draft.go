@@ -43,10 +43,11 @@ func checkDraft(d *game.Data, empireID, entityID int, unit string) error {
 // Draft is the draft phase: it carries out the accepted draft and disband
 // orders, in order. Each drafts or disbands as many as its entity can supply
 // (see game.Colony.Draft and Disband), and the entity's Drafted and Disbanded
-// record what was asked and what was done. The phase comes after production, so the people drafted
-// worked this turn and a cadre is first of use in the next one; the people
-// disbanded are back in the worker cadre from the next turn. Unlike the
-// other phases it runs in the setup turn too.
+// record what was asked and what was done. The phase is the manual's B3.12:
+// it comes after assembly and before production, so the people drafted are
+// out of the worker cadre this turn, CWRK drafted now first do construction
+// work in the next turn, and the people disbanded are back in the worker
+// cadre this turn. It runs in the setup turn too.
 func Draft(d *game.Data, drafts []DraftOrder) {
 	for i := range d.Colonies {
 		d.Colonies[i].Drafted, d.Colonies[i].Disbanded = nil, nil

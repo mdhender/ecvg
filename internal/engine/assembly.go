@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	ErrNotEnoughUnits     = cerrs.Error("the entity doesn't have that many of the unit in storage that aren't already being assembled or scrapped")
-	ErrNotEnoughAssembled = cerrs.Error("the entity doesn't have that many of the unit assembled that aren't already being disassembled")
+	ErrNotEnoughUnits     = cerrs.Error("the entity has none of the unit in storage that aren't already being assembled or scrapped")
+	ErrNotEnoughAssembled = cerrs.Error("the entity has none of the unit assembled that aren't already being disassembled")
 	ErrGroupUnit          = cerrs.Error("the unit works in a group: use the group assemble orders (groups can't be disassembled yet)")
 	ErrNotScrappable      = cerrs.Error("the unit wasn't built from MTL and NMTL, so there is nothing to recover")
 	ErrTechLevel          = cerrs.Error("every unit of the group must be of the same tech level")
@@ -24,11 +24,11 @@ const (
 	ErrTooManyGroups      = cerrs.Error("the entity has all the factory groups it may have")
 )
 
-// Disassembly is the dis-assembly phase: every colony's CWRK do a turn of
-// its disassembly and scrap work (see game.Colony.Disassemble). It comes
-// after production and before the Assembly phase, so what it returns to
-// storage is there for the phases between, and it has first call on the
-// CWRK. Like the draft, it runs in the setup turn too.
+// Disassembly is the dis-assembly phase (manual B3.4): every colony's CWRK do
+// a turn of its disassembly and scrap work (see game.Colony.Disassemble). It
+// comes before the Assembly phase, so what it returns to storage is there for
+// the phases between, and it has first call on the CWRK. Like the draft, it
+// runs in the setup turn too.
 func Disassembly(d *game.Data) {
 	for i := range d.Colonies {
 		d.Colonies[i].Disassemble()
@@ -37,9 +37,9 @@ func Disassembly(d *game.Data) {
 
 // Assembly is the assembly phase: every colony's CWRK do a turn of its
 // assembly work with what the Disassembly phase, which must come first, left
-// them (see game.Colony.Assemble). It comes after production, so a unit
-// assembled in a turn first works in the next. Like the draft, it runs in
-// the setup turn too.
+// them (see game.Colony.Assemble). It is the manual's B3.8 and comes before
+// production, so a unit assembled in a turn works in that turn. Like the
+// draft, it runs in the setup turn too.
 func Assembly(d *game.Data) {
 	for i := range d.Colonies {
 		d.Colonies[i].Assemble()
@@ -55,8 +55,9 @@ func Assembly(d *game.Data) {
 //   - ErrNotControlled: the empire has no such entity.
 //   - ErrNoSuchGroup: the entity has no group to add to with that number.
 //   - ErrTechLevel: the units aren't of the tech level of the group's units.
-//   - ErrNotEnoughUnits: the entity doesn't have the units in storage, or
-//     other assembly work has claimed them.
+//   - ErrNotEnoughUnits: the entity has none of the units in storage that
+//     other work hasn't claimed. If it has some, but fewer than the order
+//     asks for, the order assembles the ones it has.
 //   - game.ErrFarmSite, game.ErrMineSite: the entity can't have such a group.
 //   - ErrFarmCap: the planet's FARM-1 units, everyone's together, would pass
 //     its cap.
@@ -127,9 +128,11 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 		}
 	}
 
-	// The entity must have the units, and not have promised them elsewhere.
-	if have := c.Stored(u.Type, u.TechLevel) - c.Claimed(u.Type, u.TechLevel); u.Qty > have {
-		return fmt.Errorf("%s-%d: %d free in storage: %w", u.Type, u.TechLevel, max(0, have), ErrNotEnoughUnits)
+	// The order takes as many of the units as the entity has and hasn't
+	// promised elsewhere, and fails only if it has none.
+	u.Qty = min(u.Qty, c.Stored(u.Type, u.TechLevel)-c.Claimed(u.Type, u.TechLevel))
+	if u.Qty < 1 {
+		return fmt.Errorf("%s-%d: %w", u.Type, u.TechLevel, ErrNotEnoughUnits)
 	}
 
 	switch o.Kind {
@@ -230,11 +233,14 @@ func AssembleGroup(d *game.Data, empireID int, o orders.AssembleGroup) error {
 //   - ErrGroupUnit: the unit is one that works in a group (FACT, FARM, MINE),
 //     which the group orders assemble.
 //   - ErrNotScrappable: the unit wasn't built from MTL and NMTL.
-//   - ErrNotEnoughUnits: to assemble or scrap, the entity doesn't have the
-//     units in storage, or other work has claimed them. Scrap never takes
+//   - ErrNotEnoughUnits: to assemble or scrap, the entity has none of the
+//     units in storage that other work hasn't claimed. Scrap never takes
 //     assembled units.
-//   - ErrNotEnoughAssembled: to disassemble, the entity doesn't have the
-//     units assembled, or other work is disassembling them.
+//   - ErrNotEnoughAssembled: to disassemble, the entity has none of the
+//     units assembled that other work isn't disassembling.
+//
+// If the entity has some of the units, but fewer than the order asks for,
+// the order works on the ones it has.
 func UnitWork(d *game.Data, empireID int, o orders.UnitWork) error {
 	var c *game.Colony
 	for i := range d.Colonies {
@@ -263,13 +269,14 @@ func UnitWork(d *game.Data, empireID int, o orders.UnitWork) error {
 			return fmt.Errorf("%s: %w", name, ErrGroupUnit)
 		}
 	}
+	u := o.Unit
 	if o.Action == game.WorkDisassemble {
-		if have := c.InUse(code, tl) - c.BeingDisassembled(code, tl); o.Unit.Qty > have {
-			return fmt.Errorf("%s: %d assembled: %w", name, max(0, have), ErrNotEnoughAssembled)
+		if u.Qty = min(u.Qty, c.InUse(code, tl)-c.BeingDisassembled(code, tl)); u.Qty < 1 {
+			return fmt.Errorf("%s: %w", name, ErrNotEnoughAssembled)
 		}
-	} else if have := c.Stored(code, tl) - c.Claimed(code, tl); o.Unit.Qty > have {
-		return fmt.Errorf("%s: %d free in storage: %w", name, max(0, have), ErrNotEnoughUnits)
+	} else if u.Qty = min(u.Qty, c.Stored(code, tl)-c.Claimed(code, tl)); u.Qty < 1 {
+		return fmt.Errorf("%s: %w", name, ErrNotEnoughUnits)
 	}
-	c.Assembly = append(c.Assembly, game.Assembly{Action: o.Action, Unit: o.Unit, MaxCWRK: o.MaxCWRK})
+	c.Assembly = append(c.Assembly, game.Assembly{Action: o.Action, Unit: u, MaxCWRK: o.MaxCWRK})
 	return nil
 }

@@ -44,7 +44,12 @@ func TestUnitWorkOrders(t *testing.T) {
 		{name: "a no-op still needs the entity", text: "assemble 10 CNGD on 3", err: engine.ErrNotControlled},
 		{name: "group units are assembled by the group orders", text: "assemble 10 FARM-10 on 1", err: engine.ErrGroupUnit},
 		{name: "groups can't be disassembled", text: "disassemble 10 FARM-10 on 1", err: engine.ErrGroupUnit},
-		{name: "the units must be in storage", text: "assemble 21 STRN on 1", err: engine.ErrNotEnoughUnits},
+		{name: "the units must be in storage", text: "assemble 1 STRL on 1", err: engine.ErrNotEnoughUnits},
+		{
+			name:  "an order for more units than there are takes them all",
+			text:  "assemble 21 STRN on 1",
+			work1: []game.Assembly{{Unit: unit{Type: "STRN", Qty: 20}}},
+		},
 		{
 			name:  "units are claimed once",
 			text:  "assemble 15 STRN on 1\nscrap 5 STRN on 1\nassemble 1 STRN on 1",
@@ -53,9 +58,9 @@ func TestUnitWorkOrders(t *testing.T) {
 		},
 		{
 			name:  "scrap claims units from the group orders",
-			text:  "scrap 60 MINE-10 on 1\nassemble mining-group on 1 with 50 MINE-10 working 1",
+			text:  "scrap 100 MINE-10 on 1\nassemble mining-group on 1 with 50 MINE-10 working 1",
 			err:   engine.ErrNotEnoughUnits,
-			work1: []game.Assembly{{Action: game.WorkScrap, Unit: unit{Type: "MINE", TechLevel: 10, Qty: 60}}},
+			work1: []game.Assembly{{Action: game.WorkScrap, Unit: unit{Type: "MINE", TechLevel: 10, Qty: 100}}},
 		},
 		{
 			name:  "disassemble",
@@ -64,9 +69,14 @@ func TestUnitWorkOrders(t *testing.T) {
 		},
 		{
 			name:  "units are disassembled once",
-			text:  "disassemble 6 SDRV-1 on 2\ndisassemble 5 SDRV-1 on 2",
+			text:  "disassemble 10 SDRV-1 on 2\ndisassemble 1 SDRV-1 on 2",
 			err:   engine.ErrNotEnoughAssembled,
-			work2: []game.Assembly{{Action: game.WorkDisassemble, Unit: sdrv(6)}},
+			work2: []game.Assembly{{Action: game.WorkDisassemble, Unit: sdrv(10)}},
+		},
+		{
+			name:  "an order to disassemble more units than are assembled takes them all",
+			text:  "disassemble 6 SDRV-1 on 2\ndisassemble 20,000 SDRV-1 on 2",
+			work2: []game.Assembly{{Action: game.WorkDisassemble, Unit: sdrv(6)}, {Action: game.WorkDisassemble, Unit: sdrv(4)}},
 		},
 		{name: "units in storage can't be disassembled", text: "disassemble 1 STRN on 1", err: engine.ErrNotEnoughAssembled},
 		{
@@ -74,7 +84,11 @@ func TestUnitWorkOrders(t *testing.T) {
 			text:  "scrap 4 SDRV-1 on 2 using 200 CWRK",
 			work2: []game.Assembly{{Action: game.WorkScrap, Unit: sdrv(4), MaxCWRK: 200}},
 		},
-		{name: "scrap never takes the units in use", text: "scrap 5 SDRV-1 on 2", err: engine.ErrNotEnoughUnits},
+		{
+			name:  "scrap never takes the units in use",
+			text:  "scrap 5 SDRV-1 on 2",
+			work2: []game.Assembly{{Action: game.WorkScrap, Unit: sdrv(4)}},
+		},
 		{name: "resources can't be scrapped", text: "scrap 10 FUEL on 1", err: engine.ErrNotScrappable},
 		{name: "someone else's entity", text: "scrap 1 SDRV-1 on 3", err: engine.ErrNotControlled},
 		{
