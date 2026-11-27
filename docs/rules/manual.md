@@ -298,7 +298,7 @@ That number, the planet's HN limit, is the HN times 10,000,000 POP.
 
 As the POP in the planet's open colonies approaches the HN limit, births decrease ([G2.1](#rule-G2.1)); when it exceeds the limit, the death rate of every open colony on the planet increases ([G3.9](#rule-G3.9)).
 
-The number of FRM-1 that can be assembled in the planet's open colonies is also limited by the HN ([H1.7](#rule-H1.7)).
+The number of FARM-1 that can be assembled in the planet's open colonies is also limited by the HN ([H1.7](#rule-H1.7)).
 
 Habitability numbers do not affect, and are not affected by, the operations of enclosed surface colonies.
 
@@ -352,12 +352,12 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | ADN  | Add-on                            | This order adds units to an existing s/c.          |
 | AME  | After-maneuver energy-weapon fire | See Combat ([D6.1.3](#rule-D6.1.3)<!-- was 15 -->).                                   |
 | AMM  | After-maneuver missile fire       | See Combat ([D6.1.4](#rule-D6.1.4)<!-- was 15 -->).                                   |
-| ANM  | Anti-missile                      | A short range missile used for defense.            |
+| AMSL | Anti-missile                      | A short range missile used for defense.            |
 | APU  | Allow pick-up                     | This order allows a s/c to pick up from another.   |
-| ASC  | Assault craft                     | Armed vehicles capable of short flights in space.  |
+| ACFT | Assault craft                     | Armed vehicles capable of short flights in space.  |
 | ASM  | Assemble                          | This order makes items functional, forms groups.   |
-| ASW  | Assault weapons                   | Short range guns of various types.                 |
-| AUT  | Automation                        | Replaces unskilled in farms, factories, and mines. |
+| AWPN | Assault weapons                   | Short range guns of various types.                 |
+| AUTO | Automation                        | Replaces unskilled in farms, factories, and mines. |
 
 ### B
 
@@ -368,19 +368,20 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 ### C
 
-| Code | Term                | Definition                                                 |
-|------|---------------------|------------------------------------------------------------|
-|      | Cadre               | A group of population units trained for a particular task. |
-| CF\* | Combat factor       | Represents the force of attacker or defender.              |
-| CENC | Enclosed surface colony | Surface colony sealed from environment.                |
-| CLS  | Close               | This order has a ship approach another ship.               |
-| COM  | Combine             | This order combines two factory groups into one.           |
-| CON  | Control             | This order enables a player to control a planet.           |
-| CNGD | Consumer goods      | All that people need, except for food and air.             |
-| CNW  | Construction worker | Cadre consisting of 1 PRO and 1 USK.                       |
-| COPN | Open colony         | Surface colony open to environment.                        |
-| CORB | Orbiting colony     | Colony that orbits a planet.                               |
-| CSHP | Ship                | Spaceship.                                                 |
+| Code | Term                    | Definition                                                 |
+|------|-------------------------|------------------------------------------------------------|
+|      | Cadre                   | A group of population units trained for a particular task. |
+| CENC | Enclosed surface colony | Surface colony sealed from environment.                    |
+| CF\* | Combat factor           | Represents the force of attacker or defender.              |
+| CLS  | Close                   | This order has a ship approach another ship.               |
+| CNGD | Consumer goods          | All that people need, except for food and air.             |
+| COM  | Combine                 | This order combines two factory groups into one.           |
+| CON  | Control                 | This order enables a player to control a planet.           |
+| COPN | Open colony             | Surface colony open to environment.                        |
+| CORB | Orbiting colony         | Colony that orbits a planet.                               |
+| CSHP | Ship                    | Spaceship.                                                 |
+| CSUP | Military Supplies       | Medicine, uniforms, small arms, ammo, etc.                 |
+| CWRK | Construction worker     | Cadre consisting of 1 PRO and 1 USK.                       |
 
 ### D
 
@@ -399,15 +400,15 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code | Term                    | Definition                                      |
 |------|-------------------------|-------------------------------------------------|
 | END  | End                     | Signals the end of an add-on or set-up order.   |
-| ESH  | Energy shields          | Defensive armament used against energy weapons. |
-| EWP  | Energy weapons          | Weapons that fire beams or rays of energy.      |
+| ESHD | Energy shields          | Defensive armament used against energy weapons. |
+| EWPN | Energy weapons          | Weapons that fire beams or rays of energy.      |
 
 ### F
 
 | Code | Term      | Definition                                            |
 |------|-----------|-------------------------------------------------------|
-| FCT  | Factories | They create all units but food, resources and people. |
-| FRM  | Farms     | They produce food.                                    |
+| FACT | Factories | They create all units but food, resources and people. |
+| FARM | Farms     | They produce food.                                    |
 | FOOD | Food      | Used to feed people.                                  |
 | FUEL | Fuel      | Used to power all items that use power in the s/c's.  |
 |      | Foreign   | Applies to another Ruler and his Regents.             |
@@ -445,21 +446,20 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term                   | Definition                                                                      |
 |------|------------------------|---------------------------------------------------------------------------------|
-| LFS  | Life Support units     | Recycle air and water for every s/c except COPN's ([G6.1](#rule-G6.1)).          |
+| LFSU | Life Support units     | Recycle air and water for every s/c except COPN's ([G6.1](#rule-G6.1)).          |
 
 ### M
 
 | Code | Term              | Definition                                                   |
 |------|-------------------|--------------------------------------------------------------|
 | MCH  | Mine change       | This order changes standing orders for mines.                |
-| METS | Metallics         | All metallic resources other than gold.                      |
-| MIN  | Mines             | Remove natural resources from deposits and refine them.      |
+| MTL  | Metallics         | All metallic resources other than gold.                      |
+| MINE | Mines             | Remove natural resources from deposits and refine them.      |
 | MOV  | Move              | This order also has a ship move through hyper space; slowly. |
-| MRB  | Military Robots   | Used as substitutes for soldiers.                            |
+| MRBT | Military Robots   | Used as substitutes for soldiers.                            |
 | MRG  | Merge             | This order merges two s/c's into one s/c.                    |
-| MSL  | Missile Launchers | These fire missiles and anti-missiles.                       |
-| MSS  | Missiles          | Used to bombard s/c's.                                       |
-| MTSP | Military Supplies | Medicine, uniforms, small arms, ammo, etc.                   |
+| MLNC | Missile Launchers | These fire missiles and anti-missiles.                       |
+| MSSL | Missiles          | Used to bombard s/c's.                                       |
 | MU\* | Mass units        | One unit is equal to 17,000 pounds, (at 1 gravity).          |
 
 ### N
@@ -472,7 +472,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code  | Term               | Definition                                       |
 |-------|--------------------|--------------------------------------------------|
-| NMTS  | Non-metallics      | All non-metallic resources.                      |
+| NMTL  | Non-metallics      | All non-metallic resources.                      |
 | NOM   | Name of player     | This order names a player.                       |
 | NON\* | Non-assembly items | Applies to items that can't be assembled.        |
 | NSR   | News release       | This order puts a message into the News Service. |
@@ -481,7 +481,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 
 | Code | Term                    | Definition                                                                  |
 |------|-------------------------|-----------------------------------------------------------------------------|
-| ORE  | Ore                     | Raw resource extracted by MIN's, before it is refined ([H2.1](#rule-H2.1)). |
+| ORE  | Ore                     | Raw resource extracted by MINE's, before it is refined ([H2.1](#rule-H2.1)). |
 | OTS  | Offensive troop support | See Combat ([D4.0](#rule-D4.0)<!-- was 15 -->).                             |
 
 ### P
@@ -513,7 +513,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | REB\* | Rebels         | Percentage of people other than soldiers willing to rebel. |
 | REC   | Receive        | This order receives items transferred from another s/c.    |
 |       | Regent         | A player who manages a Ruler's s/c's, follows his orders.  |
-| RETL  | Retool         | This order changes the item being built by a FCT group.    |
+| RETL  | Retool         | This order changes the item being built by a FACT group.    |
 | RSCH  | Research point | A unit of research, built by a factory.                    |
 | RTN   | Ration         | This order sets the amount of food eaten in the s/c's.     |
 |       | Ruler          | Player, not a Regent, who controls a s/c.                  |
@@ -524,9 +524,9 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | Code | Term           | Definition                                           |
 |------|----------------|------------------------------------------------------|
 | S/C  | Ship or colony | Any ship or colony, interchangeably.                 |
-| SCR  | Scrap          | This order converts items back into METS and NMTS.   |
+| SCR  | Scrap          | This order converts items back into MTL  and NMTL.   |
 | SEL  | Sell           | This order sells items to or through the market.     |
-| SEN  | Sensors        | Devices to do probes and improve EWP and MSL firing. |
+| SENS | Sensors        | Devices to do probes and improve EWPN and MLNC firing. |
 | SHT  | Shut-down      | This order shuts down all farms in a s/c.            |
 
 | Code     | Term                         | Definition                                                    |
@@ -534,7 +534,7 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | SLD      | Soldier unit                 | Population unit consisting of 100 soldiers.                   |
 | SDRV     | Space Drives                 | Maneuver in combat and keep ships in orbit.                   |
 | SPM      | Spy move                     | This order changes spies from one group or target to another. |
-| SPYS     | Spy cadre                    | Cadre consisting of 1 PRO and 1 SLD.                          |
+| SPY      | Spy cadre                    | Cadre consisting of 1 PRO and 1 SLD.                          |
 | STP      | Set-up                       | This order establishes a ship or colony.                      |
 | STU      | Start-up                     | This order starts up all farms in a s/c, when shut down.      |
 | STUL     | Light structural units       | Enclose 5 times the volume of STUN per unit ([F3.1.1](#rule-F3.1.1)). |
@@ -553,8 +553,8 @@ A Regent takes the race of his Ruler ([B4.1](#rule-B4.1)), and an Independent ta
 | TL   | Technological level | S/c's level of scientific advancement.                   |
 | TMV  | Tactical maneuver   | This order moves a ship toward new tactical coordinates. |
 | TN\* | Turn                | Game turn.                                               |
-| TPT  | Transport           | Unarmed vehicle used to make transfers and in combat.    |
-| TRN  | Trainee cadre       | Cadre consisting of 1 USK who will graduate to be PRO's. |
+| TRNS | Transport           | Unarmed vehicle used to make transfers and in combat.    |
+| TRNE | Trainee cadre       | Cadre consisting of 1 USK who will graduate to be PRO's. |
 
 ### U
 
@@ -725,7 +725,7 @@ All the orders for one stage are processed before any of the orders for the next
 <a id="rule-B3.16"></a>
 ### B3.16 Restart Stage
 
-1. <a id="rule-B3.16.1"></a>Sets TPT capacity
+1. <a id="rule-B3.16.1"></a>Sets TRNS capacity
 2. <a id="rule-B3.16.2"></a>Updates count of POP living on a habitable planet, and sets death rate.
 
 <a id="rule-B3.17"></a>
@@ -758,7 +758,7 @@ All the orders for one stage are processed before any of the orders for the next
 3. <a id="rule-B3.20.3"></a>Deaths occur
 4. <a id="rule-B3.20.4"></a>Births occur
 5. <a id="rule-B3.20.5"></a>S/C's death rate changes
-6. <a id="rule-B3.20.6"></a>Fuel for LFS decreased
+6. <a id="rule-B3.20.6"></a>Fuel for LFSU decreased
 
 <a id="rule-B3.21"></a>
 ### B3.21 News Release Stage
@@ -850,7 +850,7 @@ They are used in combat, however, See [D9.2](#rule-D9.2)<!-- was 15.9.2 --> for 
 ## C3.0 Movement
 
 Ships never land.
-Transfers of POP and other units are done by TPT's.
+Transfers of POP and other units are done by TRNS's.
 There are two ways in which a ship may be propelled.
 It can move (with a MOV order), or it can jump (with a JMP order).
 Ships can only go to coordinates where there is a star system.
@@ -931,7 +931,7 @@ Such a move passes through orbit 0 ([A3.1](#rule-A3.1)), so it counts as two mov
 <a id="rule-D1.1"></a>
 ### D1.1 Invade
 
-Attempt to take control of another s/c using troops (SLD and/or MRB).
+Attempt to take control of another s/c using troops (SLD and/or MRBT).
 This is done with an invade (INV) order.
 
 <a id="rule-D1.2"></a>
@@ -955,7 +955,7 @@ This is done with a withdraw (WTD) order.
 <a id="rule-D1.5"></a>
 ### D1.5 Bombard
 
-Fire energy weapons (EWP) and missile launchers (MSL) at other s/c's.
+Fire energy weapons (EWPN) and missile launchers (MLNC) at other s/c's.
 Bombardment is done with the following orders: pre-maneuver energy weapon fire (PME), pre-maneuver missile fire (PMM), after-maneuver energy weapon fire (AME), and after maneuver missile fire (AMM).
 
 <a id="rule-D1.6"></a>
@@ -968,36 +968,36 @@ It is done with the following orders: tactical maneuver (TMV), close (CLS), and 
 ## D2.0 Invasion
 
 In the invade (INV) order, the Player lists the material and personnel that are to be used in the invasion.
-Only troops (soldiers and military robots), assault craft (ASC), and assault weapons (ASW) can be listed in an INV order.
-The troops should be written first in the order, followed by the ASC and/or ASW, if needed.
+Only troops (soldiers and military robots), assault craft (ACFT), and assault weapons (AWPN) can be listed in an INV order.
+The troops should be written first in the order, followed by the ACFT and/or AWPN, if needed.
 
 <a id="rule-D2.1"></a>
 ### D2.1 Transports-Fuel
 
-TPT's are not fired upon in an invasion.
-They are assumed to drop troops, or troops and ASW, at a distance from the s/c.
-The TPT's then return to base.
-In combat, each TPT can move 3 x its TL^2 in mass units per turn.
-Thus, ten SLD armed with ten ASW-1 require the use of 10 TPT-1.
-If there are not enough ASC, or TPT's, or fuel for either, the troops will not go.
-The computer processes the ASC and ASW (in an order) in the order in which they are written, so in the case of a shortage, the player should keep this in mind.
-TPT's used in combat are still able to be used in transfer type operations.
-TPT capacity is not used up in invade or raid orders.
+TRNS's are not fired upon in an invasion.
+They are assumed to drop troops, or troops and AWPN, at a distance from the s/c.
+The TRNS's then return to base.
+In combat, each TRNS can move 3 x its TL^2 in mass units per turn.
+Thus, ten SLD armed with ten AWPN-1 require the use of 10 TRNS-1.
+If there are not enough ACFT, or TRNS's, or fuel for either, the troops will not go.
+The computer processes the ACFT and AWPN (in an order) in the order in which they are written, so in the case of a shortage, the player should keep this in mind.
+TRNS's used in combat are still able to be used in transfer type operations.
+TRNS capacity is not used up in invade or raid orders.
 
 <a id="rule-D2.2"></a>
 ### D2.2 Troops
 
-Troops consist of soldiers (SLD) and military robots (MRB).
-One SLD can operate one ASC *or* one ASW at the same time, but not both.
-A MRB can operate two times its TL in ASC *and/or* ASW.
-Troops can only use "small arms" (see MTSP) or ASC to invade ships or orbiting colonies.
-Troops can use "small arms", or ASC, or ASW, or both ASW and ASC to invade enclosed surface colonies or open colonies.
+Troops consist of soldiers (SLD) and military robots (MRBT).
+One SLD can operate one ACFT *or* one AWPN at the same time, but not both.
+A MRBT can operate two times its TL in ACFT *and/or* AWPN.
+Troops can only use "small arms" (see CSUP) or ACFT to invade ships or orbiting colonies.
+Troops can use "small arms", or ACFT, or AWPN, or both AWPN and ACFT to invade enclosed surface colonies or open colonies.
 
 <a id="rule-D3.0"></a>
 ## D3.0 Raids
 
 RAD orders are written the same as INV orders, with the exception that troops are ordered to carry off as much as they can of the assigned items.
-Each SLD can carry off one mass unit; MRB carry 2 mass units times their TL per unit.
+Each SLD can carry off one mass unit; MRBT carry 2 mass units times their TL per unit.
 Raiders take only NON or UNA, never assembled units.
 They also take POP, with the exception of spies.
 They will not raid for TL's or RSCH.
@@ -1014,7 +1014,7 @@ This applies to a force *ordered* to withdraw, as well.
 A defensive support order, besides supporting a player against invasion will support him against raids, as well.
 But an offensive support order does not include raids.
 Raiders get no support.
-If troops are supporting, they will use MTSP & fuel whether or not the invasion takes place.
+If troops are supporting, they will use CSUP & fuel whether or not the invasion takes place.
 This applies to both offensive & defensive support in an invasion, and to defensive support in a raid.
 
 <a id="rule-D5.0"></a>
@@ -1022,7 +1022,7 @@ This applies to both offensive & defensive support in an invasion, and to defens
 
 Invading or supporting players may withdraw all or part of their forces on any turn if they have a s/c at the same orbit to withdraw to.
 If they do not, they are forced to surrender ([D9.6](#rule-D9.6)).
-WTD's use TPT capacity just as transfer type orders do.
+WTD's use TRNS capacity just as transfer type orders do.
 
 <a id="rule-D6.0"></a>
 ## D6.0 Bombardment
@@ -1033,14 +1033,14 @@ WTD's use TPT capacity just as transfer type orders do.
 <a id="rule-D6.1.1"></a>
 #### D6.1.1 Pre-Maneuver Energy Weapon Fire
 
-The pre-maneuver energy weapon fire (PME) order has a s/c fire a percentage of its energy weapons (EWP's) at a certain s/c before ship maneuvers are processed in the combat execution sequence.
+The pre-maneuver energy weapon fire (PME) order has a s/c fire a percentage of its energy weapons (EWPN's) at a certain s/c before ship maneuvers are processed in the combat execution sequence.
 A particular target within the s/c may be chosen by the player, if desired.
 This is explained in [D6.2](#rule-D6.2)<!-- was 15.6.2 -->, Targets.
 
 <a id="rule-D6.1.2"></a>
 #### D6.1.2 Pre-Maneuver Missile Fire
 
-The pre-maneuver missile fire (PMM) order has a s/c fire a percentage of its MSL's at a certain s/c before ship maneuvers are processed in the combat execution sequence.
+The pre-maneuver missile fire (PMM) order has a s/c fire a percentage of its MLNC's at a certain s/c before ship maneuvers are processed in the combat execution sequence.
 A particular target may be chosen within the s/c.
 
 <a id="rule-D6.1.3"></a>
@@ -1052,18 +1052,18 @@ Again, a particular target may be chosen.
 <a id="rule-D6.1.4"></a>
 #### D6.1.4 After-Maneuver Missile Fire
 
-The after-maneuver missile fire (AMM) order has s/c fire a percentage of its MSL's at a certain s/c after ship maneuvers are processed in the combat execution sequence.
+The after-maneuver missile fire (AMM) order has s/c fire a percentage of its MLNC's at a certain s/c after ship maneuvers are processed in the combat execution sequence.
 A target within the s/c may be chosen.
 
 <a id="rule-D6.2"></a>
 ### D6.2 Targets
 
 A player does not have to specify a target in his bombardment orders.
-Each salvo, all the MSS or all the EWP that one s/c fires with one bombardment order, counts as one hit.
-Each hit strikes one kind of unit in the s/c hit, such as MSL-1 or METS, chosen at random; each kind's chance of being hit is its share of the s/c's mass.
+Each salvo, all the MSSL or all the EWPN that one s/c fires with one bombardment order, counts as one hit.
+Each hit strikes one kind of unit in the s/c hit, such as MLNC-1 or MTL, chosen at random; each kind's chance of being hit is its share of the s/c's mass.
 All the damage from the hit is applied to that kind of unit.
 If the damage is more than it takes to destroy all of them, the excess is applied to another kind of unit, chosen at random the same way but without the target bonus, and so on until all the damage has been applied or nothing is left in the s/c.
-Troops ([D2.2](#rule-D2.2)) count at 75% of their mass, and weapons (ANM, ASC, ASW, EWP, MSL, and MSS) at 90% of their mass, rounded down, when the chances are worked out.
+Troops ([D2.2](#rule-D2.2)) count at 75% of their mass, and weapons (AMSL, ACFT, AWPN, EWPN, MLNC, and MSSL) at 90% of their mass, rounded down, when the chances are worked out.
 Specifying a target group ([D6.2.1](#rule-D6.2.1)) increases the mass of the units in that group by half, rounded up, before the chances are worked out, but decreases the damage of each hit by 25%, rounded down.
 When the mass of a kind of unit is adjusted twice, the adjustments are applied in the order that gives the lower mass.
 Only colonies may be targeted for bombardment, not ships.
@@ -1101,32 +1101,32 @@ All colonies are at tactical coordinates (0,0,0), so the distance between two co
 
 When a ship is involved, the ship's tactical coordinates ([D6.3.4](#rule-D6.3.4)) are shown on the orbit probe section of the printout ([M2.1](#rule-M2.1)).
 
-When determining MSS and EWP hits on colonies, a colony's speed is always 0.
+When determining MSSL and EWPN hits on colonies, a colony's speed is always 0.
 
 <a id="rule-D6.3.2"></a>
 #### D6.3.2 Commitment Percentage
 
-When s/c's with multiple-TL EWP's and MSL's are involved in bombardment, the percentage commitment (percent of weapons committed) applies equally to each MSL and EWP the s/c has, regardless of the TL of each.
-The number of MSL and EWP committed at each TL is rounded down.
-Each MSL committed fires one MSS of its own TL ([E3.0](#rule-E3.0)); if the s/c has fewer MSS of that TL than MSL committed, it fires only the MSS it has.
+When s/c's with multiple-TL EWPN's and MLNC's are involved in bombardment, the percentage commitment (percent of weapons committed) applies equally to each MLNC and EWPN the s/c has, regardless of the TL of each.
+The number of MLNC and EWPN committed at each TL is rounded down.
+Each MLNC committed fires one MSSL of its own TL ([E3.0](#rule-E3.0)); if the s/c has fewer MSSL of that TL than MLNC committed, it fires only the MSSL it has.
 
 <a id="rule-D6.3.3"></a>
 #### D6.3.3 Weighted Average
 
-The TL's used in computing ANM and EWP hits on MSS's and troops is the *weighted average* of the TL's of the units involved.
+The TL's used in computing AMSL and EWPN hits on MSSL's and troops is the *weighted average* of the TL's of the units involved.
 
 <a id="rule-D6.3.4"></a>
 #### D6.3.4 More Miscellaneous
 
-* ESH's, MSL's, and EWP's (used defensively) never use more than enough fuel (and in the case of MSL's, anti-missiles), to stop an attack.
-  For instance, just enough ANM are used to stop incoming MSS's even if the s/c has more MSL's and ANM available.
-* If the target s/c has multiple-TL ESH's, the highest TL ESH will be used first.
+* ESHD's, MLNC's, and EWPN's (used defensively) never use more than enough fuel (and in the case of MLNC's, anti-missiles), to stop an attack.
+  For instance, just enough AMSL are used to stop incoming MSSL's even if the s/c has more MLNC's and AMSL available.
+* If the target s/c has multiple-TL ESHD's, the highest TL ESHD will be used first.
 * Ships always take 10 times the mass units in damage that a colony does.
-  For instance, a colony hit with one MSS-1 loses 100 M.U.: a ship hit with one MSS-1 loses 1,000 M.U.
+  For instance, a colony hit with one MSSL-1 loses 100 M.U.: a ship hit with one MSSL-1 loses 1,000 M.U.
   (Ships are more compact than colonies).
-* A ship may not fire an EWP or MSL unless it has at least one assembled sensor on board.
-* A colony can't fire on a ship unless it has an assembled SEN.
-* A colony can fire on another colony without a SEN.
+* A ship may not fire an EWPN or MLNC unless it has at least one assembled sensor on board.
+* A colony can't fire on a ship unless it has an assembled SENS.
+* A colony can fire on another colony without a SENS.
 * Damage from bombardment against untargeted colonies and against ships is allocated randomly, by mass ([D6.2](#rule-D6.2)).
 * STUN, STUL,and STUS all absorb damage at the same rate.
   (500 M.U. damaged will destroy 1,000 STUN or 1,000 STUL or 1,000 STUS).
@@ -1148,23 +1148,23 @@ The TL's used in computing ANM and EWP hits on MSS's and troops is the *weighted
 <a id="rule-D8.1"></a>
 ### D8.1 What They Are and Who Receives Them
 
-Military supplies (MTSP) consist of first aid supplies, ammunition, small arms, and other supplies.
-MTSP are provided to all SLD and MRB in combat by the computer automatically; they are never included in a combat order.
-The standard ration of MTSP to SLD or MRB is one MTSP each.
+Military supplies (CSUP) consist of first aid supplies, ammunition, small arms, and other supplies.
+CSUP are provided to all SLD and MRBT in combat by the computer automatically; they are never included in a combat order.
+The standard ration of CSUP to SLD or MRBT is one CSUP each.
 
 <a id="rule-D8.2"></a>
-### D8.2 Effects of a Shortage of MTSP
+### D8.2 Effects of a Shortage of CSUP
 
-Invaders, raiders, or supporters can not function without MTSP.
-If there are no MTSP, the action will not take place; if the MTSP run out in the middle of an action, the troops will return home.
-Defenders, however, can fight without MTSP, but their total combat factor is halved.
+Invaders, raiders, or supporters can not function without CSUP.
+If there are no CSUP, the action will not take place; if the CSUP run out in the middle of an action, the troops will return home.
+Defenders, however, can fight without CSUP, but their total combat factor is halved.
 
 <a id="rule-D8.3"></a>
-### D8.3 Extra MTSP Provisions
+### D8.3 Extra CSUP Provisions
 
-Troops not provided with ASC or ASW are provided with 2 MTSP each, instead of one each as usual.
-(This is so that they can use the small arms in the MTSP to compensate for the lack of ASC or ASW).
-If there were not enough MTSP in stock for these unprovided-for troops, they would not go into battle.
+Troops not provided with ACFT or AWPN are provided with 2 CSUP each, instead of one each as usual.
+(This is so that they can use the small arms in the CSUP to compensate for the lack of ACFT or AWPN).
+If there were not enough CSUP in stock for these unprovided-for troops, they would not go into battle.
 
 <a id="rule-D9.0"></a>
 ## D9.0 Combat Execution Sequence
@@ -1174,8 +1174,8 @@ It does not matter in what order the player has his combat orders written on his
 <a id="rule-D9.1"></a>
 ### D9.1 Pre-Maneuver Fire
 
-All EWP's and MSL's may be fired before ships maneuver.
-The defensive weapons defend: ESH's against energy beams ([E6.0](#rule-E6.0)), and ANM's and then EWP's against MSS's ([E4.0](#rule-E4.0), [E5.2](#rule-E5.2)); then the damage is calculated.
+All EWPN's and MLNC's may be fired before ships maneuver.
+The defensive weapons defend: ESHD's against energy beams ([E6.0](#rule-E6.0)), and AMSL's and then EWPN's against MSSL's ([E4.0](#rule-E4.0), [E5.2](#rule-E5.2)); then the damage is calculated.
 
 <a id="rule-D9.2"></a>
 ### D9.2 Ship Maneuvers
@@ -1191,8 +1191,8 @@ Total thrust is measured by adding up the thrust of all the assembled SDRV's.
 <a id="rule-D9.3"></a>
 ### D9.3 Post-Maneuver Fire
 
-All EWP's and MSL's may be fired after ships maneuver.
-The defensive weapons defend: ESH's against energy beams ([E6.0](#rule-E6.0)), and ANM's and then EWP's against MSS's ([E4.0](#rule-E4.0), [E5.2](#rule-E5.2)); then the damage is calculated.
+All EWPN's and MLNC's may be fired after ships maneuver.
+The defensive weapons defend: ESHD's against energy beams ([E6.0](#rule-E6.0)), and AMSL's and then EWPN's against MSSL's ([E4.0](#rule-E4.0), [E5.2](#rule-E5.2)); then the damage is calculated.
 
 <a id="rule-D9.4"></a>
 ### D9.4 Troop Movement
@@ -1202,7 +1202,7 @@ All raiding, invading, supporting, and withdrawing troops moved at this time.
 <a id="rule-D9.5"></a>
 ### D9.5 Defensive Weapons vs Troops
 
-EWP's and MSL's fire at troops, supporting troops, and raiders, (and at their ASC's and/or ASW's), that are in that s/c.
+EWPN's and MLNC's fire at troops, supporting troops, and raiders, (and at their ACFT's and/or AWPN's), that are in that s/c.
 
 <a id="rule-D9.6"></a>
 ### D9.6 Surrender Check
@@ -1211,10 +1211,10 @@ If the combat factor of the defenders and their supporters, divided by that of t
 If the attackers' combat factor divided by the defenders' is at least 6, then the defenders surrender.
 Each ratio is rounded to benefit the defender: the defenders' combat factor divided by the attackers' is rounded up, and the attackers' divided by the defenders' is rounded down.
 SLD that surrender, here or when forced to by [D4.0](#rule-D4.0) or [D5.0](#rule-D5.0), become UEM of their own race (UEM-R, where R is their race number), as losing soldiers do after a rebellion ([N1.4](#rule-N1.4)).
-When a side surrenders, its MRB are sabotaged: they are destroyed, and do not fight on.
-The MTSP, ASC, and ASW of the surrendering side are transferred to the victor.
-In a raid, defenders who surrender lose nothing: when the raiders leave, their SLD do not become UEM, and they keep their MRB, MTSP, ASC, and ASW.
-In a rebellion, the losing side's MRB are not sabotaged; they go to the victor ([N1.4](#rule-N1.4)).
+When a side surrenders, its MRBT are sabotaged: they are destroyed, and do not fight on.
+The CSUP, ACFT, and AWPN of the surrendering side are transferred to the victor.
+In a raid, defenders who surrender lose nothing: when the raiders leave, their SLD do not become UEM, and they keep their MRBT, CSUP, ACFT, and AWPN.
+In a rebellion, the losing side's MRBT are not sabotaged; they go to the victor ([N1.4](#rule-N1.4)).
 
 <a id="rule-D9.7"></a>
 ### D9.7 Invasion Casualties
@@ -1234,28 +1234,28 @@ Where A = the attacker's combat factors; D = the defender's combat factors; RA a
 #### D9.7.1 Calculating Combat Factors
 
 <a id="rule-D9.7.1.1"></a>
-##### D9.7.1.1 Troops with MTSP
+##### D9.7.1.1 Troops with CSUP
 
-Each MRB counts as 2 x its TL in combat factors.
-Each ASW counts as 2 x its TL squared in combat factors.
-Each ASC counts as 10 x its TL in combat factors.
+Each MRBT counts as 2 x its TL in combat factors.
+Each AWPN counts as 2 x its TL squared in combat factors.
+Each ACFT counts as 10 x its TL in combat factors.
 Each SLD counts as one combat factor.
 
 <a id="rule-D9.7.1.2"></a>
-##### D9.7.1.2 Troops with No MTSP
+##### D9.7.1.2 Troops with No CSUP
 
-If all the troops are without MTSP, the total combat factor is cut in half.
-If a portion of the troops are without MTSP, then that portion of the combat factor is cut in half.
-Only *defending* troops can function without MTSP.
+If all the troops are without CSUP, the total combat factor is cut in half.
+If a portion of the troops are without CSUP, then that portion of the combat factor is cut in half.
+Only *defending* troops can function without CSUP.
 
 <a id="rule-D9.7.2"></a>
 #### D9.7.2 Determining Unit Losses in Combat
 
-The number of combat factors lost is divided by the total combat factors the side has, and the result is multiplied by the number of units (MRB, ASW, SLD or ASC) present in each force.
+The number of combat factors lost is divided by the total combat factors the side has, and the result is multiplied by the number of units (MRBT, AWPN, SLD or ACFT) present in each force.
 This result is the number of units lost.
 Fractions are dropped.
 10 combat factors lost ÷ 500 total combat factors equals a loss ratio of 0.02.
-0.02 times a force made up of 100 SLD and 40 ASC-1 would result in 2 SLD and 0 ASC as casualties.
+0.02 times a force made up of 100 SLD and 40 ACFT-1 would result in 2 SLD and 0 ACFT as casualties.
 
 <a id="rule-D9.7.3"></a>
 #### D9.7.3 Determining Unit Losses in Raids
@@ -1283,37 +1283,37 @@ Until then they are still in the s/c, and fight if another invader attacks it.
 <a id="rule-E1.0"></a>
 ## E1.0 Assault Weapons
 
-Assault weapons (ASW) are something like a cannon; they are very powerful, but they are not self propelled.
-They must be carried to the assigned s/c in TPTs.
+Assault weapons (AWPN) are something like a cannon; they are very powerful, but they are not self propelled.
+They must be carried to the assigned s/c in TRNS's.
 They may be used to invade, support, raid, or defend open colonies and enclosed surface colonies *only*.
-Each ASW requires one soldier (SLD) or military robot (MRB) equivalent to operate it.
-The TPT's required to carry the ASW into battle are not written in the order.
-The computer automatically assigns the necessary TPT's to carry them.
-If there are not enough TPT's, then that number of ASW will not participate.
-Troops can not use ASW to INV ships or orbiting colonies.
+Each AWPN requires one soldier (SLD) or military robot (MRBT) equivalent to operate it.
+The TRNS's required to carry the AWPN into battle are not written in the order.
+The computer automatically assigns the necessary TRNS's to carry them.
+If there are not enough TRNS's, then that number of AWPN will not participate.
+Troops can not use AWPN to INV ships or orbiting colonies.
 
 <a id="rule-E2.0"></a>
 ## E2.0 Assault Craft
 
-Assault craft (ASC) are armed vehicles that not only carry troops into battle, but are formidable weapons, as well.
+Assault craft (ACFT) are armed vehicles that not only carry troops into battle, but are formidable weapons, as well.
 They may be used to INV, raid, support, or defend any type of s/c.
-ASC require one SLD or MRB equivalent to operate a unit.
-ASC do not require TPT's to move them into combat; they are completely mobile.
-When invading or raiding ships, the ASC's speed must be greater than the ship's speed.
-An ASC's speed is 5 times its TL.
-If the number of ASC is insufficient to hold the MRB and SLD, the computer will assign enough TPT's to carry the balance.
-The TPT's are not written in a combat order.
-ASC's use fuel when sent into battle, and then use fuel each turn the battle lasts.
+ACFT require one SLD or MRBT equivalent to operate a unit.
+ACFT do not require TRNS's to move them into combat; they are completely mobile.
+When invading or raiding ships, the ACFT's speed must be greater than the ship's speed.
+An ACFT's speed is 5 times its TL.
+If the number of ACFT is insufficient to hold the MRBT and SLD, the computer will assign enough TRNS's to carry the balance.
+The TRNS's are not written in a combat order.
+ACFT's use fuel when sent into battle, and then use fuel each turn the battle lasts.
 
 <a id="rule-E3.0"></a>
 ## E3.0 Missiles and Missile Launchers
 
-Missiles (MSS) are fired by missile launchers (MSL); one MSS per MSL per firing.
+Missiles (MSSL) are fired by missile launchers (MLNC); one MSSL per MLNC per firing.
 
 There are two firings per turn - pre-maneuver, and after-maneuver.
-A MSS does 100 x its TL-squared mass units in damage.
-A MSS may be fired by a MSL of the same TL only.
-MSS's are fired by ships or colonies at ships or colonies in the same orbit.
+A MSSL does 100 x its TL-squared mass units in damage.
+A MSSL may be fired by a MLNC of the same TL only.
+MSSL's are fired by ships or colonies at ships or colonies in the same orbit.
 
 <a id="rule-E3.1"></a>
 ### E3.1 Missile Hits
@@ -1322,45 +1322,45 @@ The number of missile hits per turn is calculated as follows:
 
     H = M /(D + ( SP /10) -S)^2
 
-Where H is the number of hits, M is the number of MSS fired, D is the distance units to the target, SP is the speed of the target and S is the TL of the highest TL sensor on board.
-The number of hits may be further reduced by anti-missiles and EWP.
+Where H is the number of hits, M is the number of MSSL fired, D is the distance units to the target, SP is the speed of the target and S is the TL of the highest TL sensor on board.
+The number of hits may be further reduced by anti-missiles and EWPN.
 If the expression, "D+ (SP/10)-S", is less than 1, the value one will be used instead.
 
 <a id="rule-E4.0"></a>
 ## E4.0 Anti-Missiles
 
-The number of anti-missiles (ANM) that can be fired per *bombardment* equals the number of assembled MSL in the s/c.
-ANM's are only used defensively; they are fired at each bombardment on a s/c.
+The number of anti-missiles (AMSL) that can be fired per *bombardment* equals the number of assembled MLNC in the s/c.
+AMSL's are only used defensively; they are fired at each bombardment on a s/c.
 This is not written in an order; it is done automatically by the computer.
-ANM are fired by MSL, and those MSL must be of the same TL as the ANM.
+AMSL are fired by MLNC, and those MLNC must be of the same TL as the AMSL.
 
 **Example**
 
-If 3 s/c's fire MSS at a s/c which has 10,000 MSL-1 and 50,000 ANM-1; and if attacker A fired 5,000 MSS, attacker B fired 10,000 MSS, and attacker C fired 15,000 MSS, then the defender would fire *up to* 10,000 ANM to stop each volley of MSS.
+If 3 s/c's fire MSSL at a s/c which has 10,000 MLNC-1 and 50,000 AMSL-1; and if attacker A fired 5,000 MSSL, attacker B fired 10,000 MSSL, and attacker C fired 15,000 MSSL, then the defender would fire *up to* 10,000 AMSL to stop each volley of MSSL.
 That is, 9,091 to stop all of A's, and 10,000 each at B's and C's.
-The distance between the attacking colonies was one distance unit, and all ANM's, MSS's, and MSL's were TL-1, in this example.
+The distance between the attacking colonies was one distance unit, and all AMSL's, MSSL's, and MLNC's were TL-1, in this example.
 
 <a id="rule-E4.1"></a>
 ### E4.1 Used Against an Invasion
 
-Besides defending against bombardment, as explained in [E4.0](#rule-E4.0)<!-- was as explained above -->, ANM's are also used defending against invasions and raids.
+Besides defending against bombardment, as explained in [E4.0](#rule-E4.0)<!-- was as explained above -->, AMSL's are also used defending against invasions and raids.
 This also is automatic, and does not require an order from the player.
-The number of ANM that can be fired *per turn* of an invasion equals the number of assembled MSL in the s/c.
-The ANM's are fired only once per turn at *all* of the attacking forces combined, the hits are distributed among them proportionately, according to each attacker's combat factor.
-When a s/c faces a bombardment and invasion both, the MSL's fire ANM's at each volley of incoming MSS's, as well as once at all the invading troops.
+The number of AMSL that can be fired *per turn* of an invasion equals the number of assembled MLNC in the s/c.
+The AMSL's are fired only once per turn at *all* of the attacking forces combined, the hits are distributed among them proportionately, according to each attacker's combat factor.
+When a s/c faces a bombardment and invasion both, the MLNC's fire AMSL's at each volley of incoming MSSL's, as well as once at all the invading troops.
 
 <a id="rule-E4.2"></a>
 ### E4.2 Anti-Missile Hits
 
-Hits made by ANM's are determined as follows: HP = the quantity, 2 to the power of the ANM's TL divided by 2 to the power of the MSS's TL, times .55.
-HP is the fraction of ANM that hit.
+Hits made by AMSL's are determined as follows: HP = the quantity, 2 to the power of the AMSL's TL divided by 2 to the power of the MSSL's TL, times .55.
+HP is the fraction of AMSL that hit.
 The formula is written thus: HP =(2^AT ÷ 2^MT) x .55
-HP is the fraction of ANM that hit, AT is the ANM TL, MT is the TL of the MSS.
-In the case of an invasion, MT is the TL of their ASC or ASW.
-If a force is not armed with either ASC or ASW, then MT = 1.
-HP is not capped at 1: an ANM with a higher TL than its target may make more than one hit.
-The number of hits is HP times the number of ANM fired, rounded up to benefit the defender.
-Against MSS, each hit destroys one MSS, up to the number of MSS in the volley.
+HP is the fraction of AMSL that hit, AT is the AMSL TL, MT is the TL of the MSSL.
+In the case of an invasion, MT is the TL of their ACFT or AWPN.
+If a force is not armed with either ACFT or AWPN, then MT = 1.
+HP is not capped at 1: an AMSL with a higher TL than its target may make more than one hit.
+The number of hits is HP times the number of AMSL fired, rounded up to benefit the defender.
+Against MSSL, each hit destroys one MSSL, up to the number of MSSL in the volley.
 
 <a id="rule-E5.0"></a>
 ## E5.0 Energy Weapons
@@ -1368,69 +1368,69 @@ Against MSS, each hit destroys one MSS, up to the number of MSS in the volley.
 <a id="rule-E5.1"></a>
 ### E5.1 Offense
 
-Energy weapons (EWP) are fired by s/c's at s/c's in the same orbit.
-EWP's fire a beam of energy and are not mobile.
+Energy weapons (EWPN) are fired by s/c's at s/c's in the same orbit.
+EWPN's fire a beam of energy and are not mobile.
 The damage is calculated as follows:
 
-    E  = the sum of 10 x TL^2 for each EWP fired at the target
+    E  = the sum of 10 x TL^2 for each EWPN fired at the target
     DF = (D + DB) ÷ S
     DA = (E ÷ DF) - SH
 
-Where DA is the damage in mass units, E is the total energy of the EWP fired, D is the number of distance units to the target, DB is the dodge bonus, S is the weighted average TL of the assembled sensors in the attacker's s/c ([D6.3.3](#rule-D6.3.3)), and SH is the target's shielding.
-Each EWP fires 10 x its TL-squared energy units.
+Where DA is the damage in mass units, E is the total energy of the EWPN fired, D is the number of distance units to the target, DB is the dodge bonus, S is the weighted average TL of the assembled sensors in the attacker's s/c ([D6.3.3](#rule-D6.3.3)), and SH is the target's shielding.
+Each EWPN fires 10 x its TL-squared energy units.
 If the target is dodging, DB is its speed divided by 10; otherwise DB is 0.
 If the attacker has no assembled sensors, DF = (D + DB)^2 instead.
 If DF is less than 1, the value 1 is used in its place.
 (Shielding is the total energy units deflected by all the assembled energy shields in the s/c.
-Each energy shield (ESH) deflects 10 x its TL-squared energy units per attack).
+Each energy shield (ESHD) deflects 10 x its TL-squared energy units per attack).
 DA is rounded down to benefit the defender, and if it is less than 0, no damage is done.
-The firing of EWP against s/c's happens twice per turn: pre-maneuver and after-maneuver.
+The firing of EWPN against s/c's happens twice per turn: pre-maneuver and after-maneuver.
 
-    EWP MAY NOT FIRE FROM A SURFACE COLONY AT A SURFACE COLONY.
+    EWPN MAY NOT FIRE FROM A SURFACE COLONY AT A SURFACE COLONY.
 
-EWP's use fuel each time they are fired.
+EWPN's use fuel each time they are fired.
 
 <a id="rule-E5.2"></a>
 ### E5.2 Defense
 
-EWP's are also used for defense against raiders, invaders and attacking MSS's.
+EWPN's are also used for defense against raiders, invaders and attacking MSSL's.
 This is automatic, the computer handles it, it is never ordered.
-EWP's fire at each volley of MSS that were not destroyed by ANM's.
-EWP's fire only once per turn against invaders and raiders, combined.
+EWPN's fire at each volley of MSSL that were not destroyed by AMSL's.
+EWPN's fire only once per turn against invaders and raiders, combined.
 The hits are distributed among them proportionately, according to each attacker's combat factor.
-If the s/c faces both a bombardment and an invasion, the EWP's are fired in both cases, following the combat execution sequence detailed in [D9.0](#rule-D9.0)<!-- was section 15.9 -->.
+If the s/c faces both a bombardment and an invasion, the EWPN's are fired in both cases, following the combat execution sequence detailed in [D9.0](#rule-D9.0)<!-- was section 15.9 -->.
 The damage, against bombardment, is calculated as follows:
 
     HP=2^ET ÷ 2^MT x 0.3
 
-Where HP is the fraction of energy units that hit, ET is the EWP's TL, MT is the MSS's TL.
-In the case of an invasion, or raid, MT is the TL of their ASC or ASW.
-If the attacking force is not armed with either ASC or ASW, then MT = 1.
-EWP's use fuel each time they are fired.
-HP is not capped at 1: an EWP with a higher TL than its target may destroy more than one MSS.
-When EWP are fired at MSS, the number of MSS destroyed = HP x the number of EWP, rounded up to benefit the defender, up to the number of MSS in the volley.
+Where HP is the fraction of energy units that hit, ET is the EWPN's TL, MT is the MSSL's TL.
+In the case of an invasion, or raid, MT is the TL of their ACFT or AWPN.
+If the attacking force is not armed with either ACFT or AWPN, then MT = 1.
+EWPN's use fuel each time they are fired.
+HP is not capped at 1: an EWPN with a higher TL than its target may destroy more than one MSSL.
+When EWPN are fired at MSSL, the number of MSSL destroyed = HP x the number of EWPN, rounded up to benefit the defender, up to the number of MSSL in the volley.
 
 <a id="rule-E6.0"></a>
 ## E6.0 Energy Shields
 
-Energy shields (ESH) are used only defensively against the beams of EWP.
-ESH's operate at each attack.
-Therefore, if two attackers each fired twice, the defender's ESH's would operate 4 times during that turn.
-ESH's use fuel at each attack sufficient to deflect the energy beams.
-One ESH can deflect 10 x the TL-squared energy units per attack, and uses 10 x TL in fuel units per attack.
+Energy shields (ESHD) are used only defensively against the beams of EWPN.
+ESHD's operate at each attack.
+Therefore, if two attackers each fired twice, the defender's ESHD's would operate 4 times during that turn.
+ESHD's use fuel at each attack sufficient to deflect the energy beams.
+One ESHD can deflect 10 x the TL-squared energy units per attack, and uses 10 x TL in fuel units per attack.
 
 **Example**
 
 Assume 3 ships (A, B, and C) attack ship D at distance 1.
-A fires 2,000 EWP-1, B fires 3,000, and C fires 5,000.
-D has 1,300 ESH-2.
-A's 2,000 EWP-1 fire 20,000 energy units, B's fire 30,000 energy units, and C's fire 50,000 energy units.
-Each ESH-2 will deflect 40 energy units per attack.
-A's 20,000 energy units divided by 40 equals 500 ESH-2's used to deflect them.
-The total amount of fuel used by the ESH-2's is 10,000 fuel units.
-B's attack takes 750 ESH-2 to deflect it, using 15,000 fuel units.
-C's attack takes 1,250 ESH-2 to deflect it, using 25,000 fuel units.
-None of the attacks penetrated D's ESH's.
+A fires 2,000 EWPN-1, B fires 3,000, and C fires 5,000.
+D has 1,300 ESHD-2.
+A's 2,000 EWPN-1 fire 20,000 energy units, B's fire 30,000 energy units, and C's fire 50,000 energy units.
+Each ESHD-2 will deflect 40 energy units per attack.
+A's 20,000 energy units divided by 40 equals 500 ESHD-2's used to deflect them.
+The total amount of fuel used by the ESHD-2's is 10,000 fuel units.
+B's attack takes 750 ESHD-2 to deflect it, using 15,000 fuel units.
+C's attack takes 1,250 ESHD-2 to deflect it, using 25,000 fuel units.
+None of the attacks penetrated D's ESHD's.
 
 # F. Ships and Colonies
 
@@ -1469,12 +1469,12 @@ All incoming ships arrive in orbit 0 of the star system.
 <a id="rule-F3.1"></a>
 ### F3.1 Definition
 
-Assembled STUN, STUL, or STUS provide enclosure capacity for a s/c's units and population, except NMTS and METS in COPN's and CENC's.
+Assembled STUN, STUL, or STUS provide enclosure capacity for a s/c's units and population, except NMTL and MTL in COPN's and CENC's.
 Required enclosure is the sum of the volume units (VU) required to enclose the population, stored items, and assembled items that require enclosure, using [R3.0](#rule-R3.0) and the assembly exceptions in [F10.7](#rule-F10.7).
 Assembled STUN, STUL, and STUS require zero VU of enclosure and do not add to the structural requirement ([R3.0](#rule-R3.0)).
 The required enclosure in VU times the structure ratio gives the structural requirement in STUN equivalents ([F3.1.1](#rule-F3.1.1)).
 The s/c must have enough assembled structural units to meet this requirement, subject to [F3.2](#rule-F3.2).
-In COPN's and CENC's, NMTS and METS are stored outside the colony.
+In COPN's and CENC's, NMTL and MTL are stored outside the colony.
 
 <a id="rule-F3.1.1"></a>
 #### F3.1.1 Structure Ratio
@@ -1512,7 +1512,7 @@ In open colonies, required enclosure may exceed available enclosure capacity.
 When this happens, POP are forced into the fields outside the colony to live.
 Twenty-five percent of the dispossessed POP's will turn rebel each turn.
 In ships, orbiting colonies, and enclosed surface colonies, required enclosure exceeding available enclosure capacity prevents new items from entering the s/c.
-In the case of an excess of POP, LFS would not be sufficient, and some would die.
+In the case of an excess of POP, LFSU would not be sufficient, and some would die.
 In ships, orbiting colonies, and enclosed surface colonies, available enclosure capacity limits incoming items ([F3.2.1](#rule-F3.2.1)), disassembly ([F3.2.2](#rule-F3.2.2)), and manufactured items entering storage ([F3.2.3](#rule-F3.2.3)).
 These limits do not apply to open colonies.
 
@@ -1535,7 +1535,7 @@ Accepted units need not fill the remaining capacity: capacity too small for anot
 For example, 10,000 unassembled STUN require 500 VU at 0.05 VU each.
 If a TFR of them reaches a s/c with 300 VU remaining, 6,000 STUN are accepted and 4,000 are rejected; the 4,000 stay in the sending s/c.
 With 0.025 VU remaining, one unassembled STUN is rejected; half a STUN is never accepted.
-With 1 VU remaining, an entry for one unassembled HDRV-10 (225 VU) is rejected, and a following entry for 50 MTSP (0.02 VU each, 1 VU in all) is accepted.
+With 1 VU remaining, an entry for one unassembled HDRV-10 (225 VU) is rejected, and a following entry for 50 CSUP (0.02 VU each, 1 VU in all) is accepted.
 
 <a id="rule-F3.2.2"></a>
 #### F3.2.2 Disassembly
@@ -1621,28 +1621,28 @@ All the materials needed to create the new s/c come from the establishing s/c's 
 <a id="rule-F4.6"></a>
 ### F4.6 Construction Workers and Set-Ups
 
-The automatic assembling by construction worker units (CNW) in the new s/c, applies only to unassembled items (UNA).
-1 CNW assembles 500 mass units of UNA.
-All CNW listed in the STP order do as many assemblies as they are able to perform, and remain in the new s/c when done.
+The automatic assembling by construction worker units (CWRK) in the new s/c, applies only to unassembled items (UNA).
+1 CWRK assembles 500 mass units of UNA.
+All CWRK listed in the STP order do as many assemblies as they are able to perform, and remain in the new s/c when done.
 All the assembling in a STP order only lasts one turn.
-All CNW listed in the STP order will stay in the new s/c regardless of whether their numbers are greater or less than the number necessary to perform the assemblies in one turn.
-If there are not enough CNW listed in the STP order for the required assemblies, they are helped out by the CNW in the establishing s/c.
-The helping CNW return to the establishing s/c when they are done.
-If there are no CNW listed in the STP order at all, all the work is done by CNW of the establishing s/c, and they all return to it.
-If there are not enough CNW in the establishing s/c either, as many items in the STP order are assembled as possible, **IN THE ORDER IN WHICH THEY ARE LISTED IN THE STP ORDER**.
+All CWRK listed in the STP order will stay in the new s/c regardless of whether their numbers are greater or less than the number necessary to perform the assemblies in one turn.
+If there are not enough CWRK listed in the STP order for the required assemblies, they are helped out by the CWRK in the establishing s/c.
+The helping CWRK return to the establishing s/c when they are done.
+If there are no CWRK listed in the STP order at all, all the work is done by CWRK of the establishing s/c, and they all return to it.
+If there are not enough CWRK in the establishing s/c either, as many items in the STP order are assembled as possible, **IN THE ORDER IN WHICH THEY ARE LISTED IN THE STP ORDER**.
 (A player should therefore list the STUN (or STUL or STUS) first, followed by the other units in the order of their importance).
-UNA that can not be assembled by the CNW are simply left in the establishing s/c.
+UNA that can not be assembled by the CWRK are simply left in the establishing s/c.
 
 <a id="rule-F4.7"></a>
 ### F4.7 Transports and Set-Ups
 
-If there are no transports (TPT's) listed in the STP order, then TPT's from the establishing s/c are used, which return to the establishing s/c when done.
+If there are no transports (TRNS's) listed in the STP order, then TRNS's from the establishing s/c are used, which return to the establishing s/c when done.
 All the work in a STP is accomplished in one turn.
-If there are more TPT listed in the STP than necessary to do the required transfers, then those unnecessary TPT are used by the establishing s/c for other work.
-All the TPT in the STP return to the new s/c.
-If there are some TPT listed in the STP, but not enough to do the required transfers, they are helped by TPT's from the establishing s/c.
-The helping TPT's do their transfers and return to the establishing s/c when done.
-If there are not enough TPT in the establishing s/c, as many items in the STP are done as possible, **IN THE SEQUENCE IN WHICH THEY ARE LISTED IN THE STP**.
+If there are more TRNS listed in the STP than necessary to do the required transfers, then those unnecessary TRNS are used by the establishing s/c for other work.
+All the TRNS in the STP return to the new s/c.
+If there are some TRNS listed in the STP, but not enough to do the required transfers, they are helped by TRNS's from the establishing s/c.
+The helping TRNS's do their transfers and return to the establishing s/c when done.
+If there are not enough TRNS in the establishing s/c, as many items in the STP are done as possible, **IN THE SEQUENCE IN WHICH THEY ARE LISTED IN THE STP**.
 Items that can not be transferred are left in the establishing s/c.
 
 <a id="rule-F4.8"></a>
@@ -1656,7 +1656,7 @@ POP listed in a STP are taken from the establishing s/c's population groups.
 Items listed in a STP are never taken from the establishing s/c's assembled items.
 NON listed in a STP go to storage at the new s/c immediately.
 (This is done automatically - no order from the player is necessary).
-UNA in a STP are assembled by CNW and used in the new s/c; they do not go into storage, **EXCEPT FOR MINES AND FACTORIES**.
+UNA in a STP are assembled by CWRK and used in the new s/c; they do not go into storage, **EXCEPT FOR MINES AND FACTORIES**.
 (This is also done automatically and needs no special order from the player).
 POP go into the new s/c's population groups automatically.
 Mines listed in a STP are not automatically assembled upon arrival in the new s/c; they are put into storage and will need an assemble order on the next turn to start them functioning.
@@ -1676,7 +1676,7 @@ If an open colony or enclosed surface colony is being set-up, it will be on the 
 <a id="rule-F5.1"></a>
 ### F5.1 Description
 
-An add-on order (ADN) adds units onto an existing s/c, using the TPT's, CNW's, and materials from another s/c.
+An add-on order (ADN) adds units onto an existing s/c, using the TRNS's, CWRK's, and materials from another s/c.
 The s/c doing the ADN does not have to be the establishing s/c.
 There is no limit to the size of an ADN.
 
@@ -1688,7 +1688,7 @@ An existing s/c may ADN to any other type or number of ships and colonies, so lo
 <a id="rule-F5.2.1"></a>
 #### F5.2.1 ADN Abortions
 
-Portions of an ADN, or all of an ADN, may fail due to a shortage of CNW, fuel for the TPT's, TPT's, or STUN (or STUL or STUS) to hold all the additional units ([F3.2.1](#rule-F3.2.1)).
+Portions of an ADN, or all of an ADN, may fail due to a shortage of CWRK, fuel for the TRNS's, TRNS's, or STUN (or STUL or STUS) to hold all the additional units ([F3.2.1](#rule-F3.2.1)).
 
 <a id="rule-F5.3"></a>
 ### F5.3 How ADN Orders Work
@@ -1700,13 +1700,13 @@ All the materials needed to do the ADN come from the adding-on s/c's POP, NON, a
 <a id="rule-F5.4"></a>
 ### F5.4 Construction Workers and Add-Ons
 
-The rules regarding CNW's and set ups apply to add-ons, too.
+The rules regarding CWRK's and set ups apply to add-ons, too.
 See [F4.6](#rule-F4.6)<!-- was 7.4.6 -->.
 
 <a id="rule-F5.5"></a>
 ### F5.5 Transports and Add-Ons
 
-The rules regarding TPT's and set-ups apply to add-ons, too.
+The rules regarding TRNS's and set-ups apply to add-ons, too.
 See [F4.7](#rule-F4.7)<!-- was 7.4.7 -->.
 
 <a id="rule-F5.6"></a>
@@ -1735,7 +1735,7 @@ They must write an allow add-on order (AAN) or the order will fail.
 A junk order (JNK) places all units that make up a s/c into another s/c's storage, after dis-assembling all the assembled items.
 Players can JNK only their own s/c's, not other players' s/c's.
 Both the s/c doing the JNK and the s/c to be JNK'ed must be at the same orbit.
-CNW's and TPT's are used to perform this order.
+CWRK's and TRNS's are used to perform this order.
 POP's do not go into storage; they join the junking s/c's POP's.
 When a s/c has been junked, it ceases to exist.
 
@@ -1755,8 +1755,8 @@ He may, however, give away someone else's home colony that he has conquered.
 
 A merge order (MRG) merges two s/c's into one s/c.
 The two s/c's must be of the same type, must belong to the same player, and must be in the same orbit.
-The total number of factory (FCT) groups in the two s/c's must not exceed 25.
-Neither CNW's nor TPT's are necessary to perform a MRG order.
+The total number of factory (FACT) groups in the two s/c's must not exceed 25.
+Neither CWRK's nor TRNS's are necessary to perform a MRG order.
 
 <a id="rule-F9.0"></a>
 ## F9.0 Control of Planets
@@ -1778,13 +1778,13 @@ If all the s/c's on a home planet are controlled by races other than the home pl
 <a id="rule-F10.0"></a>
 ## F10.0 Assembly and Disassembly
 
-Assembly (ASM) orders are used in two ways: to assemble special purpose population groups (CNW's and SPYS), and to assemble unassembled items.
+Assembly (ASM) orders are used in two ways: to assemble special purpose population groups (CWRK's and SPY), and to assemble unassembled items.
 
 <a id="rule-F10.1"></a>
 ### F10.1 Assembling Special Purpose Population Groups
 
-When an ASM order is given for a SPYS cadre, 1 PRO unit and 1 SLD unit are taken from their population segments and joined to form one group spy cadre.
-When an ASM order is given for a CNW cadre, 1 PRO unit and 1 USK unit are taken from their population segments and formed into one construction worker cadre.
+When an ASM order is given for a SPY cadre, 1 PRO unit and 1 SLD unit are taken from their population segments and joined to form one group spy cadre.
+When an ASM order is given for a CWRK cadre, 1 PRO unit and 1 USK unit are taken from their population segments and formed into one construction worker cadre.
 
 <a id="rule-F10.2"></a>
 ### F10.2 Assembling Unassembled Items
@@ -1796,17 +1796,17 @@ When they have been disassembled with a DAS (dis-assembly) order, the items do n
 
 The following items are assembly type items:
 
-* AUT
-* ESH
-* EWP
-* FCT
-* FRM
+* AUTO
+* ESHD
+* EWPN
+* FACT
+* FARM
 * HDRV
-* LFS
+* LFSU
 * STUL
-* MIN
-* MSL
-* SEN
+* MINE
+* MLNC
+* SENS
 * SDRV
 * STUN
 * STUS
@@ -1817,12 +1817,12 @@ An ASM order takes an unassembled item from storage, assembles it, and makes it 
 ### F10.3 Disassembling Assembled Items
 
 Dis-assembly (DAS) orders are used to reverse assembly orders.
-That is, they disassemble items and put them into storage, and are also used to break up SPYS and CNW's.
+That is, they disassemble items and put them into storage, and are also used to break up SPY and CWRK's.
 
-    Note: only group G SPYS can be DAS'd.
+    Note: only group G SPY can be DAS'd.
 
 Dis-assembly of non-population units causes a 10% *LOSS*.
-For instance, if 5,000 EWP-2 are dis-assembled then 500 will be lost and 4,500 will appear in storage under "un-assembled items" in the storage section of the printout.
+For instance, if 5,000 EWPN-2 are dis-assembled then 500 will be lost and 4,500 will appear in storage under "un-assembled items" in the storage section of the printout.
 There is no loss in disassembling population units.
 When determining the 10% loss, fractions are rounded down.
 In a CSHP, CORB, or CENC, a disassembly is refused if the result would exceed the s/c's enclosure capacity ([F3.2.2](#rule-F3.2.2)).
@@ -1836,27 +1836,27 @@ NON can not be assembled or dis-assembled.
 
 The following items are NON:
 
-* TPT
-* MSS
-* METS
-* NMTS
+* TRNS
+* MSSL
+* MTL
+* NMTL
 * FUEL
 * FOOD
-* ASW
-* ASC
-* ANM
+* AWPN
+* ACFT
+* AMSL
 * CNGD
-* MRB
-* MTSP
+* MRBT
+* CSUP
 
 NON are taken by the computer from storage automatically as used per turn.
 
 <a id="rule-F10.5"></a>
 ### F10.5 Use of Construction Workers
 
-Dis-assembly requires 1 CNW per 500 mass units being dis-assembled.
-Assembly requires 1 CNW per 500 mass units being assembled per turn.
-If a s/c has 5,000 EWP-2 in storage, it would require 200 CNW ((20 x 5000) ÷ 500) to ASM them.
+Dis-assembly requires 1 CWRK per 500 mass units being dis-assembled.
+Assembly requires 1 CWRK per 500 mass units being assembled per turn.
+If a s/c has 5,000 EWPN-2 in storage, it would require 200 CWRK ((20 x 5000) ÷ 500) to ASM them.
 
 <a id="rule-F10.6"></a>
 ### F10.6 Regents
@@ -1872,19 +1872,19 @@ Also, assembled items do not leave the s/c.
 Only UNA or NON can be TFR'd or ADN'd to another s/c, or can be picked up by another s/c.
 So, assembled items must be dis-assembled first.
 Mine units are assembled on a particular deposit.
-This assembly causes the MIN's to begin functioning automatically; a start-up order is not necessary.
-Factory units are assembled into factory groups; causing the FCT units to begin functioning automatically; no start-up order is necessary.
+This assembly causes the MINE's to begin functioning automatically; a start-up order is not necessary.
+Factory units are assembled into factory groups; causing the FACT units to begin functioning automatically; no start-up order is necessary.
 
 <a id="rule-F11.0"></a>
 ## F11.0 Scrap
 
 Scrap (SCR) orders convert items *in storage* back into resource units.
 Scrapping causes a 30% loss.
-For instance, scrapping 10,000 MSS-1 will result in 14,000 NMTS and 14,000 METS.
-Scrapping requires one CNW per 300 MU scrapped.
+For instance, scrapping 10,000 MSSL-1 will result in 14,000 NMTL and 14,000 MTL.
+Scrapping requires one CWRK per 300 MU scrapped.
 
-Example: Dis-assembly of 50,000 MU, scrapping of 3,000 MU, and assembly of 100,000 mass units will require a total of 310 CNW units.
-(CNW can not be used twice during the same turn).
+Example: Dis-assembly of 50,000 MU, scrapping of 3,000 MU, and assembly of 100,000 mass units will require a total of 310 CWRK units.
+(CWRK can not be used twice during the same turn).
 
 Scrapping of population units is not allowed.
 
@@ -1924,27 +1924,27 @@ All SLD not used in spy units are used in combat.
 Any number of soldiers may be disbanded on any turn, with a disband (DSB) order, and these become USK.
 
 <a id="rule-G1.5"></a>
-### G1.5 Spies (SPYS)
+### G1.5 Spies (SPY)
 
 Spies conduct espionage activities.
 
 A spy cadre can be assembled, with an ASM (assemble) order, or disassembled, with a DAS (disassemble) order, on any turn.
-The number of SPYS that can be assembled is limited to the number of PRO's and SLD's a player has that are loyal.
+The number of SPY that can be assembled is limited to the number of PRO's and SLD's a player has that are loyal.
 Each spy cadre is made up of 1 PRO and 1 SLD.
 Each spy cadre, therefore, is made up of 2 population units.
 
 <a id="rule-G1.6"></a>
-### G1.6 Construction Workers (CNW)
+### G1.6 Construction Workers (CWRK)
 
 Construction workers execute ASM (assemble), DAS (disassemble), and SCR (scrap) orders.
 
 A construction worker cadre can be assembled, with an ASM (assemble) order, or disassembled, with a DAS (disassemble) order, on any turn.
-Each CNW is made up of 1 PRO and 1 USK.
-Each CNW, therefore, is made up of 2 population units.
-The number of CNWs that can be assembled is limited to the number of PRO's and USK's a player has.
-Also, CNWs are used to do assembly portions of STP and ADN orders.
+Each CWRK is made up of 1 PRO and 1 USK.
+Each CWRK, therefore, is made up of 2 population units.
+The number of CWRK's that can be assembled is limited to the number of PRO's and USK's a player has.
+Also, CWRK's are used to do assembly portions of STP and ADN orders.
 
-Note: CNWs are not needed for merge, combine, or give orders.
+Note: CWRK's are not needed for merge, combine, or give orders.
 
 <a id="rule-G1.7"></a>
 ### G1.7 Rebels
@@ -1952,13 +1952,13 @@ Note: CNWs are not needed for merge, combine, or give orders.
 Rebel units are merely a tally of the number of population units in each population type or group willing to rebel.
 They are found in *all* groups, except spies, and soldiers.
 The portion of SLD willing to rebel are known as *rebel soldiers*; rebel soldiers determine the success or failure of a rebellion.
-There are no rebels at all in the SPYS.
+There are no rebels at all in the SPY.
 
 <a id="rule-G1.8"></a>
-### G1.8 Trainees (TRN)
+### G1.8 Trainees (TRNE)
 
 Trainees are USK in training to become PRO's.
-Each 100 TRN requires one PRO to train them.
+Each 100 TRNE requires one PRO to train them.
 5% of all trainees graduate each turn.
 
 <a id="rule-G1.9"></a>
@@ -2003,7 +2003,7 @@ All disbanded SLD become USK, (when a DSB order is written).
 ### G2.3 Professional Increases
 
 Professional increases are caused by the influx of trainees each turn, and by the entry of retiring SLD.
-5% of all SLD retire each *year* (every fourth turn), and 5% of all TRN graduate each *turn*.
+5% of all SLD retire each *year* (every fourth turn), and 5% of all TRNE graduate each *turn*.
 These percentages become PRO's automatically.
 
 <a id="rule-G2.4"></a>
@@ -2015,21 +2015,21 @@ The player writes a draft (DRF) order for the SLD needed, and that number is ded
 <a id="rule-G2.5"></a>
 ### G2.5 Spy Increases
 
-SPYS increases are ordered by the player, using an assemble (ASM) order.
-An ASM order for SPYS takes the necessary quantity of PRO's and SLD's from each group, and puts them together to form the SPYS ordered.
-1 SLD and 1 PRO assembled become 1 SPYS.
-A SPYS can be assembled or disassembled (ASM or DAS) on any turn.
-The number of SPYS assembled is limited to the number of SLD and PRO units in a s/c that are loyal.
-SPYS can't be formed from rebels.
+SPY increases are ordered by the player, using an assemble (ASM) order.
+An ASM order for SPY takes the necessary quantity of PRO's and SLD's from each group, and puts them together to form the SPY ordered.
+1 SLD and 1 PRO assembled become 1 SPY.
+A SPY can be assembled or disassembled (ASM or DAS) on any turn.
+The number of SPY assembled is limited to the number of SLD and PRO units in a s/c that are loyal.
+SPY can't be formed from rebels.
 
 <a id="rule-G2.6"></a>
 ### G2.6 Construction Worker Increases
 
-CNW increases are ordered using an assemble (ASM) order.
-This order takes the necessary quantity of PRO's and USK's from each group, and puts them together to form the CNW's ordered.
-1 USK and 1 PRO become 1 CNW.
-A CNW can be ASM or DAS on any turn.
-The number of CNW's assembled is limited to the number of PRO's and USK's a s/c has.
+CWRK increases are ordered using an assemble (ASM) order.
+This order takes the necessary quantity of PRO's and USK's from each group, and puts them together to form the CWRK's ordered.
+1 USK and 1 PRO become 1 CWRK.
+A CWRK can be ASM or DAS on any turn.
+The number of CWRK's assembled is limited to the number of PRO's and USK's a s/c has.
 
 <a id="rule-G2.7"></a>
 ### G2.7 Rebel (and Rebel Soldier) Increases
@@ -2048,9 +2048,9 @@ Rebels also increase if a foreign nation has his "E" spies incite loyal populati
 <a id="rule-G2.8"></a>
 ### G2.8 Trainee Increases
 
-Trainees increase when the player writes a DRF order for a quantity of TRN to be trained as PRO's.
+Trainees increase when the player writes a DRF order for a quantity of TRNE to be trained as PRO's.
 This number is deducted from the USK and added to the existing trainee units.
-5% of all TRN graduate each *turn* as professionals.
+5% of all TRNE graduate each *turn* as professionals.
 
 <a id="rule-G3.0"></a>
 ## G3.0 Population Decreases
@@ -2064,17 +2064,17 @@ See [G2.2](#rule-G2.2)<!-- was 5.2.2 -->.
 <a id="rule-G3.2"></a>
 ### G3.2 Unskilled Decreases
 
-Unskilled decreases are due to the DRF orders for trainees or soldiers or ASM orders for CNW.
+Unskilled decreases are due to the DRF orders for trainees or soldiers or ASM orders for CWRK.
 
 <a id="rule-G3.3"></a>
 ### G3.3 Professional Decreases
 
-Professional decreases are due to ASM orders for SPYS and CNW's.
+Professional decreases are due to ASM orders for SPY and CWRK's.
 
 <a id="rule-G3.4"></a>
 ### G3.4 Soldier Decreases
 
-Soldier decreases are due to ASM orders for SPYS; DSB orders which disband, retirement (5% per *year*), and combat casualties.
+Soldier decreases are due to ASM orders for SPY; DSB orders which disband, retirement (5% per *year*), and combat casualties.
 Disbanded SLD become USK.
 
 <a id="rule-G3.5"></a>
@@ -2086,7 +2086,7 @@ Each spy unit disassembles into 1 PRO and 1 SLD.
 <a id="rule-G3.6"></a>
 ### G3.6 Construction Worker Decreases
 
-Construction worker decreases are due to DAS orders that disassemble them; each CNW disassembles into 1 USK and 1 PRO.
+Construction worker decreases are due to DAS orders that disassemble them; each CWRK disassembles into 1 USK and 1 PRO.
 
 <a id="rule-G3.7"></a>
 ### G3.7 Rebel Decreases
@@ -2152,8 +2152,8 @@ Unemployables are paid nothing.
 
 All PAY orders are standing orders; they remain the same until changed by the player.
 At the start of the game, all unskilled (USK) units are paid 0.125 CNGD per turn; soldiers (SLD) are paid 0.25 CNGD per turn; and professionals (PRO) are paid 0.375 per turn.
-Construction workers (CNW) are paid the USK rate plus the PRO rate.
-Spies (SPYS) are paid the PRO pay rate plus the SLD pay rate.
+Construction workers (CWRK) are paid the USK rate plus the PRO rate.
+Spies (SPY) are paid the PRO pay rate plus the SLD pay rate.
 Trainees are paid at the USK rate.
 To change the pay rate, the player writes a PAY order.
 
@@ -2172,145 +2172,145 @@ Back pay is decreased when the s/c has more CNGD than it needs to meet its payro
 <a id="rule-G6.1"></a>
 ### G6.1 Consumption
 
-Life support units (LFS) are used in s/c's to recycle air and water.
+Life support units (LFSU) are used in s/c's to recycle air and water.
 They will support the number of POP equal to their TL squared.
-For instance, a TL-5 LFS (LFS-5) will support 25 POP.
-A LFS uses one fuel unit times its TL per turn (i.e. a LFS-5 uses 5 fuel units per turn).
-Only COPN's do not require LFS.
-LFS on CORB's in orbits 1-5 do not use FUEL, but use solar power.
+For instance, a TL-5 LFSU (LFSU-5) will support 25 POP.
+A LFSU uses one fuel unit times its TL per turn (i.e. a LFSU-5 uses 5 fuel units per turn).
+Only COPN's do not require LFSU.
+LFSU on CORB's in orbits 1-5 do not use FUEL, but use solar power.
 
 <a id="rule-G6.2"></a>
 ### G6.2 Death Rate Affected
 
-If the LFS capacity of a s/c is exceeded, the death rate will be increased as follows:
+If the LFSU capacity of a s/c is exceeded, the death rate will be increased as follows:
 
     N = ((P x 10) + 1) x D
 
-Where P is the fraction of population over the LFS limit, D is the current death rate, and N is the new death rate.
+Where P is the fraction of population over the LFSU limit, D is the current death rate, and N is the new death rate.
 
-Each turn the s/c's LFS capacity is not exceeded, the death rate will be cut in half until it reaches normal (0.0625%).
-Lack of LFS does not cause rebels.
+Each turn the s/c's LFSU capacity is not exceeded, the death rate will be cut in half until it reaches normal (0.0625%).
+Lack of LFSU does not cause rebels.
 
 # H. Production and Industry
 
 <a id="rule-H1.0"></a>
 ## H1.0 Farming
 
-Farming is done by farm (FRM) units.
-All the farm units at each technological level (TL) form a FRM group.
+Farming is done by farm (FARM) units.
+All the farm units at each technological level (TL) form a FARM group.
 There can be only one group *per TL* in a s/c.
-For instance one s/c could have one group of 50,000 FRM-1, and 30,000 FRM-2 and 90,000 FRM-3.
-In order for the farm units to be taken from storage and put to work, the player assembles them into a FRM group.
+For instance one s/c could have one group of 50,000 FARM-1, and 30,000 FARM-2 and 90,000 FARM-3.
+In order for the farm units to be taken from storage and put to work, the player assembles them into a FARM group.
 This is done with an ASM (assembly) order, and is explained in detail in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 
 <a id="rule-H1.1"></a>
 ### H1.1 Amount of Food Produced
 
 The amount of food produced per turn per farm unit depends on the unit's TL.
-A FRM-1 unit (TL-1 farm unit) will produce 25 food units per turn.
-A FRM-2 through FRM-10 will produce 5 times the TL in food units per turn.
-So, a FRM-2 will produce 10 food units per turn.
+A FARM-1 unit (TL-1 farm unit) will produce 25 food units per turn.
+A FARM-2 through FARM-10 will produce 5 times the TL in food units per turn.
+So, a FARM-2 will produce 10 food units per turn.
 
 <a id="rule-H1.2"></a>
 ### H1.2 Effect of Shortages
 
-A shortage of fuel or labor will cause the FRM's to not produce.
+A shortage of fuel or labor will cause the FARM's to not produce.
 If there is a shortage of space available to hold the food, the extra food is thrown out.
-A shortage of fuel or labor may only affect *part* of the farms; ie, if there is enough fuel for 50,000 FRM's out of a total of 90,000 FRM's, then 40,000 FRM's will not produce.
+A shortage of fuel or labor may only affect *part* of the farms; ie, if there is enough fuel for 50,000 FARM's out of a total of 90,000 FARM's, then 40,000 FARM's will not produce.
 
 <a id="rule-H1.3"></a>
 ### H1.3 Types of Farms
 
 <a id="rule-H1.3.1"></a>
-#### H1.3.1 FRM-1
+#### H1.3.1 FARM-1
 
-TL-1 FRM's are like our modern dirt farms.
+TL-1 FARM's are like our modern dirt farms.
 They may only be assembled in open colonies.
 
 <a id="rule-H1.3.2"></a>
-#### H1.3.2 FRM-2 Through FRM-5
+#### H1.3.2 FARM-2 Through FARM-5
 
 These are hydroponic farms.
 They may be assembled in any colonies in orbits 1 through 5, but not in ships in any orbit, and not in colonies in orbits 6 - 10.
 
 <a id="rule-H1.3.3"></a>
-#### H1.3.3 FRM-6 Through FRM-10
+#### H1.3.3 FARM-6 Through FARM-10
 
 These use artificial sunlight and may be used in any s/c.
 
 <a id="rule-H1.4"></a>
 ### H1.4 Personnel Required
 
-The personnel required to run one FRM unit of any TL is one PRO and three USK.
+The personnel required to run one FARM unit of any TL is one PRO and three USK.
 
 <a id="rule-H1.5"></a>
 ### H1.5 Fuel Use
 
-One FRM-1 uses 0.5 fuel units per turn; one FRM-2 through FRM-5 uses 0.5 times the TL in fuel units per turn; one FRM-6 through FRM-10 uses 1 fuel unit times the TL per turn.
-FRM's on CORB's in orbits 1-5 use no fuel, but use solar power.
+One FARM-1 uses 0.5 fuel units per turn; one FARM-2 through FARM-5 uses 0.5 times the TL in fuel units per turn; one FARM-6 through FARM-10 uses 1 fuel unit times the TL per turn.
+FARM's on CORB's in orbits 1-5 use no fuel, but use solar power.
 
 <a id="rule-H1.6"></a>
 ### H1.6 Shut Downs and Start Ups
 
 Shut down orders (SHT) are used to stop the farming done by *all* assembled farms in a s/c; one can not shut down only a portion of them.
 Start up orders (STU) are used ONLY to start up farms that have been shut down.
-FRM's are assembled in running condition.
+FARM's are assembled in running condition.
 
 <a id="rule-H1.7"></a>
 ### H1.7 Quantity of Farms Allowed per Planet
 
-The number of FRM-1 that can be assembled in the open colonies of a planet is limited to the habitability number of the planet times 100,000.
-There is no limit to the number of FRM's TL-2 through TL-10 that can be assembled in open colonies.
-And there is no limit to FRM's of any TL in ships, enclosed surface colonies, or orbiting colonies, providing there is enough space for them, and the restrictions in [H1.3](#rule-H1.3)<!-- was 8.1.3 --> are observed.
+The number of FARM-1 that can be assembled in the open colonies of a planet is limited to the habitability number of the planet times 100,000.
+There is no limit to the number of FARM's TL-2 through TL-10 that can be assembled in open colonies.
+And there is no limit to FARM's of any TL in ships, enclosed surface colonies, or orbiting colonies, providing there is enough space for them, and the restrictions in [H1.3](#rule-H1.3)<!-- was 8.1.3 --> are observed.
 
 <a id="rule-H2.0"></a>
 ## H2.0 Mining
 
-Mining is done by mine (MIN) units at deposits of natural resources.
-The four types of natural resources are: fuel (FUEL), gold (GOLD), non-metallics (NMTS) and metallics (METS).
-In order for a mine unit to work, it must be taken from storage and assembled into a MIN group.
-(All MIN's in a group must be of the same TL.)
+Mining is done by mine (MINE) units at deposits of natural resources.
+The four types of natural resources are: fuel (FUEL), gold (GOLD), non-metallics (NMTL) and metallics (MTL).
+In order for a mine unit to work, it must be taken from storage and assembled into a MINE group.
+(All MINE's in a group must be of the same TL.)
 This is done with an ASM (assembly) order, and is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 
 <a id="rule-H2.1"></a>
 ### H2.1 Amount of Resources Mined
 
-One MIN extracts 25 times its TL in units of raw resource (ORE) per turn.
+One MINE extracts 25 times its TL in units of raw resource (ORE) per turn.
 The ORE is refined at the deposit's yield ([A4.3](#rule-A4.3)), rounded down to a whole number of units, and the refined resource is added to the s/c's storage.
 The deposit's quantity goes down by the refined amount, not by the ORE extracted.
-The MIN's always extract their full amount of ORE, unless a shortage of fuel or labor stops them ([H2.2](#rule-H2.2)); the quantity left in the deposit does not limit it.
+The MINE's always extract their full amount of ORE, unless a shortage of fuel or labor stops them ([H2.2](#rule-H2.2)); the quantity left in the deposit does not limit it.
 The refined amount, however, can never be more than the quantity left in the deposit; a deposit with no quantity left is exhausted.
-For example, 10 MIN-1 working a deposit of 500 FUEL with a 50% yield extract 10 x 25 x 1 = 250 ORE in a turn, and refine it into 125 FUEL.
+For example, 10 MINE-1 working a deposit of 500 FUEL with a 50% yield extract 10 x 25 x 1 = 250 ORE in a turn, and refine it into 125 FUEL.
 The deposit has 375 FUEL left.
-Had it held only 100 FUEL, the MIN's would still extract 250 ORE, but refine only the 100 FUEL left, exhausting the deposit.
+Had it held only 100 FUEL, the MINE's would still extract 250 ORE, but refine only the 100 FUEL left, exhausting the deposit.
 
 <a id="rule-H2.2"></a>
 ### H2.2 Effect of Shortages
 
-If there is a shortage of available space to hold the refined *gold* or *fuel* which would normally be mined on a turn, the MIN's will only mine the ORE whose refined gold or fuel will fit the space available, and no more.
-Shortages of space do not affect NMTS or METS: extra amounts of those are stored outside the colony walls.
+If there is a shortage of available space to hold the refined *gold* or *fuel* which would normally be mined on a turn, the MINE's will only mine the ORE whose refined gold or fuel will fit the space available, and no more.
+Shortages of space do not affect NMTL or MTL: extra amounts of those are stored outside the colony walls.
 (This applies only to enclosed surface colonies and open colonies.
 Mines are not operable on ships or orbiting colonies).
-Shortages of fuel or labor will cause MIN's to not produce, either fully or partially.
-MIN groups produce one by one, starting with MIN group #1, then #2, etc.
+Shortages of fuel or labor will cause MINE's to not produce, either fully or partially.
+MINE groups produce one by one, in group number order, lowest number first ([H3.9](#rule-H3.9)).
 As many mines will produce as are able before the shortage stops production.
 
 <a id="rule-H2.3"></a>
 ### H2.3 Fuel and Personnel Required
 
-Each MIN consumes 0.5 times its TL in fuel each turn.
-Therefore, a MIN-3 consumes 1.5 fuel units each turn.
-One MIN of any TL requires one PRO and three USK to operate it.
+Each MINE consumes 0.5 times its TL in fuel each turn.
+Therefore, a MINE-3 consumes 1.5 fuel units each turn.
+One MINE of any TL requires one PRO and three USK to operate it.
 
 <a id="rule-H2.4"></a>
 ### H2.4 Quantity of Mines Allowed
 
-Only one s/c may have a MIN group at a deposit.
-If two s/c's attempt to place MIN groups on the same deposit, one of them will be chosen randomly by the computer to succeed, and the other will fail.
-A s/c may not have more than one MIN group at a deposit.
+Only one s/c may have a MINE group at a deposit.
+If two s/c's attempt to place MINE groups on the same deposit, one of them will be chosen randomly by the computer to succeed, and the other will fail.
+A s/c may not have more than one MINE group at a deposit.
 Only 40 mine groups are allowed in any enclosed surface colony, or in any open colony.
-Since all deposits are located on planets, no MIN's can function on ships or orbiting colonies.
-MIN's may be held in storage, however.
+Since all deposits are located on planets, no MINE's can function on ships or orbiting colonies.
+MINE's may be held in storage, however.
 
 <a id="rule-H2.5"></a>
 ### H2.5 MCH, DEP, and DAS Orders
@@ -2319,44 +2319,44 @@ When a player no longer needs a mine group, he disassembles it with a DAS (disas
 This is explained fully in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 Mine units may be moved from one deposit to another, turned off, or turned on with a mine change order (MCH).
 Examples of MCH orders are shown in [S8.3](#rule-S8.3)<!-- was Chapter 17, Order Writing -->.
-All MIN's at a deposit may be given to another s/c with a deposit gift (DEP) order.
+All MINE's at a deposit may be given to another s/c with a deposit gift (DEP) order.
 
 <a id="rule-H3.0"></a>
 ## H3.0 Manufacturing
 
-Manufacturing is done by factory (FCT) units.
-In order for a factory unit to work, it must be taken from storage and assembled into a FCT group, as is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
-All FCT's in a FCT group must be at the same TL.
+Manufacturing is done by factory (FACT) units.
+In order for a factory unit to work, it must be taken from storage and assembled into a FACT group, as is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
+All FACT's in a FACT group must be at the same TL.
 Factory groups manufacture everything except population units, food, and resources.
-Each FCT group can only manufacture one item at a time.
+Each FACT group can only manufacture one item at a time.
 No item can be built in less than a year.
-All FCT groups require four turns to produce any item in production.
-There may be more than one FCT group building the same item.
+All FACT groups require four turns to produce any item in production.
+There may be more than one FACT group building the same item.
 A colony may have only 25 factory groups.
-When a FCT group completes an item, it is placed in storage, subject to enclosure capacity ([F3.2.3](#rule-F3.2.3)).
+When a FACT group completes an item, it is placed in storage, subject to enclosure capacity ([F3.2.3](#rule-F3.2.3)).
 Ships can NOT have assembled factories (operating factories), but may carry them in storage.
 
 <a id="rule-H3.1"></a>
 ### H3.1 Fuel and Personnel Requirements
 
-Each FCT requires one PRO times the efficiency factor (see [H3.2](#rule-H3.2)<!-- was 8.3.2 -->) and three USK times the efficiency factor.
-Each FCT uses 0.5 fuel units times the factory's TL per turn, except FCT units in CORB's within the 5th orbit or less, which use 0 fuel.
-Personnel and fuel are only used by assembled (functioning) FCT groups.
+Each FACT requires one PRO times the efficiency factor (see [H3.2](#rule-H3.2)<!-- was 8.3.2 -->) and three USK times the efficiency factor.
+Each FACT uses 0.5 fuel units times the factory's TL per turn, except FACT units in CORB's within the 5th orbit or less, which use 0 fuel.
+Personnel and fuel are only used by assembled (functioning) FACT groups.
 
 <a id="rule-H3.2"></a>
 ### H3.2 Efficiency Factor - Cost
 
 Small factory groups are less efficient than larger ones.
 This is reflected by the group's efficiency factor, which determines the cost of building an item.
-The quantity of METS and NMTS required to build an item, (see [R3.0](#rule-R3.0)<!-- was the back cover -->, UNIT CHARACTERISTICS SUMMARY), is multiplied by the FCT group's efficiency factor.
+The quantity of MTL and NMTL required to build an item, (see [R3.0](#rule-R3.0)<!-- was the back cover -->, UNIT CHARACTERISTICS SUMMARY), is multiplied by the FACT group's efficiency factor.
 The resulting figure is multiplied by the quantity of the unit being manufactured.
 This results in the cost per year; to determine the cost per turn, divide by four.
-For instance, the cost of a LFS-2 is 6 METS and 10 NMTS.
-The quantity of FCT's in the group is 50,000, so the efficiency factor is 1.
-62,500 LFS-2 times 6 METS and 10 NMTS = 375,000 METS and 625,000 NMTS, (annual cost).
-The cost per turn is 93,750 METS and 156,250 NMTS.
+For instance, the cost of a LFSU-2 is 6 MTL and 10 NMTL.
+The quantity of FACT's in the group is 50,000, so the efficiency factor is 1.
+62,500 LFSU-2 times 6 MTL and 10 NMTL = 375,000 MTL and 625,000 NMTL, (annual cost).
+The cost per turn is 93,750 MTL and 156,250 NMTL.
 
-| Number of FCT's in Group | Efficiency Factor |
+| Number of FACT's in Group | Efficiency Factor |
 |--------------------------|-------------------|
 |       1 ... 4            | 6                 |
 |       5 ... 49           | 5                 |
@@ -2366,51 +2366,51 @@ The cost per turn is 93,750 METS and 156,250 NMTS.
 |  50,000 ... 199,999      | 1                 |
 | 200,000 ... infinity     | 0.5               |
 
-The efficiency factor is not used when calculating the number of units a FCT group can produce.
+The efficiency factor is not used when calculating the number of units a FACT group can produce.
 
     NOTE: In the MAXI-CHALLENGE game, the efficiency factor is always 1 when calculating cost per year, and is never less than 1 when calculating personnel requirements.
 
 <a id="rule-H3.3"></a>
 ### H3.3 Capacity of a Factory Group
 
-One FCT (factory unit) produces 5 x its TL MU per turn; 20 MU x its TL per year.
-This annual production in mass units, times the number of factory units in the group, divided by the mass units per item, will give the quantity of an item to be produced per year by a FCT group.
-For example: A FCT group of 50,000 FCT-1 is set up to build LFS-2.
-20 (mass units per year) times 50,000 (number of FCT units in the group) divided by 16 (a LFS-2 is 16 mass units) will equal 62,500 LFS-2 produced per year, or 15,625 LFS-2 produced per turn.
+One FACT (factory unit) produces 5 x its TL MU per turn; 20 MU x its TL per year.
+This annual production in mass units, times the number of factory units in the group, divided by the mass units per item, will give the quantity of an item to be produced per year by a FACT group.
+For example: A FACT group of 50,000 FACT-1 is set up to build LFSU-2.
+20 (mass units per year) times 50,000 (number of FACT units in the group) divided by 16 (a LFSU-2 is 16 mass units) will equal 62,500 LFSU-2 produced per year, or 15,625 LFSU-2 produced per turn.
 
 <a id="rule-H3.4"></a>
 ### H3.4 Work in Process
 
 Work in process (WIP) includes all items in the process of being manufactured.
-Using the example in [H3.3](#rule-H3.3)<!-- was 8.3.3. --> of 50,000 FCT-1 being ASM'd (on turn 3) to build 62,500 LFS-2, the printout will report the WIP in this way:
+Using the example in [H3.3](#rule-H3.3)<!-- was 8.3.3. --> of 50,000 FACT-1 being ASM'd (on turn 3) to build 62,500 LFSU-2, the printout will report the WIP in this way:
 
 | TURN | WIP 1/4 COMP. | WIP 1/2 COMP. | WIP 3/4 COMP. |
 |------|---------------|---------------|---------------|
 | 3    |      0        |      0        |      0        |
-| 4    | 62,500 LFS-2  |      0        |      0        |
-| 5    |      0        | 62,500 LFS-2  |      0        |
-| 6    |      0        |      0        | 62,500 LFS-2  |
+| 4    | 62,500 LFSU-2  |      0        |      0        |
+| 5    |      0        | 62,500 LFSU-2  |      0        |
+| 6    |      0        |      0        | 62,500 LFSU-2  |
 
-Note that the FCT group does not complete 1/4 of the LFS-2 per turn (15,625 in other words), but instead will get the entire 62,500 one quarter of the way to being complete.
-On turn 7 of the example, 62,500 LFS-2 will show up on the storage report on the printout, and the WIP will look like it did on turn 3.
+Note that the FACT group does not complete 1/4 of the LFSU-2 per turn (15,625 in other words), but instead will get the entire 62,500 one quarter of the way to being complete.
+On turn 7 of the example, 62,500 LFSU-2 will show up on the storage report on the printout, and the WIP will look like it did on turn 3.
 
-Let's say that we assembled this group on turn three, and assembled more FCT units to the group on turn 4, and turn 5 and turn 6.
+Let's say that we assembled this group on turn three, and assembled more FACT units to the group on turn 4, and turn 5 and turn 6.
 The printout will show:
 
 | TURN | WIP1/4 COMP. | WIP 1/2 COMP. | WIP 3/4 COMP. |
 |------|--------------|---------------|---------------|
 | 3    |      0       |      0        |      0        |
-| 4    | 62,500 LFS-2 |      0        |      0        |
-| 5    | 62,500 LFS-2 | 62,500 LFS-2  |      0        |
-| 6    | 62,500 LFS-2 | 62,500 LFS-2  | 62,500 LFS-2  |
+| 4    | 62,500 LFSU-2 |      0        |      0        |
+| 5    | 62,500 LFSU-2 | 62,500 LFSU-2  |      0        |
+| 6    | 62,500 LFSU-2 | 62,500 LFSU-2  | 62,500 LFSU-2  |
 
-Starting on turn 7, 62,500 LFS-2 are added to storage each turn.
+Starting on turn 7, 62,500 LFSU-2 are added to storage each turn.
 
 <a id="rule-H3.5"></a>
 ### H3.5 BCH, COM, and DAS Orders
 
 Once ordered to manufacture an item, a factory group will continue to do so, unless ordered to build something else with a build change order (BCH - see [H3.6](#rule-H3.6)<!-- was 8.3.6 -->, Retooling), or to shut down (a BCH, SHT order).
-Once ordered to shut down, a FCT group (still assembled) remains shut down, unless ordered to start up (with a BCH, STU order).
+Once ordered to shut down, a FACT group (still assembled) remains shut down, unless ordered to start up (with a BCH, STU order).
 One final way to stop a factory from producing is to disassemble it with a DAS (dis-assembly) order.
 This is explained in [F10.0](#rule-F10.0)<!-- was Chapter 9 -->, Assembly.
 Dis-assembled factory units go into storage.
@@ -2419,25 +2419,25 @@ A combine (COM) order combines two factory groups into one; both groups must be 
 <a id="rule-H3.6"></a>
 ### H3.6 Retooling
 
-A FCT group may be changed from building one item to building another, but it must retool first with a BCH, RETL order, with the following exceptions.
+A FACT group may be changed from building one item to building another, but it must retool first with a BCH, RETL order, with the following exceptions.
 
 * In the case of switching from making an item to making research points, no retool order is needed (switching from research to an item *does* require a retool order.)
 
 * Also, in the case of switching from one type of structural unit (STUN, STUL, STUS) to another, no retool order is needed.
-* If the FCT units in a group are occupied with WIP, they will not retool, even though the BCH, RETL order is accepted and acknowledged on the printout.
-  As the FCT are freed from WIP, they retool themselves.
+* If the FACT units in a group are occupied with WIP, they will not retool, even though the BCH, RETL order is accepted and acknowledged on the printout.
+  As the FACT are freed from WIP, they retool themselves.
 
-In order to determine the number of FCT that will be retooled on a given turn, determine the total mass of all the items in WIP as if they were complete, and divide by 20 times the TL of the FCT.
-Subtract this result from the quantity of FCT in the FCT group; the result is the number of FCT that will be retooled on a given turn.
-A FCT group must retool when changing to building the same item at a higher TL.
-Retooling uses 0.01 METS and 0.01 NMTS per FCT in the group being retooled.
-Retooled FCT's are shown in WIP.
+In order to determine the number of FACT that will be retooled on a given turn, determine the total mass of all the items in WIP as if they were complete, and divide by 20 times the TL of the FACT.
+Subtract this result from the quantity of FACT in the FACT group; the result is the number of FACT that will be retooled on a given turn.
+A FACT group must retool when changing to building the same item at a higher TL.
+Retooling uses 0.01 MTL and 0.01 NMTL per FACT in the group being retooled.
+Retooled FACT's are shown in WIP.
 
 <a id="rule-H3.7"></a>
 ### H3.7 Research and TL
 
-A factory group ordered to build research (RSCH) will build one research point per FCT times the FCT's TL per game year, divided by four for the amount per turn.
-A FCT group may not build any item of a higher TL than that of the s/c it is in.
+A factory group ordered to build research (RSCH) will build one research point per FACT times the FACT's TL per game year, divided by four for the amount per turn.
+A FACT group may not build any item of a higher TL than that of the s/c it is in.
 RSCH and TL's are further explained in subject [J](#j-technology-and-research)<!-- was Chapter 10 -->, Technological Levels.
 
 <a id="rule-H3.8"></a>
@@ -2457,24 +2457,25 @@ But ordering a type with *greater* enclosure capacity per unit than the appropri
 <a id="rule-H3.9"></a>
 ### H3.9 Shortages and Factory Group Numbers
 
-FCT groups will move as many items through its WIP as there are resources, labor, and fuel to do so.
+FACT groups will move as many items through its WIP as there are resources, labor, and fuel to do so.
 The computer processes the manufacturing group by group in *group number order*, and within each group starting with WIP 3/4, WIP 1/2, then WIP 1/4.
 When the shortage occurs, the computer will cease to work on the portion it was processing, and not do any more processing.
-If the shortage has been taken care of on the next turn, the computer will process as normal, starting with FCT group #1, WIP 3/4.
+If the shortage has been taken care of on the next turn, the computer will process as normal, starting with the lowest-numbered FACT group, WIP 3/4.
 If the shortage still exists, processing will not be done.
-There is no way for a player to change a particular FCT group number of a FCT group to another number; if there is a shortage, the player should issue a BCH, SHT to his less necessary FCT groups.
-Although the player can not assign a group # to a FCT group when it is initially assembled, he can determine what number the computer assigns to it.
-The computer assigns #1 to the first FCT group ASM order it encounters, #2 to the second and so on.
-If a player DAS's a FCT group, that number remains unassigned until a new ASM is ordered.
+There is no way for a player to change a particular FACT group number of a FACT group to another number; if there is a shortage, the player should issue a BCH, SHT to his less necessary FACT groups.
+The computer assigns the group numbers; the player can not choose one.
+A s/c's FARM, MINE, and FACT groups share one run of group numbers.
+Each new group gets the next number, higher than any the s/c has given out, in the order the computer encounters the ASM orders.
+A number is never used again, even after its group has been DAS'd.
 
 <a id="rule-H3.10"></a>
 ### H3.10 Automation
 
-Automation units (AUT) are used to replace USK for FRM's, MIN's, and FCT's.
-The AUT's TL squared times the number of AUT's being used equals the number of USKs being replaced.
-AUT's are not assigned to specific production groups, but are counted as USK labor available to any production group in the s/c.
-If a colony, for instance, has 1,000 FRM's, 10,000 MIN's, and one 50,000 factory unit group, it will need 183,000 USK or the equivalent in AUT (which could be 183,000 AUT-1 or 45,750 AUT-2 or 7,320 AUT-5, etc.).
-AUT's use no fuel.
+Automation units (AUTO) are used to replace USK for FARM's, MINE's, and FACT's.
+The AUTO's TL squared times the number of AUTO's being used equals the number of USKs being replaced.
+AUTO's are not assigned to specific production groups, but are counted as USK labor available to any production group in the s/c.
+If a colony, for instance, has 1,000 FARM's, 10,000 MINE's, and one 50,000 factory unit group, it will need 183,000 USK or the equivalent in AUTO (which could be 183,000 AUTO-1 or 45,750 AUTO-2 or 7,320 AUTO-5, etc.).
+AUTO's use no fuel.
 
 # J. Technology and Research
 
@@ -2487,27 +2488,27 @@ A ship's TL determines the highest TL that the ship can transfer.
 A s/c's TL does not limit the TL of the items existing in the s/c's themselves.
 When a s/c is conquered, it always loses one TL, but TL's never decrease to less than one.
 
-    A conquered colony continues manufacturing items at the same TL, but if any change was ordered, or if more FCT were assembled into the group, the units made would be at the lesser TL.
+    A conquered colony continues manufacturing items at the same TL, but if any change was ordered, or if more FACT were assembled into the group, the units made would be at the lesser TL.
 
 The s/c's TL is not referred to on the player's turnsheet, but is shown in the Vital Statistics portion of each s/c report on the printout.
 
 <a id="rule-J2.0"></a>
 ## J2.0 TL of Factories
 
-A FCT's TL is not determined by a s/c's TL, and it does not affect the TL of an item being manufactured, it only affects the FCT's output.
-For instance, a TL-5 colony can have TL-9 FCT's it bought, but they can not manufacture items of a TL higher than 5.
+A FACT's TL is not determined by a s/c's TL, and it does not affect the TL of an item being manufactured, it only affects the FACT's output.
+For instance, a TL-5 colony can have TL-9 FACT's it bought, but they can not manufacture items of a TL higher than 5.
 
     Reminder: Ships do not have functioning factories.
 
-This colony is able to sell or transfer the FCT-9's, but it would only be able to sell or transfer a technological level of 5.
+This colony is able to sell or transfer the FACT-9's, but it would only be able to sell or transfer a technological level of 5.
 More about transferring and selling TL's and RSCH in [J4.0](#rule-J4.0)<!-- was section 10.4 -->, IMPROVING TL.
 
 <a id="rule-J3.0"></a>
 ## J3.0 Unit TL
 
-Once a unit has been manufactured, (any unit - even FCT's), its TL can not be changed.
-Therefore, if a s/c wishes to upgrade the TL of its FCT's, ASW, etc, it must manufacture, buy or trade for the higher-TL items, and decide what should be done with the lower-TL items.
-As stated before, the TL of a FCT or a s/c does not limit the TL of the items in the s/c, a TL-1 s/c can have TL-5 FCT's, TL-8 TPT's, etc.
+Once a unit has been manufactured, (any unit - even FACT's), its TL can not be changed.
+Therefore, if a s/c wishes to upgrade the TL of its FACT's, AWPN, etc, it must manufacture, buy or trade for the higher-TL items, and decide what should be done with the lower-TL items.
+As stated before, the TL of a FACT or a s/c does not limit the TL of the items in the s/c, a TL-1 s/c can have TL-5 FACT's, TL-8 TRNS's, etc.
 
 All units have a TL except for the following:
 
@@ -2516,18 +2517,18 @@ All units have a TL except for the following:
 * FOOD
 * GOLD
 * FUEL
-* METS
-* NMTS
-* MTSP
+* MTL
+* NMTL
+* CSUP
 * STUN
 * STUL
 * STUS
 
 *A unit's TL is part of the unit's name.*
 
-SEN-1 are very different from SEN-10 in mass, fuel consumption, and capabilities.
+SENS-1 are very different from SENS-10 in mass, fuel consumption, and capabilities.
 When writing orders, the player must always include the TL on items that need it; otherwise his orders may fail to be processed.
-A player is not restricted to having one TL per item; that is, he could have SEN-1, SEN-5, and SEN-10 all in the same s/c at the same time.
+A player is not restricted to having one TL per item; that is, he could have SENS-1, SENS-5, and SENS-10 all in the same s/c at the same time.
 
 <a id="rule-J4.0"></a>
 ## J4.0 Improving TL
@@ -2539,9 +2540,9 @@ There are three ways to do so.
 ### J4.1 Research Points
 
 One way to improve a s/c's TL is to build the required amount of research points necessary to raise it.
-A build change - research - order (BCH, RSCH) will cause a FCT group to change from manufacturing an item to building RSCH.
-A FCT producing RSCH will build .25 times its TL in RSCH per turn.
-The FCT group will complete its work-in-process before beginning the research.
+A build change - research - order (BCH, RSCH) will cause a FACT group to change from manufacturing an item to building RSCH.
+A FACT producing RSCH will build .25 times its TL in RSCH per turn.
+The FACT group will complete its work-in-process before beginning the research.
 RSCH may be transferred or sold, decreasing the total number of RSCH accumulated.
 RSCH accumulate in the s/c until the player assembles them with an ASM order naming the TL he wants, such as 75, ASM, TL-3 ([S6.1](#rule-S6.1)).
 The ASM order is processed in the assembly stage, but the TL is raised during the production stage ([B3.17.6](#rule-B3.17.6)), so RSCH built that turn are counted.
@@ -2565,7 +2566,7 @@ The quantities of RSCH listed below for each level are the number required to ge
 | 10    | 25,600,000 |
     
 A REC order is not written by the recipient of a RSCH transfer.
-Note that METS and NMTS are not required for the production of RSCH.
+Note that MTL and NMTL are not required for the production of RSCH.
 
 <a id="rule-J4.2"></a>
 ### J4.2 Transferring RSCH
@@ -2575,7 +2576,7 @@ A s/c transferring RSCH will have that number deducted from the total RSCH accum
 
 When a s/c's established, it automatically starts out with TL-1, whether the establishing s/c has a higher TL or not.
 
-TFR'ing RSCH requires TPT's, but RSCH do not use up any TPT capacity (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
+TFR'ing RSCH requires TRNS's, but RSCH do not use up any TRNS capacity (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
 
 <a id="rule-J4.3"></a>
 ### J4.3 Buying and Selling RSCH
@@ -2588,8 +2589,8 @@ A s/c selling RSCH will have that number deducted from the total RSCH accumulate
 <a id="rule-K1.0"></a>
 ## K1.0 Transfers and Pick-Ups
 
-A transfer (TFR) order moves units from one s/c to another, using transports (TPT's) of the sending s/c.
-A pick-up (PUP) order moves units from one s/c to another, using TPT's of the receiving s/c.
+A transfer (TFR) order moves units from one s/c to another, using transports (TRNS's) of the sending s/c.
+A pick-up (PUP) order moves units from one s/c to another, using TRNS's of the receiving s/c.
 Any item may be TFR'd or PUP'd if both s/c's belong to the same Ruler, or a Ruler and his Regent, or two Regents belonging to the same Ruler.
 If a s/c belongs to another Ruler of the same race, or his Regent, any item may be TFR'd to it if the receiving s/c writes a receive (REC) order, and any item may be PUP'd from it if that s/c writes an allow pick-up (APU) order.
 If a s/c belongs to a Ruler of another race, or his Regent, only gold may be TFR'd to it, and nothing may be PUP'd from it.
@@ -2601,30 +2602,30 @@ Group G spies may be TFR'd into any s/c, and PUP'd back out of it, to conduct es
 <a id="rule-K2.0"></a>
 ## K2.0 Transports
 
-PUP's and TFR's are done by transports (TPT's).
+PUP's and TFR's are done by transports (TRNS's).
 They also do surveys, ADN's, STP's, jettisons, and move troops in combat.
-TPT's are not capable of making trips between planets.
+TRNS's are not capable of making trips between planets.
 They are only used to move goods and people between s/c's at the same orbit.
-TPT's have their own life support capabilities; it is not necessary to provide food or LFS for POP being moved in TPT's.
+TRNS's have their own life support capabilities; it is not necessary to provide food or LFSU for POP being moved in TRNS's.
 
-When not in combat, 10 TPT's can be operated by 1 PRO.
-When used in combat, TPT's are operated by the SLD's they carry.
+When not in combat, 10 TRNS's can be operated by 1 PRO.
+When used in combat, TRNS's are operated by the SLD's they carry.
 
 <a id="rule-K2.1"></a>
 ### K2.1 Transport Capacity
 
-TPT capacity is the mass units a TPT can carry.
-To determine TPT capacity, a player multiplies the TPT's TL squared times 200.
-For instance, a TPT-4 will have a capacity of 3,200 MU.
-RSCH TFR's do not use up TPT capacity.
+TRNS capacity is the mass units a TRNS can carry.
+To determine TRNS capacity, a player multiplies the TRNS's TL squared times 200.
+For instance, a TRNS-4 will have a capacity of 3,200 MU.
+RSCH TFR's do not use up TRNS capacity.
 
 <a id="rule-K2.2"></a>
 ### K2.2 Transferring Transports
 
-TPT's being transferred or picked up simply move themselves from one s/c to another.
-They are not put inside another TPT, and therefore do not use any TPT capacity, nor do they carry anything inside them.
-The TPT's do all their work before being TFR'd or PUP'd.
-The s/c that has the TPT's to start with gets full use of them on the turn they are TFR'd; the new owner will not be able to use them until the next turn.
+TRNS's being transferred or picked up simply move themselves from one s/c to another.
+They are not put inside another TRNS, and therefore do not use any TRNS capacity, nor do they carry anything inside them.
+The TRNS's do all their work before being TFR'd or PUP'd.
+The s/c that has the TRNS's to start with gets full use of them on the turn they are TFR'd; the new owner will not be able to use them until the next turn.
 
 <a id="rule-K3.0"></a>
 ## K3.0 Rebel Pick-Ups and Transfers
@@ -2640,7 +2641,7 @@ See [N1.0](#rule-N1.0)<!-- was Chapter 18 -->, Rebellion, for further details re
 If the X option is used, only loyal POP will transfer.
 The X option is used in TFR's only, *never in any other order*.
 In order to TFR loyal POP only, change the last letter of the POP to X.
-For example, PRO would be PRX, SLD would be SLX, CNW would be CNX, etc.
+For example, PRO would be PRX, SLD would be SLX, CWRK would be CNX, etc.
 
 <a id="rule-K3.2"></a>
 ### K3.2 TFR's of Population
@@ -2659,7 +2660,7 @@ This TFR order TFR's 500 PRO-3 to s/c 398 without rebels.
 Shortages of fuel or PRO's will result in all or part of the TFR or PUP orders failing.
 TFR's and PUP's are done in the order in which they are listed on the turnsheet; they are done one by one until stopped by a shortage.
 
-    NOTE: NEVER WRITE MORE THAN ONE TFR OR PUP ORDER FOR THE SAME ITEM TO THE SAME S/C ON THE SAME TURN, ie: 30, TFR, 40,000, METS, [26]. and 30, TFR, 80,000, METS, [26].
+    NOTE: NEVER WRITE MORE THAN ONE TFR OR PUP ORDER FOR THE SAME ITEM TO THE SAME S/C ON THE SAME TURN, ie: 30, TFR, 40,000, MTL, [26]. and 30, TFR, 80,000, MTL, [26].
 
 This is very important as doing this can not only cause the order to abort, but can cause other errors in the turn, as well.
 If the receiving s/c lacks the enclosure capacity to house the new items, it receives only the whole units that fit, and the rest stay in the s/c they came from ([F3.2.1](#rule-F3.2.1)).
@@ -2669,7 +2670,7 @@ If the receiving s/c lacks the enclosure capacity to house the new items, it rec
 
 RSCH are transferred, but are never picked up.
 REC orders are unnecessary for them.
-They do not use up any TPT capacity.
+They do not use up any TRNS capacity.
 All other rules concerning TFR's apply to them.
 
 <a id="rule-K6.0"></a>
@@ -2701,8 +2702,8 @@ At that point, the market report will show up in his printout for that colony.
 ## L2.0 How the Market Works
 
 The market sells items from a stockpile of items it collects.
-At the beginning of the game, it only has NMTS, METS, and FUEL in its stockpile, but as it buys items from the players, those items will be for sale.
-All units in the game, even population units, can be sold, except for: SPYS and TL's.
+At the beginning of the game, it only has NMTL, MTL, and FUEL in its stockpile, but as it buys items from the players, those items will be for sale.
+All units in the game, even population units, can be sold, except for: SPY and TL's.
 Only NON and UNA can be sold; assembled items must be DAS'd first before they can be sold.
 The units are sold on a highest-bidder-come-first basis.
 If more items are bought by the market than sold, the surplus is added to the market's stockpile of these items.
@@ -2745,7 +2746,7 @@ A player sells items to the market with sell (SEL) orders, in which no price is 
 A survey (SUR) will report the number of natural resource deposits on a planet, their deposit location numbers, the resource each deposit contains, quantity of resource per deposit, the yield of each deposit ([A4.3](#rule-A4.3)), and the planet's habitability number.
 A survey also reports the number of TL-1 farms assembled and the total population of the open colonies there.
 A SUR can only be made if the planet and s/c are in the same orbit.
-A SUR is ordered with a survey (SUR) order, is completed in one turn, and requires one TPT and one PRO to do it.
+A SUR is ordered with a survey (SUR) order, is completed in one turn, and requires one TRNS and one PRO to do it.
 
 <a id="rule-M2.0"></a>
 ## M2.0 Probes
@@ -2797,16 +2798,16 @@ The planet types reported are only for planets in the solar systems of the star 
 <a id="rule-M3.0"></a>
 ## M3.0 Sensors
 
-A sensor (SEN) is the instrument that performs a probe.
-The number of probes a s/c can perform per turn is limited to the number of SEN's it has assembled x their individual TL's.
-The ratio of SEN's to s/c's probed is one to one; the ratio of sensors to orbits probed is one to one.
+A sensor (SENS) is the instrument that performs a probe.
+The number of probes a s/c can perform per turn is limited to the number of SENS's it has assembled x their individual TL's.
+The ratio of SENS's to s/c's probed is one to one; the ratio of sensors to orbits probed is one to one.
 There is no magnitude for orbit and s/c probes.
-The number of SEN's x the SEN's TL determines the maximum magnitude of a probe (up to 10).
-A magnitude 10 probe would use 10 SEN-1 or 2 SEN-5 or 1 SEN-10, for example.
-The total mass of a SEN is 3,000 times its TL.
-The total fuel used per turn per SEN is its TL divided by 20.
-As long as a s/c has one POP, of any type, that is considered enough to run the SEN.
-If a s/c has 3 SEN-5, it would be able to execute 1 magnitude 5 system probe, 5 orbit orbit probes, and 5 s/c probes; or 1 magnitude 10 system probe and 5 s/c probes or any other combination that uses 15 probes.
+The number of SENS's x the SENS's TL determines the maximum magnitude of a probe (up to 10).
+A magnitude 10 probe would use 10 SENS-1 or 2 SENS-5 or 1 SENS-10, for example.
+The total mass of a SENS is 3,000 times its TL.
+The total fuel used per turn per SENS is its TL divided by 20.
+As long as a s/c has one POP, of any type, that is considered enough to run the SENS.
+If a s/c has 3 SENS-5, it would be able to execute 1 magnitude 5 system probe, 5 orbit orbit probes, and 5 s/c probes; or 1 magnitude 10 system probe and 5 s/c probes or any other combination that uses 15 probes.
 
 # N. Espionage and Rebellion
 
@@ -2852,7 +2853,7 @@ The larger the quantity of rebels, the more rebel soldiers will be "recruited" e
 ### N1.2 Decreases
 
 If a s/c is captured by a foreign power, 65% of the rebels in that s/c become loyal.
-Rebels and rebel soldiers also decrease when the standard of living rises, and when they are converted by group B SPYS back into loyal POP units.
+Rebels and rebel soldiers also decrease when the standard of living rises, and when they are converted by group B SPY back into loyal POP units.
 A s/c's group B spies converts 1.5 rebels or rebel soldiers per turn.
 Visiting group B spies convert only one rebel or rebel soldier per turn.
 The group B spies convert the rebel soldiers first, and when done, convert rebels.
@@ -2863,16 +2864,16 @@ The group B spies convert the rebel soldiers first, and when done, convert rebel
 10% of all rebels are considered activists and will fight if a rebellion takes place.
 All rebel soldiers will fight if a rebellion takes place.
 A rebellion will take place if the combined total of rebels and rebel soldiers is equal to 60% of the total population of the s/c.
-Rebel soldiers will attempt to steal ASC and ASW for the rebellion.
+Rebel soldiers will attempt to steal ACFT and AWPN for the rebellion.
 The number stolen is roughly proportional to the percentage of soldiers that are rebel soldiers.
-The rebellion proceeds in combat, with the activists and rebel soldiers treated as invaders, and loyal soldiers and MRB's defending.
+The rebellion proceeds in combat, with the activists and rebel soldiers treated as invaders, and loyal soldiers and MRBT's defending.
 
 <a id="rule-N1.4"></a>
 ### N1.4 Aftermath
 
 If the rebels and rebel soldiers lose, then 70% of their survivors become loyal.
 All losing SLD and rebel soldier survivors become UEM's.
-Losing MRB are not sabotaged, as they are in other battles ([D9.6](#rule-D9.6)); they go to the victor.
+Losing MRBT are not sabotaged, as they are in other battles ([D9.6](#rule-D9.6)); they go to the victor.
 If the rebels and rebel soldiers win, then the number of rebels and rebel soldiers is reduced to 0, as they are now considered to be loyal to the new regime.
 The s/c then is given to the Ruler with the most group E spies in the colony.
 If that Ruler or one of his Regents was the former owner, then the Ruler with the second highest number of E spies gets control.
@@ -2894,54 +2895,54 @@ If he wants to support the rebels in 99, he would write: 95, OTS, 99, 0.
 <a id="rule-N2.1"></a>
 ### N2.1 General Rules
 
-Espionage is performed by spy units (SPYS) and can be conducted in either ships or colonies.
+Espionage is performed by spy units (SPY) and can be conducted in either ships or colonies.
 Each spy unit is composed of one SLD and one PRO.
 There can be only one type of espionage activity performed by a spy unit per turn, and there can be no more than one of each type of spy group per s/c per turn.
-(Rulers can not assign the same 100 SPYS to be in both group B and group E on the same turn, and they cannot assign two group D spy groups to the same s/c.)
-SPYS may not be sold as spies, but may be dis-assembled into PRO's and SLD's and then sold.
-SPYS may be killed, but they will never desert, rebel, or surrender.
-SPYS use up food, CNGD's, and life support, whether in the home s/c or in a foreign s/c.
-(SPYS in a foreign s/c steal their food and pay from the host's s/c.
+(Rulers can not assign the same 100 SPY to be in both group B and group E on the same turn, and they cannot assign two group D spy groups to the same s/c.)
+SPY may not be sold as spies, but may be dis-assembled into PRO's and SLD's and then sold.
+SPY may be killed, but they will never desert, rebel, or surrender.
+SPY use up food, CNGD's, and life support, whether in the home s/c or in a foreign s/c.
+(SPY in a foreign s/c steal their food and pay from the host's s/c.
 They do this by forging ration tickets and vouchers.
 The host's death, pay, and ration rates apply).
 
 Espionage activities are separated into various functions, which are performed by a particular group.
-Assigning SPYS is done with a SPM order; which causes them to start functioning immediately.
-SPYS in any group may be moved with a SPM order into any other group, as long as both groups are in the same s/c.
+Assigning SPY is done with a SPM order; which causes them to start functioning immediately.
+SPY in any group may be moved with a SPM order into any other group, as long as both groups are in the same s/c.
 All groups, other than group G which is non-operational, are listed as follows:
 
 <a id="rule-N2.2"></a>
-### N2.2 Group G SPYS
+### N2.2 Group G SPY
 
 To form a spy group, the player writes an ASM order.
 When a spy group is assembled, it automatically becomes group G spy group.
-Group G SPYS may be viewed as a pool from which one draws spies for any other group; they perform no espionage activity in themselves.
+Group G SPY may be viewed as a pool from which one draws spies for any other group; they perform no espionage activity in themselves.
 Only group G spies, however, can be transferred to, or picked up from, another s/c.
-In order for SPYS to function, they must be physically at the s/c in which they are to work.
-To get SPYS to a foreign s/c, one must transfer them there with a TFR order.
-(If the SPYS are not group G spies, the TFR will not work; they must be changed from the group they are in to group G with a SPM order).
-SPYS being TFR'd to another s/c will not enter if the structural limitations would be exceeded.
-SPYS are still controlled by their Ruler regardless of the s/c they are in.
+In order for SPY to function, they must be physically at the s/c in which they are to work.
+To get SPY to a foreign s/c, one must transfer them there with a TFR order.
+(If the SPY are not group G spies, the TFR will not work; they must be changed from the group they are in to group G with a SPM order).
+SPY being TFR'd to another s/c will not enter if the structural limitations would be exceeded.
+SPY are still controlled by their Ruler regardless of the s/c they are in.
 
-SPYS being TFR'd leave their TPT's just outside the s/c.
-The SPYS will be shot at but not their TPT's, unless the owner of the s/c is their Ruler.
+SPY being TFR'd leave their TRNS's just outside the s/c.
+The SPY will be shot at but not their TRNS's, unless the owner of the s/c is their Ruler.
 
-On the turn following the TFR of the group G SPYS, the player may assign the G SPYS to various functions.
-He does this by assigning all or part of the G SPYS to various spy groups, each of which has a separate function, using SPM orders.
+On the turn following the TFR of the group G SPY, the player may assign the G SPY to various functions.
+He does this by assigning all or part of the G SPY to various spy groups, each of which has a separate function, using SPM orders.
 
-(Of course, a Ruler may use some SPYS within his home colony.
-These SPYS he would not TFR, but simply assign to the appropriate spy group).
-When the SPYS that are in the foreign s/c have completed their task, and the Ruler is ready to bring them home, he moves them back into group G (with a SPM order), and then issues a pick-up order.
-(SPYS cannot be TFR'd from a s/c that does not belong to their Ruler.
+(Of course, a Ruler may use some SPY within his home colony.
+These SPY he would not TFR, but simply assign to the appropriate spy group).
+When the SPY that are in the foreign s/c have completed their task, and the Ruler is ready to bring them home, he moves them back into group G (with a SPM order), and then issues a pick-up order.
+(SPY cannot be TFR'd from a s/c that does not belong to their Ruler.
 Nor can they be picked up by a s/c that does not belong to their Ruler).
-The SPYS leave the s/c, being shot at, (with the same rules and casualty percentages that apply to entering a foreign s/c), and meet their TPT's outside the s/c.
-The TPT's then bring the SPYS to their colony.
-The SPYS may not be moved from one foreign s/c to another foreign s/c directly.
+The SPY leave the s/c, being shot at, (with the same rules and casualty percentages that apply to entering a foreign s/c), and meet their TRNS's outside the s/c.
+The TRNS's then bring the SPY to their colony.
+The SPY may not be moved from one foreign s/c to another foreign s/c directly.
 
 <a id="rule-N2.2.1"></a>
 #### N2.2.1 Casualties
 
-The following formula determines the percentage of SPYS caught and shot when entering and leaving a foreign s/c.
+The following formula determines the percentage of SPY caught and shot when entering and leaving a foreign s/c.
 
 | S/C Type | Percent Caught |
 |----------|----------------|
@@ -2953,33 +2954,33 @@ The following formula determines the percentage of SPYS caught and shot when ent
 Casualties less than one will be rounded up to one.
 
 <a id="rule-N2.3"></a>
-### N2.3 Group A SPYS
+### N2.3 Group A SPY
 
-These SPYS are counter-intelligence spies and are usually used in their Ruler's own s/c's.
+These SPY are counter-intelligence spies and are usually used in their Ruler's own s/c's.
 They inform the player of the number of rebels and rebel soldiers in his s/c's.
 Although only one group A spy unit is necessary per s/c to give this information, it is a good idea to have more in case some are killed.
 Group A spies are also used in enemy s/c's, for intelligence.
 A knowledge of the rebel condition in the enemy's s/c's can be very valuable.
 
 <a id="rule-N2.4"></a>
-### N2.4 Group B SPYS
+### N2.4 Group B SPY
 
-These SPYS convert rebels and rebel soldiers back into loyal population units.
+These SPY convert rebels and rebel soldiers back into loyal population units.
 Each group B spy unit can convert (rebel soldiers first, then rebels when all the rebel soldiers have been converted) 1.5 per turn in a s/c owned by their Ruler or his Regents; in foreign s/c's, they convert 1 per turn.
 
 <a id="rule-N2.5"></a>
-### N2.5 Group C SPYS
+### N2.5 Group C SPY
 
-These SPYS will report to their Ruler the number of other spies in the ship or colony (either foreign or domestic) where they are located.
+These SPY will report to their Ruler the number of other spies in the ship or colony (either foreign or domestic) where they are located.
 Their report will designate these foreign spies by group number and the number of the s/c from which they originated.
 Only one spy unit per s/c is required for this function but more may be necessary in case of assassinations.
 
 <a id="rule-N2.6"></a>
-### N2.6 Group D SPYS
+### N2.6 Group D SPY
 
-These SPYS are used to assassinate other spies.
+These SPY are used to assassinate other spies.
 They may be used in either domestic or foreign s/c's.
-Group D spies have targets; they can be told which group of SPYS to kill and/or which Ruler's spies are to be killed.
+Group D spies have targets; they can be told which group of SPY to kill and/or which Ruler's spies are to be killed.
 Examples of this are shown in the SPM orders in [S11.1](#rule-S11.1)<!-- was Chapter 17, Writing Orders -->.
 
 <a id="rule-N2.6.1"></a>
@@ -2987,25 +2988,25 @@ Examples of this are shown in the SPM orders in [S11.1](#rule-S11.1)<!-- was Cha
 
 Attacking group D spies will destroy a number of defending spies equal to one third of the attacker's number.
 The number of attacking spies lost is equal to one half of the defenders killed.
-For example: if 21 SPYS attacked 12 SPYS, 3 attacking SPYS and 7 defending SPYS would be lost.
+For example: if 21 SPY attacked 12 SPY, 3 attacking SPY and 7 defending SPY would be lost.
 Fractions are rounded down.
 Domestic group D spies always strike first.
 
 <a id="rule-N2.7"></a>
-### N2.7 Group E SPYS
+### N2.7 Group E SPY
 
-These SPYS incite rebellion, and are always used in foreign s/c's.
+These SPY incite rebellion, and are always used in foreign s/c's.
 Each group E spy unit can convert one loyal population unit to one rebel unit.
 More about this is covered in [N1.0](#rule-N1.0)<!-- was Chapter 18 -->, Rebellion.
 
 <a id="rule-N2.8"></a>
-### N2.8 Group F SPYS
+### N2.8 Group F SPY
 
-Group F SPYS can obtain for their Ruler a part of a foreign s/c's report.
+Group F SPY can obtain for their Ruler a part of a foreign s/c's report.
 Reminder: the F spies have to be *at* that s/c to get that information.
 Whether the spies *can* obtain any portion of a report is determined by the following formula:
 
-| PERCENTAGE OF FOREIGN POP COMPOSED OF F SPYS | CHANCE OF SUCCESS IN OBTAINING DATA |
+| PERCENTAGE OF FOREIGN POP COMPOSED OF F SPY  | CHANCE OF SUCCESS IN OBTAINING DATA |
 |----------------------------------------------|-------------------------------------|
 | 0.00001% to 0.00009%                         | 10%                                 |
 | 0.0001% to 0.00049%                          | 20%                                 |
@@ -3035,7 +3036,7 @@ Each section is identified by its own target number, as shown below:
 | 6             | Transfer and market report         |
 
 Using the random selection, there is a 16.67% chance of getting any section.
-If the group F SPYS are assigned to a particular target (section of the report), then the chances of getting that particular section are increased to 33.4% and decreased to 13.33% for the other sections.
+If the group F SPY are assigned to a particular target (section of the report), then the chances of getting that particular section are increased to 33.4% and decreased to 13.33% for the other sections.
 
 <a id="rule-N2.9"></a>
 ### N2.9 Regents
@@ -3087,7 +3088,7 @@ They may be addressed to members of the same race, or to s/c's located at the sa
 Most of the printout is in easy to understand terms, with the exceptions of the abbreviations listed in the Glossary, the error messages, orbit probes, and the three headings shown below.
 
 1. Space Available is the number of additional volume units a s/c can hold.
-2. Transport Not Used is the total unused carrying capacity of all the TPT's in the s/c measured in mass units.
+2. Transport Not Used is the total unused carrying capacity of all the TRNS's in the s/c measured in mass units.
 3. Standard of Living is the s/c's standard of living (SOL) for the turn, as calculated each quarter by the rules.
 4. *Orbit Probes:*
 
@@ -3114,20 +3115,20 @@ The error code at the end of a failed order explains why the order failed.
 - E01: Format error.
   This error also includes mis-spellings and undefined errors.
 - E02: Quantity error.
-  E02 may mean lack of fuel for TPT's involved, but in most cases refers to the quantity of the object of the order.
+  E02 may mean lack of fuel for TRNS's involved, but in most cases refers to the quantity of the object of the order.
 - E03: The player does not own the s/c or planet necessary.
 - E04: The s/c does not exist.
 - E05: E5 error codes have been discontinued.
 - E06: The deposit is already being mined.
-- E07: The FCT or MIN group does not exist.
-- E08: The player already has 40 MIN groups, and can not have more.
-- E09: The FCT group cannot make the new item until the FCT's are retooled.
+- E07: The FACT or MINE group does not exist.
+- E08: The player already has 40 MINE groups, and can not have more.
+- E09: The FACT group cannot make the new item until the FACT's are retooled.
 - E10: There is no market at location of the s/c.
 - E11: There is not enough space available in the s/c to complete the order.
-- E12: The player already has 25 FCT groups, and can not have more.
+- E12: The player already has 25 FACT groups, and can not have more.
 - E13: The s/c was at the wrong orbit.
 - E14: No REC, AAN, or APU order was given.
-- E15: Insufficient TPT capacity or CNW's.
+- E15: Insufficient TRNS capacity or CWRK's.
 - E16: Permission to colonize was not granted.
 - E17: A REC, AAN, or APU order was written, but for a lesser amount.
 - E18: The planet is already controlled.
@@ -3140,38 +3141,36 @@ The error code at the end of a failed order explains why the order failed.
 The VOLUME column gives the volume units (VU) required to enclose one item, not necessarily its physical volume.
 For assembly-type items (UNA), it gives the unassembled enclosure requirement; assembled requirements are described in the footnote below and [F10.7](#rule-F10.7).
 
-| COMPONENT     | UNIT COMPOSITION METS | UNIT COMPOSITION NMTS | TOTAL MASS PER UNIT | FUEL USE PER UNIT | OUTPUT OR CAPACITY PER UNIT  | PERSONNEL REQUIREMENTS/UNIT | VOLUME    | ASSEMBLY? |
+| COMPONENT     | UNIT COMPOSITION MTL  | UNIT COMPOSITION NMTL | TOTAL MASS PER UNIT | FUEL USE PER UNIT | OUTPUT OR CAPACITY PER UNIT  | PERSONNEL REQUIREMENTS/UNIT | VOLUME    | ASSEMBLY? |
 |---------------|-----------------------|-----------------------|---------------------|-------------------|------------------------------|-----------------------------|-----------|-----------|
-| ASW           | 1xTL                  | 1xTL                  | 2xTL                | 0                 | 2xTL^2=CF                    | 1 SLD                       | 2xTL      | NON       |
-| ASC           | 3xTL                  | 2xTL                  | 5xTL                | 0.1               | 10xTL=CF                     | 1 SLD                       | 5xTL      | NON       |
-| ANM           | 2xTL                  | 2xTL                  | 4xTL                | 0                 | (2^AT÷2^MT)x.55              | none                        | 4xTL      | NON       |
-| AUT           | 2xTL                  | 2xTL                  | 4xTL                | 0                 | Replaces 1 USK xTL^2         | none                        | 2xTL      | UNA       |
+| AWPN          | 1xTL                  | 1xTL                  | 2xTL                | 0                 | 2xTL^2=CF                    | 1 SLD                       | 2xTL      | NON       |
+| ACFT          | 3xTL                  | 2xTL                  | 5xTL                | 0.1               | 10xTL=CF                     | 1 SLD                       | 5xTL      | NON       |
+| AMSL          | 2xTL                  | 2xTL                  | 4xTL                | 0                 | (2^AT÷2^MT)x.55              | none                        | 4xTL      | NON       |
+| AUTO          | 2xTL                  | 2xTL                  | 4xTL                | 0                 | Replaces 1 USK xTL^2         | none                        | 2xTL      | UNA       |
 | CNGD          | 0.2                   | 0.4                   | 0.6                 | 0                 | --                           | --                          | 0.6       | NON       |
-| ESH           | 25xTL                 | 25xTL                 | 50xTL               | 10xTL/attack      | 10xTL^2 deflected per attack | none                        | 25xTL     | UNA       |
-| EWP           | 5xTL                  | 5xTL                  | 10xTL               | 4xTL/attack       | 10xTL^2 energy/att.          | none                        | 5xTL      | UNA       |
-| FCT           | 8+TL                  | 4+TL                  | 12+(2xTL)           | 0.5xTL\*          | 5xTL MU/TN                   | varies                      | 6+TL      | UNA       |
+| ESHD          | 25xTL                 | 25xTL                 | 50xTL               | 10xTL/attack      | 10xTL^2 deflected per attack | none                        | 25xTL     | UNA       |
+| EWPN          | 5xTL                  | 5xTL                  | 10xTL               | 4xTL/attack       | 10xTL^2 energy/att.          | none                        | 5xTL      | UNA       |
+| FACT          | 8+TL                  | 4+TL                  | 12+(2xTL)           | 0.5xTL\*          | 5xTL MU/TN                   | varies                      | 6+TL      | UNA       |
 | FOOD          | --                    | --                    | 6                   | --                | Feeds 4-16 POP               | --                          | 3         | NON       |
-| FRM TL1       | 4+TL                  | 2+TL                  | 6+(2xTL)            | 0.5               | 25 FOOD/TN                   | 1 PRO + 3 USK               | 3+TL      | UNA       |
-| FRM TL2-5     | 4+TL                  | 2+TL                  | 6+(2xTL)            | 0.5xTL\*          | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
-| FRM TL6-10    | 4+TL                  | 2+TL                  | 6+(2xTL)            | 1xTL              | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
+| FARM TL1       | 4+TL                  | 2+TL                  | 6+(2xTL)            | 0.5               | 25 FOOD/TN                   | 1 PRO + 3 USK               | 3+TL      | UNA       |
+| FARM TL2-5     | 4+TL                  | 2+TL                  | 6+(2xTL)            | 0.5xTL\*          | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
+| FARM TL6-10    | 4+TL                  | 2+TL                  | 6+(2xTL)            | 1xTL              | 5xTL FOOD/TN                 | 1 PRO + 3 USK               | 3+TL      | UNA       |
 | HDRV          | 25xTL                 | 20xTL                 | 45xTL               | 40 x dist.        | 1045xTL MU lift              | none                        | 22.5xTL   | UNA       |
-| LFS           | 3xTL                  | 5xTL                  | 8xTL                | 1xTL              | TL^2= POP supported          | none                        | 4xTL      | UNA       |
+| LFSU          | 3xTL                  | 5xTL                  | 8xTL                | 1xTL              | TL^2= POP supported          | none                        | 4xTL      | UNA       |
 | STUL          | 0.05                  | 0.05                  | 0.1                 | --                | 5 STUN equivalents           | --                          | 0.05      | UNA \*\*  |
-| MRB           | 10+TL                 | 10+TL                 | 20+(2xTL)           | 0                 | TLx2= SLD replaced           | none                        | 20+(2xTL) | NON       |
-| MIN           | 5+TL                  | 5+TL                  | 10+(2xTL)           | 0.5xTL            | 25xTL MU/TN                  | 1 PRO + 3 USK               | 5+TL      | UNA       |
-| MSL           | 15xTL                 | 10xTL                 | 25xTL               | 0                 | 1 MSS/attack                 | none                        | 12.5xTL   | UNA       |
-| MSS           | 2xTL                  | 2xTL                  | 4xTL                | 0                 | 100xTL^2=MU DAM              | none                        | 4xTL      | NON       |
-| MTSP          | 0.02                  | 0.02                  | 0.04                | 0                 | 1 MTSP/SLD/TN                | --                          | 0.02      | NON       |
+| MRBT          | 10+TL                 | 10+TL                 | 20+(2xTL)           | 0                 | TLx2= SLD replaced           | none                        | 20+(2xTL) | NON       |
+| MINE          | 5+TL                  | 5+TL                  | 10+(2xTL)           | 0.5xTL            | 25xTL MU/TN                  | 1 PRO + 3 USK               | 5+TL      | UNA       |
+| MLNC          | 15xTL                 | 10xTL                 | 25xTL               | 0                 | 1 MSSL/attack                 | none                        | 12.5xTL   | UNA       |
+| MSSL          | 2xTL                  | 2xTL                  | 4xTL                | 0                 | 100xTL^2=MU DAM              | none                        | 4xTL      | NON       |
+| CSUP          | 0.02                  | 0.02                  | 0.04                | 0                 | 1 CSUP/SLD/TN                | --                          | 0.02      | NON       |
 | RSCH          | --                    | --                    | 0                   | --                | --                           | --                          | 0         |           |
-| SEN           | 1,000xTL              | 2,000xTL              | 3,000xTL            | 0.05xTL           | 1 probe/TL                   | none                        | 1500xTL   | UNA       |
+| SENS          | 1,000xTL              | 2,000xTL              | 3,000xTL            | 0.05xTL           | 1 probe/TL                   | none                        | 1500xTL   | UNA       |
 | SDRV          | 15xTL                 | 10xTL                 | 25xTL               | TL^2              | 1000xTL^2=thrust/TN          | none                        | 12.5xTL   | UNA       |
 | STUN          | 0.07                  | 0.03                  | 0.1                 | --                | 1 STUN equivalent            | --                          | 0.05      | UNA \*\*  |
 | STUS          | 0.02                  | 0.08                  | 0.1                 | --                | 20 STUN equivalents          | --                          | 0.05      | UNA \*\*  |
-| TPT           | 3xTL                  | 1xTL                  | 4xTL                | 0.1xTL^2          | 200xTL^2=MU                  | 1 PRO/10 TPT                | 4xTL      | NON       |
-| TPT/COMBAT    | 3xTL                  | 1xTL                  | 4xTL                | 0.01xTL^2         | 3xTL^2=MU/TN                 | 1 PRO/10 TPT                | 4xTL      | NON       |
-| SPYS          | --                    | --                    | 2                   | --                | --                           | --                          | 2         |           |
-| CNW           | --                    | --                    | 2                   | --                | --                           | --                          | 2         |           |
-| other POP     | --                    | --                    | 1                   | --                | --                           | --                          | 1         |           |
+| TRNS          | 3xTL                  | 1xTL                  | 4xTL                | 0.1xTL^2          | 200xTL^2=MU                  | 1 PRO/10 TRNS               | 4xTL      | NON       |
+| TRNS/COMBAT   | 3xTL                  | 1xTL                  | 4xTL                | 0.01xTL^2         | 3xTL^2=MU/TN                 | 1 PRO/10 TRNS               | 4xTL      | NON       |
+| POP           | --                    | --                    | 1                   | --                | --                           | --                          | 1         |           |
 | All resources | --                    | --                    | 1                   | --                | --                           | --                          | 0.5       | NON       |
 
 \* Farms and factories in orbiting colonies within the 5th orbit or less use 0 fuel.
@@ -3179,6 +3178,9 @@ For assembly-type items (UNA), it gives the unassembled enclosure requirement; a
 \*\* When assembled, UNA require twice their listed VU of enclosure, except STUN, STUL, and STUS, which require zero VU when assembled.
 Each unassembled STUN, STUL, or STUS requires the listed 0.05 VU of enclosure.
 The enclosure capacity provided by assembled structural units is given in STUN equivalents in the OUTPUT OR CAPACITY PER UNIT column, as defined in [F3.1.1](#rule-F3.1.1).
+
+A cadre (CWRK, SPY, or TRNE) has no mass or volume of its own.
+The population units that make it up stay in the s/c's POP and are counted there, at 1 MU and 1 VU each; a CWRK or SPY is two of them.
 
 # S. Orders
 
@@ -3240,11 +3242,11 @@ And:
 <a id="rule-S2.4"></a>
 ### S2.4 Race Numbers and TL Numbers
 
-All POP's, except for spies, *must* have their race number attached, as: CNW-1 or SLD-3 or PRO-2.
-Spies are simply listed as SPYS.
+All POP's, except for spies, *must* have their race number attached, as: CWRK-1 or SLD-3 or PRO-2.
+Spies are simply listed as SPY.
 Race numbers are NOT used in PAY orders, however.
-Non-population units, (except for consumable units which have four letters each, such as CNGD, NMTS, STUN, and except for TL) *must* have their TL numbers attached.
-Examples: TPT-1, SEN-4, ASC-6, AUT-8, FCT-5.
+Non-population units, (except for consumable units which have four letters each, such as CNGD, NMTL, STUN, and except for TL) *must* have their TL numbers attached.
+Examples: TRNS-1, SENS-4, ACFT-6, AUTO-8, FACT-5.
 
 <a id="rule-S2.5"></a>
 ### S2.5 Lists
@@ -3267,18 +3269,18 @@ RACE #2      SIGNATURE:                      PLAYER ID #22    ACCT #0353
 
 
 22, DAS, 60,000, STUN.
-22, TFR, 1E6, MSS-1, [24].
-22, PUP, 2E6, NMTS, [24].
+22, TFR, 1E6, MSSL-1, [24].
+22, PUP, 2E6, NMTL, [24].
 22, TFR, 100,000, FUEL, [295].
 
 22, PUP, 3, M, [295].
-800, SPYS.
-100, CNW-1.
-2E5, LFS-2.
+800, SPY.
+100, CWRK-1.
+2E5, LFSU-2.
 
 22, SPM, 1, G, A.
 25, SPM, 1E3, G, E.
-209, TFR, 100,000, METS, [22].
+209, TFR, 100,000, MTL, [22].
 209, MOV, (0,0,0,1,6).
 
 209, PAY, .4, PRO.
@@ -3314,31 +3316,31 @@ will have more STUL for sale next turn. Signed.
 <a id="rule-S4.4"></a>
 ### S4.4 Pre-Maneuver Energy Weapon Fire Orders (PME)
 
-- Format: S/C ID#, "PME", target s/c, % of EWP firing, target.
+- Format: S/C ID#, "PME", target s/c, % of EWPN firing, target.
 - Example: 190, PME, 210, 10, 4.
-- Notes: The PME order has s/c #190 fire 10% of its EWP at colony 210's mine groups before any ship maneuver orders are processed.
+- Notes: The PME order has s/c #190 fire 10% of its EWPN at colony 210's mine groups before any ship maneuver orders are processed.
 
 <a id="rule-S4.5"></a>
 ### S4.5 Pre-Maneuver Missile Fire Orders (PMM)
 
-- Format: S/C ID#, "PMM", target s/c, % of MSL's being fired, target.
+- Format: S/C ID#, "PMM", target s/c, % of MLNC's being fired, target.
 - Example: 191, PMM, 220, 30, 5.
-- Notes: The PMM order has colony 191 fire 30% of its MSL's at colony 220's FCT groups before any ship maneuver orders are processed.
+- Notes: The PMM order has colony 191 fire 30% of its MLNC's at colony 220's FACT groups before any ship maneuver orders are processed.
 
 <a id="rule-S4.6"></a>
 ### S4.6 After-Maneuver Energy Weapon Fire Orders (AME)
 
-- Format: S/C ID#, "AME", target s/c, % of EWP's firing, target.
+- Format: S/C ID#, "AME", target s/c, % of EWPN's firing, target.
 - Example: 191, AME, 220, 60.
-- Notes: The AME order has s/c 191 fire 60% of its EWP's at colony 220 after all ship maneuvers are processed.
+- Notes: The AME order has s/c 191 fire 60% of its EWPN's at colony 220 after all ship maneuvers are processed.
   No target was chosen (targets are optional).
 
 <a id="rule-S4.7"></a>
 ### S4.7 After-Maneuver Missile Fire Orders (AMM)
 
-- Format: S/C ID#, "AMM", target s/c, % of MSL's being fired, target.
+- Format: S/C ID#, "AMM", target s/c, % of MLNC's being fired, target.
 - Example: 190, AMM, 210, 25, 3.
-- Notes: The AMM order has colony 190 fire 25% of its MSL's at colony 210 after all ship maneuvers are processed.
+- Notes: The AMM order has colony 190 fire 25% of its MLNC's at colony 210 after all ship maneuvers are processed.
 
 <a id="rule-S4.8"></a>
 ### S4.8 Invasion Orders (INV)
@@ -3353,11 +3355,11 @@ will have more STUL for sale next turn. Signed.
   ```text
   29, INV, 30.
   25,000, SLD-1.
-  20,000, ASC-2.
-  5,000, ASW-1.
+  20,000, ACFT-2.
+  5,000, AWPN-1.
   1, END.
   ```
-- Notes: The INV order has s/c 29 invade s/c 30 using 25,000 SLD-1, 20,000 ASC-2, and 5,000 ASW-1.
+- Notes: The INV order has s/c 29 invade s/c 30 using 25,000 SLD-1, 20,000 ACFT-2, and 5,000 AWPN-1.
 
 <a id="rule-S4.9"></a>
 ### S4.9 Raid Orders (RAD)
@@ -3371,12 +3373,12 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   29, RAD, 200, GOLD.
-  10,000, MRB-2.
-  25,000, ASC-2.
-  15,000, ASW-2.
+  10,000, MRBT-2.
+  25,000, ACFT-2.
+  15,000, AWPN-2.
   1, END.
   ```
-- Notes: The RAD order has s/c 29 raid ship 200 for gold, using 10,000 MRB-2, and 25,000 ASC-2 and 15,000 ASW-2.
+- Notes: The RAD order has s/c 29 raid ship 200 for gold, using 10,000 MRBT-2, and 25,000 ACFT-2 and 15,000 AWPN-2.
 
 <a id="rule-S4.10"></a>
 ### S4.10 Defensive Troop Support Orders (DTS)
@@ -3407,12 +3409,12 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   25, OTS, 30, 29.
-  10,000, MRB-1.
-  10,000, ASC-2.
-  10,000, ASW-1.
+  10,000, MRBT-1.
+  10,000, ACFT-2.
+  10,000, AWPN-1.
   1, END.
   ```
-- Notes: The OTS order has s/c 25 assign 10,000 MRB-1, 10,000 ASC-2, and 10,000 ASW-1 to the support of colony 29 in its attack on s/c 30.
+- Notes: The OTS order has s/c 25 assign 10,000 MRBT-1, 10,000 ACFT-2, and 10,000 AWPN-1 to the support of colony 29 in its attack on s/c 30.
 
 <a id="rule-S4.12"></a>
 ### S4.12 Withdraw Orders (WTD)
@@ -3427,7 +3429,7 @@ will have more STUL for sale next turn. Signed.
   ```text
   27, WTD, 17.
   15,000, SLD-1.
-  10, ASC-1.
+  10, ACFT-1.
   1, END.
   ```
 - Notes: The WTD order has s/c 27 withdraw from s/c 17.
@@ -3473,8 +3475,8 @@ will have more STUL for sale next turn. Signed.
   5, PRO-2.
   1, SDRV-1.
   20, FOOD.
-  5, LFS-1.
-  1, SEN-1.
+  5, LFSU-1.
+  1, SENS-1.
   1000, FUEL.
   100, HDRV-1.
   20, CNGD.
@@ -3484,7 +3486,7 @@ will have more STUL for sale next turn. Signed.
   (There is never more than one colony of any type set up on any turn).
   The items were listed in the order of their importance, with the STUN heading the list.
   Only one quantity and one type of unit is allowed per line.
-  Note that the 5,000 FCT-1 will go into storage, but the 6,000 FCT-1 will be assembled and begin to make TPT-1.
+  Note that the 5,000 FACT-1 will go into storage, but the 6,000 FACT-1 will be assembled and begin to make TRNS-1.
   In order to STP a s/c for another player, the receiving player's ID# is entered after "the type of s/c to be set up" on the first line of the order.
   A s/c can be set up for a member of the same race only.
 
@@ -3501,23 +3503,23 @@ will have more STUL for sale next turn. Signed.
   ```text
   38, ADN, [205].
   1,400,000, STUS.
-  12, LFS-1.
-  10,000, FCT-1.
-  6,000, FCT-1, FCT-2.
-  1,000, FCT-1, 3.
+  12, LFSU-1.
+  10,000, FACT-1.
+  6,000, FACT-1, FACT-2.
+  1,000, FACT-1, 3.
   1, END.
   ```
 - Notes: The ADN order has colony 38 ADN to colony 205.
   As in the STP order, the items are listed in the order of their importance, with the STUS listed first, and only one quantity and one type of unit is allowed per line.
   Add-on orders always finish with **1, END**, never with any other quantity.
-  The 10,000 FCT-1 will go into storage, the 6,000 FCT-1 will be assembled and begin manufacturing FCT-2, and the 1,000 FCT-1 will be added to FCT group #3 already in colony 205.
+  The 10,000 FACT-1 will go into storage, the 6,000 FACT-1 will be assembled and begin manufacturing FACT-2, and the 1,000 FACT-1 will be added to FACT group #3 already in colony 205.
   A single s/c is still written as a list ([S2.5](#rule-S2.5)), and `[*]` can not be used in an ADN order.
 
 - Example:
   ```text
   38, ADN, [205, 206, 207, 208, 209, 210].
   1,400,000, STUS.
-  12, LFS-1.
+  12, LFSU-1.
   300, PRO-2.
   1, END.
   ```
@@ -3564,7 +3566,7 @@ will have more STUL for sale next turn. Signed.
 - Example: 45, MRG, 50.
 - Notes: The MRG order causes s/c 50 to merge into s/c 45 and be absorbed.
   After the merge, 45 exists, and 50 does not.
-  Both s/c's must be owned by the same player, the total number of FCT groups in both s/c's must total less than 25, and both s/c's must be of the same type.
+  Both s/c's must be owned by the same player, the total number of FACT groups in both s/c's must total less than 25, and both s/c's must be of the same type.
 
 <a id="rule-S5.9"></a>
 ### S5.9 Control Orders (CON)
@@ -3587,9 +3589,9 @@ will have more STUL for sale next turn. Signed.
 ### S6.1 Assembly Orders (ASM)
 
 - Format: S/C ID#, "ASM", quantity, item.
-- Example: 100, ASM, 100, SPYS.
-- Example: 100, ASM, 3E5, MSL-1.
-- Notes: This format is used to either form SPYS and CNW's, or to take items out of storage and put them to use.
+- Example: 100, ASM, 100, SPY.
+- Example: 100, ASM, 3E5, MLNC-1.
+- Notes: This format is used to either form SPY and CWRK's, or to take items out of storage and put them to use.
 
 - Format: S/C ID#, "ASM", "TL"-TL#.
 - Example: 75, ASM, TL-3.
@@ -3597,19 +3599,19 @@ will have more STUL for sale next turn. Signed.
   If s/c 75 is TL-1 with 300,000 RSCH, it rises to TL-3 and has no RSCH left.
   With 250,000 RSCH, it rises to TL-2 and keeps 150,000 RSCH, and the order fails with error E02 because TL-3 was not reached.
 
-- Format: S/C ID#, "ASM", quantity, "FCT"-TL#, item to build.
-- Example: 83, ASM, 20,000, FCT-4, LFS-1.
+- Format: S/C ID#, "ASM", quantity, "FACT"-TL#, item to build.
+- Example: 83, ASM, 20,000, FACT-4, LFSU-1.
 - Notes: This format is used to set up a new factory group.
-  S/C 83 is setting up 20,000 FCT-4 to build LFS-1.
+  S/C 83 is setting up 20,000 FACT-4 to build LFSU-1.
 
-- Format: S/C ID#, "ASM", quantity, "FCT"-TL#, FCT group #.
-- Example: 99, ASM, 10,000, FCT-3, 5.
-- Notes: This format takes FCT's from storage and adds them to an existing FCT group.
-  In this case, 10,000 FCT-3 were added to FCT group 5.
+- Format: S/C ID#, "ASM", quantity, "FACT"-TL#, FACT group #.
+- Example: 99, ASM, 10,000, FACT-3, 5.
+- Notes: This format takes FACT's from storage and adds them to an existing FACT group.
+  In this case, 10,000 FACT-3 were added to FACT group 5.
 
-- Format: S/C ID#, "ASM", quantity, "MIN"-TL#, deposit location #.
-- Example: 37, ASM, 25,000, MIN-2, 30.
-- Notes: This format takes 25,000 MIN-2 out of storage and places them on deposit #30.
+- Format: S/C ID#, "ASM", quantity, "MINE"-TL#, deposit location #.
+- Example: 37, ASM, 25,000, MINE-2, 30.
+- Notes: This format takes 25,000 MINE-2 out of storage and places them on deposit #30.
 
 <a id="rule-S6.1.1"></a>
 #### S6.1.1 Multiple ASM Orders
@@ -3622,12 +3624,12 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   75, ASM, 6, M.
-  50, SPYS.
-  60, CNW-3.
-  1,000, MSL-1.
-  500, FCT-2, 7.
-  2E6, FCT-1, TPT-1.
-  3,000, MIN-1, 28.
+  50, SPY.
+  60, CWRK-3.
+  1,000, MLNC-1.
+  500, FACT-2, 7.
+  2E6, FACT-1, TRNS-1.
+  3,000, MINE-1, 28.
   ```
 - Notes: The multiple ASM orders are used to allow a s/c to assemble more than one item in a turn without writing a separate order for each assembly.
   This is optional, though, and the player may write each order separately if he wishes.
@@ -3637,18 +3639,18 @@ will have more STUL for sale next turn. Signed.
 ### S6.2 Disassembly Orders (DAS)
 
 - Format: S/C ID#, DAS, qty, item.
-- Example: 100, DAS, 400, MSL-1.
-- Example: 100, DAS, 1,000, SPYS.
-- Notes: This format is used to either disassemble SPYS or CNW cadres, or to take items out of use and put them into storage.
+- Example: 100, DAS, 400, MLNC-1.
+- Example: 100, DAS, 1,000, SPY.
+- Notes: This format is used to either disassemble SPY or CWRK cadres, or to take items out of use and put them into storage.
 
-- Format: S/C ID#, DAS, qty, "FCT"-TL#, FCT group #.
-- Example: 99, DAS, 10,000, FCT-3, 5.
-- Notes: This format takes FCT's from an existing FCT group and puts them into storage.
-  In this case, 10,000 FCT-3 are taken from FCT group #5 and put into storage.
+- Format: S/C ID#, DAS, qty, "FACT"-TL#, FACT group #.
+- Example: 99, DAS, 10,000, FACT-3, 5.
+- Notes: This format takes FACT's from an existing FACT group and puts them into storage.
+  In this case, 10,000 FACT-3 are taken from FACT group #5 and put into storage.
 
-- Format: S/C ID#, DAS, qty, "MIN"-TL#, *group #*.
-- Example: 37, DAS, 25,000, MIN-2, 8.
-- Notes: This format takes MIN's out of an existing MIN *group* and puts them into storage.
+- Format: S/C ID#, DAS, qty, "MINE"-TL#, *group #*.
+- Example: 37, DAS, 25,000, MINE-2, 8.
+- Notes: This format takes MINE's out of an existing MINE *group* and puts them into storage.
   Please use the group #, not the deposit location.
 
 <a id="rule-S6.2.1"></a>
@@ -3658,19 +3660,19 @@ will have more STUL for sale next turn. Signed.
 - Example:
   ```text
   75, DAS, 4, M.
-  30, SPYS.
-  4E9, CNW-3.
-  1,000, MSL-2.
-  50,000, FCT-4,7.
-  3,000, MIN-6, 4.
+  30, SPY.
+  4E9, CWRK-3.
+  1,000, MLNC-2.
+  50,000, FACT-4,7.
+  3,000, MINE-6, 4.
   ```
 
 <a id="rule-S6.3"></a>
 ### S6.3 Scrap Orders (SCR)
 
 - Format: S/C ID#, "SCR", quantity, unit to be scrapped.
-- Example: 55, SCR, 1000, ASW-1.
-- Notes: The SCR order has s/c 55 convert the ASW's to resource units.
+- Example: 55, SCR, 1000, AWPN-1.
+- Notes: The SCR order has s/c 55 convert the AWPN's to resource units.
   POP's can not be scrapped.
 
 <a id="rule-S6.3.1"></a>
@@ -3685,10 +3687,10 @@ will have more STUL for sale next turn. Signed.
   ```text
   38, SCR, 5, M.
   20,000, CNGD.
-  1,000, ASW-1.
-  562, ASW-2.
-  900, MSS-1.
-  100, MTSP.
+  1,000, AWPN-1.
+  562, AWPN-2.
+  900, MSSL-1.
+  100, CSUP.
   ```
 
 The multiple SCR is used to scrap more than one item per s/c per turn.
@@ -3704,10 +3706,10 @@ This order does not require "END" to finish it.
 - Format: S/C ID#, "TFR", quantity, item, [receiving s/c ID#'s].
 - Examples:
   ```text
-  75, TFR, 1,000,000, NMTS, [74].
+  75, TFR, 1,000,000, NMTL, [74].
   75, TFR, 30,000, RSCH, [70, 71, 72, 73, 74].
   ```
-- Notes: The first TFR order has s/c 75 transfer 1,000,000 NMTS TO s/c 74; a single s/c is still written as a list ([S2.5](#rule-S2.5)).
+- Notes: The first TFR order has s/c 75 transfer 1,000,000 NMTL TO s/c 74; a single s/c is still written as a list ([S2.5](#rule-S2.5)).
   The second causes the RSCH to be transferred to 70, 71, 72, 73, and 74.
   Each s/c listed receives the full quantity, and the s/c's are supplied in the order listed ([K4.0](#rule-K4.0)).
   A s/c listed more than once is transferred to only the first time; each repeat fails with error E01, and the rest of the list is still processed.
@@ -3715,7 +3717,7 @@ This order does not require "END" to finish it.
   The items are taken from 75's storage and are put into 74's storage.
   Any item can be TFR'd to another Ruler of the same race if the receiving s/c writes a REC order.
   Only gold can be TFR'd to a Ruler of another race.
-  Group G SPYS may be TFR'd into a foreign s/c to conduct espionage, but they remain under their Ruler's control (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
+  Group G SPY may be TFR'd into a foreign s/c to conduct espionage, but they remain under their Ruler's control (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
 
 <a id="rule-S7.1.2"></a>
 #### S7.1.2 Multiple TFR Orders
@@ -3738,17 +3740,17 @@ This order does not require "END" to finish it.
 - Format: S/C ID#, "REC", quantity, item, [s/c ID#'s received from].
 - Examples:
   ```text
-  307, REC, 1E6, NMTS, [75].
-  75, REC, 3E3, NMTS, [72, 73].
+  307, REC, 1E6, NMTL, [75].
+  75, REC, 3E3, NMTL, [72, 73].
   ```
-- Notes: The first REC order has s/c 307 receive 1,000,000 NMTS from s/c #75; a single s/c is still written as a list ([S2.5](#rule-S2.5)).
-  The second causes the NMTS to be received from 72 and 73.
+- Notes: The first REC order has s/c 307 receive 1,000,000 NMTL from s/c #75; a single s/c is still written as a list ([S2.5](#rule-S2.5)).
+  The second causes the NMTL to be received from 72 and 73.
   A s/c listed more than once is received from only once; the repeat is not an error.
   `[*]` can not be used in a REC order.
   This order is not necessary if both s/c's are owned by the same player.
   If X- POP units are used in a REC order, it will be void.
   REC orders are used only for TFR's from another Ruler of the same race, or his Regent (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
-  Gold, RSCH, and SPYS do not require a REC order.
+  Gold, RSCH, and SPY do not require a REC order.
 
 <a id="rule-S7.2.2"></a>
 #### S7.2.2 To Cancel Receive Orders
@@ -3765,9 +3767,9 @@ A REC order cancelled this way is cancelled for every s/c in its list.
   ```text
   307, REC, 4, M, [75, 76, 77, 78, 79].
   100, PRO-4.
-  200, LFS-1.
-  10, TPT-2.
-  25, AUT-1.
+  200, LFSU-1.
+  10, TRNS-2.
+  25, AUTO-1.
   ```
 - Notes: The multiple REC order is optional.
   It can be used to REC more than one item from one or more s/c's.
@@ -3791,7 +3793,7 @@ A REC order cancelled this way is cancelled for every s/c in its list.
   X-POP units may not be used in a pick up order; if used, it will be void.
   The items are picked up from 70's storage and go into 69's storage.
   Any item can be PUP'd from another Ruler of the same race if that s/c writes an APU order.
-  Nothing can be PUP'd from a Ruler of another race, except the player's own group G SPYS (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
+  Nothing can be PUP'd from a Ruler of another race, except the player's own group G SPY (see [K1.0](#rule-K1.0)<!-- was 11.1 -->).
 
 <a id="rule-S7.3.2"></a>
 #### S7.3.2 Multiple PUP Orders
@@ -3802,7 +3804,7 @@ A REC order cancelled this way is cancelled for every s/c in its list.
   307, PUP, 3, M, [80, 81].
   2E6, STUL.
   800, FOOD.
-  90, CNW-2.
+  90, CWRK-2.
   ```
 - Notes: The multiple PUP order is optional.
   It can be used to PUP more than one item from one or more s/c's.
@@ -3856,49 +3858,49 @@ An APU order canceled this way is canceled for every s/c in its list.
 <a id="rule-S8.1"></a>
 ### S8.1 Build Change Orders (BCH)
 
-- Format: S/C ID#, "BCH", FCT group #, new function.
-- Example: 16, BCH, 8, EWP-1.
-- Notes: This BCH order has FCT group 8 start building EWP-1.
-  This order would not change the item being made by FCT group 8 unless a BCH, RETL order has been issued first.
+- Format: S/C ID#, "BCH", FACT group #, new function.
+- Example: 16, BCH, 8, EWPN-1.
+- Notes: This BCH order has FACT group 8 start building EWPN-1.
+  This order would not change the item being made by FACT group 8 unless a BCH, RETL order has been issued first.
 
 - Example: 16, BCH, 8, RETL.
-- Notes: This BCH order has FCT group 8 retool.
-  This must be done whenever the FCT group changes the item it is making, with the exception of RSCH.
+- Notes: This BCH order has FACT group 8 retool.
+  This must be done whenever the FACT group changes the item it is making, with the exception of RSCH.
 
 - Example: 16, BCH, 8, RSCH.
-- Notes: This BCH order has FCT group 8 begin making RSCH.
+- Notes: This BCH order has FACT group 8 begin making RSCH.
   There is no RETL order necessary to change from making one item to making RSCH, but when changing from making RSCH to making an item, a RETL order *is* necessary.
 
 - Example: 16, BCH, 8, SHT.
-- Notes: This BCH order has FCT group 8 shut down.
+- Notes: This BCH order has FACT group 8 shut down.
   The group remains assembled but does not produce.
 
 - Example: 16, BCH, 8, STU.
-- Notes: This BCH order is used to make a shut-down FCT group begin producing.
+- Notes: This BCH order is used to make a shut-down FACT group begin producing.
 
 <a id="rule-S8.2"></a>
 ### S8.2 Combine Orders (COM)
 
-- Format: S/C ID#, "COM", FCT group, FCT group that is being absorbed.
+- Format: S/C ID#, "COM", FACT group, FACT group that is being absorbed.
 - Example: 77, COM, 1, 7.
-- Notes: The COM order causes FCT group 7 to combine with FCT group 1, and be absorbed.
-  After they combine, FCT group 1 exists, and FCT group 7 does not.
-  Both FCT groups must be making the same kind of unit, and both must have the same type of work in process.
+- Notes: The COM order causes FACT group 7 to combine with FACT group 1, and be absorbed.
+  After they combine, FACT group 1 exists, and FACT group 7 does not.
+  Both FACT groups must be making the same kind of unit, and both must have the same type of work in process.
 
 <a id="rule-S8.3"></a>
 ### S8.3 Mine Change Orders (MCH)
 
-- Format: S/C ID#, "MCH", MIN group #, new deposit location, quantity of MIN's.
+- Format: S/C ID#, "MCH", MINE group #, new deposit location, quantity of MINE's.
 - Example: 35, MCH, 1, 35, 50,000.
 - Notes: This MCH order has s/c 35 move 50,000 mine units from mine group 1 to deposit 35.
 
-- Format: S/C ID#, "MCH", MIN group #, "STU" or "SHT".
+- Format: S/C ID#, "MCH", MINE group #, "STU" or "SHT".
 - Example: 35, MCH, 1, SHT.
-- Notes: This MCH order has MIN group 1 shut down.
+- Notes: This MCH order has MINE group 1 shut down.
   The group remains assembled but does not produce.
 
 - Example: 35, MCH, 2, STU.
-- Notes: This MCH order is used to make a shut-down MIN group begin producing.
+- Notes: This MCH order is used to make a shut-down MINE group begin producing.
 
 <a id="rule-S8.4"></a>
 ### S8.4 Deposit Orders (DEP)
@@ -3911,16 +3913,16 @@ An APU order canceled this way is canceled for every s/c in its list.
 ### S8.5 Shut Down Orders (SHT)
 
 - Format: S/C ID#, "SHT", farms.
-- Example: 100, SHT, FRM-2.
-- Notes: The SHT down order has *all* of s/c 100's FRM-2 shut down.
+- Example: 100, SHT, FARM-2.
+- Notes: The SHT down order has *all* of s/c 100's FARM-2 shut down.
   This order is used only for farms.
 
 <a id="rule-S8.6"></a>
 ### S8.6 Start Up Orders (STU)
 
 - Format: S/C ID#, "STU", farms.
-- Example: 100, STU, FRM-1.
-- Notes: The STU order starts up all of 100's FRM-1 after they were shut down.
+- Example: 100, STU, FARM-1.
+- Notes: The STU order starts up all of 100's FARM-1 after they were shut down.
 
 <a id="rule-S9.0"></a>
 ## S9.0 Market Orders
@@ -3929,15 +3931,15 @@ An APU order canceled this way is canceled for every s/c in its list.
 ### S9.1 Buy Orders (BUY)
 
 - Format: S/C ID#, "BUY", quantity, item, price *per unit*.
-- Example: 75, BUY, 62,000, MSS-1, .501.
-- Notes: The BUY order has s/c 75 offer to buy from the market 62,000 MSS-1 at .501 each.
+- Example: 75, BUY, 62,000, MSSL-1, .501.
+- Notes: The BUY order has s/c 75 offer to buy from the market 62,000 MSSL-1 at .501 each.
 
 <a id="rule-S9.2"></a>
 ### S9.2 Sell Orders (SEL)
 
 - Format: S/C ID#, "SEL", quantity, item.
-- Example: 75, SEL, 62,000, MSS-1.
-- Notes: 75 sells 62,000 MSS-1 to the market.
+- Example: 75, SEL, 62,000, MSSL-1.
+- Notes: 75 sells 62,000 MSSL-1 to the market.
 
 <a id="rule-S10.0"></a>
 ## S10.0 Exploration Orders
@@ -3988,10 +3990,10 @@ S/C 79 probes the star system it is in at magnitude 10.
 
 - Format: S/C where spies are, "SPM", quantity, from group #, to group #.
 - Example: 28, SPM, 20, G, E.
-- Notes: SPYS cannot be moved from one s/c to another with a SPM order; they are moved with a TFR order.
+- Notes: SPY cannot be moved from one s/c to another with a SPM order; they are moved with a TFR order.
   In order to be TFR'd, they must be in group G.
   On arrival in the new s/c, they are still in group G, and must be changed to another group to be effective.
-  This order changes the SPYS from group G to E.
+  This order changes the SPY from group G to E.
 
 - Example: 18, SPM, 29, E, C.
 - Notes: The spies were changed from group E to C.
@@ -4013,18 +4015,18 @@ S/C 79 probes the star system it is in at magnitude 10.
   Therefore, all the spies in group F (with no target) are assigned to group F *target 5*.
 
 - Example: 29, SPM, 10, G, F, 0.
-- Notes: No target was specified, so the information reported by the F SPYS will be randomly selected by the computer.
+- Notes: No target was specified, so the information reported by the F SPY will be randomly selected by the computer.
 
 - Format: S/C where spies are, "SPM", from group #, to group #, target 1, target 2.
 - Example: 29, SPM, 1000, G, D, 0, 0.
-- Notes: No target was specified for these D spies, so they will kill all SPYS except those of their Ruler of any type belonging to anyone.
+- Notes: No target was specified for these D spies, so they will kill all SPY except those of their Ruler of any type belonging to anyone.
 
 - Example: 29, SPM, 1000, C, D, 0, A.
 - Notes: 0 used as a target means all, so the 1000 spies have been changed from C spies to D spies, and instructed to kill all A spies.
-  The first target for D SPYS signifies whose spies they are to assassinate, and the second target signifies the type of spies they are to kill.
+  The first target for D SPY signifies whose spies they are to assassinate, and the second target signifies the type of spies they are to kill.
 
 - Example: 29, SPM, 1000, C, D, 26, 0.
-- Notes: This format changes 1000 spies from C to D, ordering them to kill all SPYS belonging to player 26.
+- Notes: This format changes 1000 spies from C to D, ordering them to kill all SPY belonging to player 26.
 
 - Example: 29, SPM, 1000, A, D, 28, B.
   This SPM order changes 1000 spies from group A to group D, and orders them to kill all B spies belonging to player 28.
@@ -4042,16 +4044,16 @@ NOTE: ALL SPM ORDERS CAN BE USED IN THE PLAYER'S OWN S/C, OR IN FOREIGN S/C's.
 
 - Format: S/C ID#, "DRF", quantity, units to be drafted.
 - Example: 13, DRF, 3,000, SLD-0.
-- Notes: Only SLD or TRN can be drafted.
-  (SPYS and CNW cadres must be assembled).
+- Notes: Only SLD or TRNE can be drafted.
+  (SPY and CWRK cadres must be assembled).
 
 <a id="rule-S12.2"></a>
 ### S12.2 Disband Orders (DSB)
 
 - Format: S/C ID#, "DSB", quantity, units to be disbanded.
-- Example: 66, DSB, 7E3, TRN-1.
-- Notes: Only SLD or TRN can be disbanded.
-  (SPYS and CNW cadres must be dis-assembled).
+- Example: 66, DSB, 7E3, TRNE-1.
+- Notes: Only SLD or TRNE can be disbanded.
+  (SPY and CWRK cadres must be dis-assembled).
 
 <a id="rule-S12.3"></a>
 ### S12.3 Pay Orders (PAY)
